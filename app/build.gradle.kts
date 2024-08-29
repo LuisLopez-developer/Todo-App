@@ -53,14 +53,19 @@ android {
 
 dependencies {
 
+    // Core dependencies
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
+
+    // Compose dependencies
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    // Test dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -69,17 +74,17 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    //Navigation
+    // Navigation
     implementation(libs.androidx.navigation.compose)
 
-    //DaggerHilt
+    // Dagger Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
 
-    //LiveData
+    // LiveData
     implementation(libs.androidx.runtime.livedata)
 
-    //Room
+    // Room
     implementation(libs.androidx.room.runtime)
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
