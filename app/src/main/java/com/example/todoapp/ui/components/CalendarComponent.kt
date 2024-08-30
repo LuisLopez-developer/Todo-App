@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import com.example.todoapp.R
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -86,7 +87,7 @@ fun HeaderCalendar(
     onNextClick: () -> Unit,
 ) {
     // Formato para mostrar el mes y año en el encabezado
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("MMMM yyyy") }
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("MMMM yyyy", Locale("es", "PE")) }
 
     Row(
         modifier = Modifier
@@ -105,7 +106,7 @@ fun HeaderCalendar(
 
         // Muestra el mes y año formateado
         Text(
-            text = date.format(dateFormatter),
+            text = date.format(dateFormatter).uppercase(),
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center,
             fontSize = 20.sp
