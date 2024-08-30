@@ -49,6 +49,12 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    hilt {
+        enableAggregatingTask = true
+    }
+    kapt {
+        correctErrorTypes = true
+    }
 }
 
 dependencies {
