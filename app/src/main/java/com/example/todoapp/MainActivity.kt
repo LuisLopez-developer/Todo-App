@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navigationController = rememberNavController()
-                    NavHost(navController = navigationController, startDestination = "Calendar") {
+                    NavHost(navController = navigationController, startDestination = "screen1") {
                         composable("Calendar") { TasksScreen(taskViewModel,navigationController) }
                         composable("screen1") { Screen1(navigationController) }
                         composable("screen2") { Screen2(navigationController) }

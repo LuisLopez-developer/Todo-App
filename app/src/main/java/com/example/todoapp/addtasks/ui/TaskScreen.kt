@@ -1,5 +1,7 @@
 package com.example.todoapp.addtasks.ui
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -10,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -43,7 +44,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.ui.components.CalendarComponent
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostController) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -66,45 +69,81 @@ fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostContr
         }
 
         is TasksUiState.Success -> {
-            Container(showDialog, taskViewModel, (uiState as TasksUiState.Success).tasks)
+            Container(
+                showDialog,
+                taskViewModel,
+                (uiState as TasksUiState.Success).tasks,
+                navigationController
+            )
         }
     }
 
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Container(showDialog: Boolean, taskViewModel: TaskViewModel, tasks: List<TaskModel>) {
+fun Container(
+    showDialog: Boolean,
+    taskViewModel: TaskViewModel,
+    tasks: List<TaskModel>,
+    navigationController: NavHostController,
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .systemBarsPadding() // Añade padding para evitar las barras de estado y navegación
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            // Contenedor para el DatePicker
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                CalendarComponent()
+            }
+
+            // Lista de tareas ocupa el espacio restante
+            TasksList(tasks, taskViewModel, navigationController)
+        }
+
+        // Mantener el FAB siempre visible en la esquina inferior derecha
         AddTaskDialog(
             showDialog,
             onDismiss = { taskViewModel.onDialogClose() },
-            onTaskAdded = { taskViewModel.onTaskCreated(it) })
+            onTaskAdded = { taskViewModel.onTaskCreated(it) }
+        )
+
         FabDialog(
             Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp), taskViewModel
+                .align(Alignment.BottomEnd) // Alínea el FAB al final de la caja (absoluto)
+                .padding(16.dp),
+            taskViewModel
         )
-        TasksList(tasks, taskViewModel)
     }
 }
 
 @Composable
-fun TasksList(tasks: List<TaskModel>, taskViewModel: TaskViewModel) {
-
-
+fun TasksList(
+    tasks: List<TaskModel>,
+    taskViewModel: TaskViewModel,
+    navigationController: NavHostController,
+) {
     LazyColumn() {
         items(tasks, key = { it.id }) { task ->
-            ItemTask(taskModel = task, taskViewModel = taskViewModel)
+            ItemTask(taskModel = task, taskViewModel = taskViewModel, navigationController)
         }
     }
 }
 
 @Composable
-fun ItemTask(taskModel: TaskModel, taskViewModel: TaskViewModel) {
+fun ItemTask(
+    taskModel: TaskModel,
+    taskViewModel: TaskViewModel,
+    navigationController: NavHostController,
+) {
     Card(
         Modifier
             .fillMaxWidth()
@@ -169,4 +208,3 @@ fun AddTaskDialog(show: Boolean, onDismiss: () -> Unit, onTaskAdded: (String) ->
         }
     }
 }
-
