@@ -1,7 +1,6 @@
 package com.example.todoapp.ui.components
 
 import android.os.Build
-import android.webkit.WebSettings.TextSize
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,10 +14,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -45,11 +43,17 @@ fun CalendarComponent(
     initialDate: LocalDate = LocalDate.now(),
     onDateSelected: (LocalDate) -> Unit = {},
 ) {
-    // Mantiene el estado de la fecha seleccionada en el calendario
+    // Estado de la fecha seleccionada en el calendario
     var selectedDate by remember { mutableStateOf(initialDate) }
 
     // Calcula el primer día del mes actual basado en la fecha seleccionada
-    val currentMonthFirstDay = remember(selectedDate) { selectedDate.withDayOfMonth(1) }
+    val currentMonthFirstDay by remember(selectedDate) {
+        mutableStateOf(
+            selectedDate.withDayOfMonth(
+                1
+            )
+        )
+    }
 
     Column(modifier = modifier) {
         // Encabezado del calendario que muestra el mes y año actual y permite navegar entre meses
@@ -61,14 +65,15 @@ fun CalendarComponent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Cuerpo del calendario que muestra los días del mes actual
+        // La altura del contenedor del calendario se ajustará dinámicamente
         CalendarBody(
             currentMonthFirstDay = currentMonthFirstDay,
             selectedDate = selectedDate,
             onDateSelected = { date ->
                 selectedDate = date
                 onDateSelected(date)
-            }
+            },
+            modifier = Modifier.wrapContentHeight() // Ajusta la altura del contenedor del calendario
         )
     }
 }
@@ -81,18 +86,18 @@ fun HeaderCalendar(
     onNextClick: () -> Unit,
 ) {
     // Formato para mostrar el mes y año en el encabezado
-    val dateFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("MMMM yyyy") }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         IconButton(onClick = onPreviousClick) {
             Icon(
-                painter  = painterResource(id = R.drawable.ic_round_arrow_left),
+                painter = painterResource(id = R.drawable.ic_round_arrow_left),
                 contentDescription = "Previous",
                 modifier = Modifier.size(40.dp)
             )
@@ -108,7 +113,7 @@ fun HeaderCalendar(
 
         IconButton(onClick = onNextClick) {
             Image(
-                painter  = painterResource(id = R.drawable.ic_round_arrow_right),
+                painter = painterResource(id = R.drawable.ic_round_arrow_right),
                 contentDescription = "Next",
                 modifier = Modifier.size(40.dp)
             )
@@ -119,39 +124,57 @@ fun HeaderCalendar(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CalendarBody(
+    modifier: Modifier = Modifier,
     currentMonthFirstDay: LocalDate,
     selectedDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit = {},
+    onDateSelected: (LocalDate) -> Unit = {}
 ) {
-    val daysOfWeek = listOf("Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab")
-    val daysInMonth = currentMonthFirstDay.lengthOfMonth()
+    val daysOfWeek = remember { listOf("Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab") }
+    val daysInMonth = currentMonthFirstDay.lengthOfMonth() // Número total de días en el mes
+    val firstDayOfWeek =
+        remember(currentMonthFirstDay) { currentMonthFirstDay.dayOfWeek.value % 7 } // Determina el primer día de la semana del mes actual
 
-    // Determina el primer día de la semana del mes actual
-    val firstDayOfWeek = currentMonthFirstDay.dayOfWeek.value % 7
-
-    Column {
-        // Encabezado que muestra los días de la semana
+    Column(modifier = modifier) {
+        // Encabezado con los días de la semana
         DaysOfWeekHeader(daysOfWeek)
 
-        var dayCounter = 1
-        for (week in 0 until 6) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                for (day in 0 until 7) {
-                    // Crea celdas vacías para los días que no pertenecen al mes actual
-                    if (week == 0 && day < firstDayOfWeek || dayCounter > daysInMonth) {
-                        EmptyDayCell(modifier = Modifier.weight(1f))
-                    } else {
-                        // Crea celdas con los días del mes actual
-                        val date = currentMonthFirstDay.plusDays((dayCounter - 1).toLong())
-                        DayCell(
-                            date = date,
-                            isSelected = date == selectedDate,
-                            onDateSelected = onDateSelected
-                        )
-                        dayCounter++
+        // Tamaño y altura de las celdas del calendario
+        val daySize = 40.dp
+        val rowHeight = daySize + 8.dp
+        // Calcula el número de filas necesarias para mostrar todos los días del mes
+        val numRows =
+            remember(daysInMonth, firstDayOfWeek) { (daysInMonth + firstDayOfWeek + 6) / 7 }
+
+        // Utiliza LazyColumn para mejorar el rendimiento en la generación de filas de días
+        LazyColumn {
+            items(numRows) { week ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(rowHeight),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    for (day in 0 until 7) {
+                        // Crea celdas vacías para los días que no pertenecen al mes actual
+                        if (week == 0 && day < firstDayOfWeek || (week * 7 + day - firstDayOfWeek + 1) > daysInMonth) {
+                            EmptyDayCell(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .size(daySize)
+                            )
+                        } else {
+                            // Crea celdas con los días del mes actual
+                            val date =
+                                currentMonthFirstDay.plusDays((week * 7 + day - firstDayOfWeek).toLong())
+                            DayCell(
+                                date = date,
+                                isSelected = date == selectedDate,
+                                onDateSelected = onDateSelected,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .size(daySize)
+                            )
+                        }
                     }
                 }
             }
@@ -163,7 +186,9 @@ fun CalendarBody(
 fun DaysOfWeekHeader(daysOfWeek: List<String>) {
     // Crea un encabezado de los días de la semana
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp), // Asegura que el encabezado tenga una altura consistente
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         daysOfWeek.forEach { day ->
@@ -188,11 +213,11 @@ fun DayCell(
     date: LocalDate,
     isSelected: Boolean,
     onDateSelected: (LocalDate) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .padding(4.dp)
-            .size(40.dp)
             .background(
                 if (isSelected) Color.Blue else Color.Transparent,
                 shape = CircleShape
