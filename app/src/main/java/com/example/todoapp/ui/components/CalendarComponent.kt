@@ -1,7 +1,9 @@
 package com.example.todoapp.ui.components
 
 import android.os.Build
+import android.webkit.WebSettings.TextSize
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,8 +30,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.todoapp.R
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -87,8 +92,9 @@ fun HeaderCalendar(
     ) {
         IconButton(onClick = onPreviousClick) {
             Icon(
-                imageVector = Icons.Filled.ArrowBack,
-                contentDescription = "Previous"
+                painter  = painterResource(id = R.drawable.ic_round_arrow_left),
+                contentDescription = "Previous",
+                modifier = Modifier.size(40.dp)
             )
         }
 
@@ -96,13 +102,15 @@ fun HeaderCalendar(
         Text(
             text = date.format(dateFormatter),
             modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            fontSize = 20.sp
         )
 
         IconButton(onClick = onNextClick) {
-            Icon(
-                imageVector = Icons.Filled.ArrowForward,
-                contentDescription = "Next"
+            Image(
+                painter  = painterResource(id = R.drawable.ic_round_arrow_right),
+                contentDescription = "Next",
+                modifier = Modifier.size(40.dp)
             )
         }
     }
