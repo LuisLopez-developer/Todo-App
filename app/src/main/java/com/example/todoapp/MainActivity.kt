@@ -11,18 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.todoapp.addtasks.ui.TaskViewModel
-import com.example.todoapp.addtasks.ui.TasksScreen
+import com.example.todoapp.ui.layouts.MainLayout
 import com.example.todoapp.ui.theme.TodoAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    private val taskViewModel: TaskViewModel by viewModels()
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,15 +28,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val navigationController = rememberNavController()
-                    NavHost(navController = navigationController, startDestination = "Calendar") {
-                        composable("Calendar") { TasksScreen(taskViewModel,navigationController) }
-                        composable("screen1") { Screen1(navigationController) }
-                        composable("screen2") { Screen2(navigationController) }
-                    }
-
-
-
+                    MainLayout()
                 }
             }
         }
