@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -43,6 +42,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.navigation.Routes
 
 @Composable
 fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostController) {
@@ -66,18 +66,27 @@ fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostContr
         }
 
         is TasksUiState.Success -> {
-            Container(showDialog, taskViewModel, (uiState as TasksUiState.Success).tasks)
+            Container(
+                showDialog,
+                taskViewModel,
+                (uiState as TasksUiState.Success).tasks,
+                navigationController
+            )
         }
     }
 
 }
 
 @Composable
-fun Container(showDialog: Boolean, taskViewModel: TaskViewModel, tasks: List<TaskModel>) {
+fun Container(
+    showDialog: Boolean,
+    taskViewModel: TaskViewModel,
+    tasks: List<TaskModel>,
+    navigationController: NavHostController,
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .systemBarsPadding() // Añade padding para evitar las barras de estado y navegación
     ) {
         AddTaskDialog(
             showDialog,
@@ -88,29 +97,40 @@ fun Container(showDialog: Boolean, taskViewModel: TaskViewModel, tasks: List<Tas
                 .align(Alignment.BottomEnd)
                 .padding(16.dp), taskViewModel
         )
-        TasksList(tasks, taskViewModel)
+        TasksList(tasks, taskViewModel, navigationController)
     }
 }
 
 @Composable
-fun TasksList(tasks: List<TaskModel>, taskViewModel: TaskViewModel) {
-
-
+fun TasksList(
+    tasks: List<TaskModel>,
+    taskViewModel: TaskViewModel,
+    navigationController: NavHostController,
+) {
     LazyColumn() {
         items(tasks, key = { it.id }) { task ->
-            ItemTask(taskModel = task, taskViewModel = taskViewModel)
+            ItemTask(taskModel = task, taskViewModel = taskViewModel, navigationController)
         }
     }
 }
 
 @Composable
-fun ItemTask(taskModel: TaskModel, taskViewModel: TaskViewModel) {
+fun ItemTask(
+    taskModel: TaskModel,
+    taskViewModel: TaskViewModel,
+    navigationController: NavHostController,
+) {
     Card(
         Modifier
             .fillMaxWidth()
             .pointerInput(Unit) {
                 detectTapGestures(onLongPress = {
                     taskViewModel.onItemRemove(taskModel)
+                })
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(onPress = {
+                    navigationController.navigate(Routes.Pantalla3.createRoute(taskModel.id))
                 })
             }) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
