@@ -1,9 +1,5 @@
 package com.example.todoapp.ui.components
 
-import android.os.Build
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -27,17 +22,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.todoapp.R
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import org.threeten.bp.LocalDate
+import org.threeten.bp.format.DateTimeFormatter
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CalendarComponent(
     modifier: Modifier = Modifier,
@@ -46,14 +38,12 @@ fun CalendarComponent(
 ) {
     // Estado de la fecha seleccionada en el calendario
     var selectedDate by remember { mutableStateOf(initialDate) }
+    // Estado del día actual
+    val currentDay = remember { LocalDate.now() }
 
     // Calcula el primer día del mes actual basado en la fecha seleccionada
     val currentMonthFirstDay by remember(selectedDate) {
-        mutableStateOf(
-            selectedDate.withDayOfMonth(
-                1
-            )
-        )
+        mutableStateOf(selectedDate.withDayOfMonth(1))
     }
 
     Column(modifier = modifier) {
@@ -70,6 +60,7 @@ fun CalendarComponent(
         CalendarBody(
             currentMonthFirstDay = currentMonthFirstDay,
             selectedDate = selectedDate,
+            currentDay = currentDay, // Pasa el día actual
             onDateSelected = { date ->
                 selectedDate = date
                 onDateSelected(date)
@@ -79,7 +70,6 @@ fun CalendarComponent(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HeaderCalendar(
     date: LocalDate,
@@ -87,7 +77,12 @@ fun HeaderCalendar(
     onNextClick: () -> Unit,
 ) {
     // Formato para mostrar el mes y año en el encabezado
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("MMMM yyyy", Locale("es", "PE")) }
+    val dateFormatter = remember {
+        DateTimeFormatter.ofPattern(
+            "MMMM yyyy",
+            java.util.Locale("es", "PE")
+        )
+    }
 
     Row(
         modifier = Modifier
@@ -113,7 +108,7 @@ fun HeaderCalendar(
         )
 
         IconButton(onClick = onNextClick) {
-            Image(
+            Icon(
                 painter = painterResource(id = R.drawable.ic_round_arrow_right),
                 contentDescription = "Next",
                 modifier = Modifier.size(40.dp)
@@ -122,13 +117,13 @@ fun HeaderCalendar(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CalendarBody(
     modifier: Modifier = Modifier,
     currentMonthFirstDay: LocalDate,
     selectedDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit = {}
+    currentDay: LocalDate, // Recibe el día actual
+    onDateSelected: (LocalDate) -> Unit = {},
 ) {
     val daysOfWeek = remember { listOf("Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab") }
     val daysInMonth = currentMonthFirstDay.lengthOfMonth() // Número total de días en el mes
@@ -170,6 +165,7 @@ fun CalendarBody(
                             DayCell(
                                 date = date,
                                 isSelected = date == selectedDate,
+                                isToday = date == currentDay, // Pasa el día actual
                                 onDateSelected = onDateSelected,
                                 modifier = Modifier
                                     .weight(1f)
@@ -182,6 +178,7 @@ fun CalendarBody(
         }
     }
 }
+
 
 @Composable
 fun DaysOfWeekHeader(daysOfWeek: List<String>) {
@@ -208,28 +205,25 @@ fun EmptyDayCell(modifier: Modifier = Modifier) {
     Box(modifier = modifier)
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @Composable
 fun DayCell(
     date: LocalDate,
     isSelected: Boolean,
+    isToday: Boolean,
     onDateSelected: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
             .padding(4.dp)
-            .background(
-                if (isSelected) Color.Blue else Color.Transparent,
-                shape = CircleShape
-            )
             .clickable { onDateSelected(date) },
         contentAlignment = Alignment.Center
     ) {
-        // Muestra el número del día del mes actual
+
         Text(
             text = date.dayOfMonth.toString(),
-            color = if (isSelected) Color.White else Color.Black
         )
+
     }
 }

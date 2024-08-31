@@ -1,7 +1,5 @@
 package com.example.todoapp.addtasks.ui
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -22,6 +20,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -33,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
@@ -46,7 +44,6 @@ import androidx.navigation.NavHostController
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.ui.components.CalendarComponent
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostController) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -80,7 +77,6 @@ fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostContr
 
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Container(
     showDialog: Boolean,
@@ -182,7 +178,7 @@ fun AddTaskDialog(show: Boolean, onDismiss: () -> Unit, onTaskAdded: (String) ->
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(colorScheme.background)
                     .padding(16.dp)
             ) {
                 Text(
