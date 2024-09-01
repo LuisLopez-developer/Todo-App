@@ -12,15 +12,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -30,7 +34,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.todoapp.R
+import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
+import org.threeten.bp.YearMonth
 import org.threeten.bp.format.DateTimeFormatter
 
 @Composable
@@ -40,46 +46,75 @@ fun CalendarComponent(
     onDateSelected: (LocalDate) -> Unit = {},
 ) {
     var selectedDate by remember { mutableStateOf(initialDate) }
-    val currentDay = remember { LocalDate.now() }
-    var currentMonth by remember { mutableStateOf(selectedDate.withDayOfMonth(1)) }
+    var currentMonth by remember { mutableStateOf(initialDate.withDayOfMonth(1)) }
 
-    // Handle month change
-    fun handleMonthChange(newMonth: LocalDate) {
-        // Calculate the new selected date
-        val newDay = if (selectedDate.dayOfMonth <= newMonth.lengthOfMonth()) {
-            selectedDate.withMonth(newMonth.monthValue).withYear(newMonth.year)
+    val pagerState = rememberPagerState(
+        pageCount = { Int.MAX_VALUE }, // Unbounded page count
+        initialPage = calculateInitialPage(initialDate)
+    )
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(pagerState.currentPage) {
+        val yearMonth = pageToYearMonth(pagerState.currentPage)
+        currentMonth = yearMonth.atDay(1)
+        selectedDate = if (selectedDate.month != currentMonth.month) {
+            currentMonth.withDayOfMonth(minOf(selectedDate.dayOfMonth, currentMonth.lengthOfMonth()))
         } else {
-            newMonth.withDayOfMonth(newMonth.lengthOfMonth())
+            selectedDate
         }
-
-        selectedDate = newDay
-        currentMonth = newMonth
-    }
-
-    // Update selectedDate and notify parent when date is selected
-    fun handleDateSelected(date: LocalDate) {
-        selectedDate = date
-        onDateSelected(date)
     }
 
     Column(
         modifier = modifier
             .padding(bottom = 20.dp)
     ) {
-        Header(currentMonth, onPreviousMonth = {
-            handleMonthChange(currentMonth.minusMonths(1))
-        }, onNextMonth = {
-            handleMonthChange(currentMonth.plusMonths(1))
-        })
-
-        Content(
-            currentMonthFirstDay = currentMonth,
-            selectedDate = selectedDate,
-            currentDay = currentDay,
-            onDateSelected = { date -> handleDateSelected(date) }
+        Header(
+            currentMonth,
+            onPreviousMonth = {
+                coroutineScope.launch {
+                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                }
+            },
+            onNextMonth = {
+                coroutineScope.launch {
+                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                }
+            }
         )
+        DaysOfTheWeek()
+
+        HorizontalPager(
+            state = pagerState,
+            pageSpacing = 8.dp,
+        ) { page ->
+            val yearMonth = pageToYearMonth(page)
+            DaysOfTheMonth(
+                currentMonthFirstDay = yearMonth.atDay(1),
+                selectedDate = selectedDate,
+                currentDay = LocalDate.now(),
+                onDateSelected = { date ->
+                    selectedDate = date
+                    onDateSelected(date)
+                }
+            )
+        }
     }
 }
+
+fun calculateInitialPage(initialDate: LocalDate): Int {
+    val yearMonth = YearMonth.from(initialDate)
+    val yearOffset = 100 // Offset for range of 100 years
+    return ((yearMonth.year - (initialDate.year - yearOffset)) * 12) + (yearMonth.monthValue - 1)
+}
+
+fun pageToYearMonth(page: Int): YearMonth {
+    val yearOffset = 100 // Offset for range of 100 years
+    val year = (page / 12) + (initialYear - yearOffset)
+    val month = (page % 12) + 1
+    return YearMonth.of(year, month)
+}
+
+private val initialYear = LocalDate.now().year
 
 @Composable
 fun Header(
@@ -110,22 +145,6 @@ fun Header(
             contentDescription = "Next"
         )
     }
-}
-
-@Composable
-fun Content(
-    currentMonthFirstDay: LocalDate,
-    selectedDate: LocalDate,
-    currentDay: LocalDate,
-    onDateSelected: (LocalDate) -> Unit,
-) {
-    DaysOfTheWeek()
-    DaysOfTheMonth(
-        currentMonthFirstDay = currentMonthFirstDay,
-        selectedDate = selectedDate,
-        currentDay = currentDay,
-        onDateSelected = onDateSelected
-    )
 }
 
 @Composable

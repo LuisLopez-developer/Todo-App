@@ -24,7 +24,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isDebuggable = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -97,5 +98,5 @@ dependencies {
 
     // Pager
     implementation(libs.androidx.foundation)
-
+    implementation("com.google.accompanist:accompanist-pager:0.35.2-beta") // Sostiene la mentira del scroll horizontal
 }
