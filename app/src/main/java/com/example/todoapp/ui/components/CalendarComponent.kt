@@ -56,8 +56,12 @@ fun CalendarComponent(
         // Encabezado del calendario que muestra el mes y año actual y permite navegar entre meses
         HeaderCalendar(
             date = selectedDate,
-            onPreviousClick = { selectedDate = selectedDate.minusMonths(1).withDayOfMonth(1) },
-            onNextClick = { selectedDate = selectedDate.plusMonths(1).withDayOfMonth(1) }
+            onPreviousClick = {
+                selectedDate = getAdjustedDateForMonthChange(selectedDate, -1)
+            },
+            onNextClick = {
+                selectedDate = getAdjustedDateForMonthChange(selectedDate, 1)
+            }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -74,6 +78,12 @@ fun CalendarComponent(
             modifier = Modifier.wrapContentHeight() // Ajusta la altura del contenedor del calendario
         )
     }
+}
+
+fun getAdjustedDateForMonthChange(date: LocalDate, monthChange: Int): LocalDate {
+    val newDate = date.plusMonths(monthChange.toLong())
+    val lastDayOfNewMonth = newDate.lengthOfMonth()
+    return newDate.withDayOfMonth(minOf(date.dayOfMonth, lastDayOfNewMonth))
 }
 
 @Composable
