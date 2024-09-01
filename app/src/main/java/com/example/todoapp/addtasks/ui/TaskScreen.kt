@@ -96,7 +96,6 @@ fun Container(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
             ) {
                 CalendarComponent()
             }
