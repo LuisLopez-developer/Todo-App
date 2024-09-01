@@ -1,5 +1,6 @@
 package com.example.todoapp.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,9 +12,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -76,14 +80,6 @@ fun HeaderCalendar(
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
 ) {
-    // Formato para mostrar el mes y año en el encabezado
-    val dateFormatter = remember {
-        DateTimeFormatter.ofPattern(
-            "MMMM yyyy",
-            java.util.Locale("es", "PE")
-        )
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -91,31 +87,44 @@ fun HeaderCalendar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        IconButton(onClick = onPreviousClick) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_round_arrow_left),
-                contentDescription = "Previous",
-                modifier = Modifier.size(40.dp)
-            )
-        }
-
-        // Muestra el mes y año formateado
+        NavigationIcon(
+            onClick = onPreviousClick,
+            iconId = R.drawable.ic_round_arrow_left,
+            contentDescription = "Previous"
+        )
         Text(
-            text = date.format(dateFormatter).uppercase(),
+            text = formatDate(date),
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center,
             fontSize = 20.sp
         )
-
-        IconButton(onClick = onNextClick) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_round_arrow_right),
-                contentDescription = "Next",
-                modifier = Modifier.size(40.dp)
-            )
-        }
+        NavigationIcon(
+            onClick = onNextClick,
+            iconId = R.drawable.ic_round_arrow_right,
+            contentDescription = "Next"
+        )
     }
 }
+
+@Composable
+fun NavigationIcon(onClick: () -> Unit, iconId: Int, contentDescription: String) {
+    IconButton(onClick = onClick) {
+        Icon(
+            painter = painterResource(id = iconId),
+            contentDescription = contentDescription,
+            modifier = Modifier.size(40.dp)
+        )
+    }
+}
+
+@Composable
+fun formatDate(date: LocalDate): String {
+    val dateFormatter = remember {
+        DateTimeFormatter.ofPattern("MMMM yyyy", java.util.Locale("es", "PE"))
+    }
+    return date.format(dateFormatter).uppercase()
+}
+
 
 @Composable
 fun CalendarBody(
@@ -182,11 +191,11 @@ fun CalendarBody(
 
 @Composable
 fun DaysOfWeekHeader(daysOfWeek: List<String>) {
-    // Crea un encabezado de los días de la semana
+    // Encabezado de los días de la semana
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(40.dp), // Asegura que el encabezado tenga una altura consistente
+            .height(40.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         daysOfWeek.forEach { day ->
@@ -200,11 +209,28 @@ fun DaysOfWeekHeader(daysOfWeek: List<String>) {
 }
 
 @Composable
-fun EmptyDayCell(modifier: Modifier = Modifier) {
-    // Representa una celda vacía en el calendario
-    Box(modifier = modifier)
+fun CalendarCell(
+    modifier: Modifier = Modifier,
+    date: LocalDate?,
+    onDateSelected: ((LocalDate) -> Unit)? = null,
+    content: @Composable (Modifier) -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .clickable { date?.let { onDateSelected?.invoke(it) } },
+        contentAlignment = Alignment.Center
+    ) {
+        content(modifier)
+    }
 }
 
+@Composable
+fun EmptyDayCell(modifier: Modifier = Modifier) {
+    CalendarCell(
+        date = null,
+        modifier = modifier
+    ) {}
+}
 
 @Composable
 fun DayCell(
@@ -214,16 +240,25 @@ fun DayCell(
     onDateSelected: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    CalendarCell(
+        date = date,
+        onDateSelected = onDateSelected,
         modifier = modifier
-            .padding(4.dp)
-            .clickable { onDateSelected(date) },
-        contentAlignment = Alignment.Center
     ) {
-
         Text(
             text = date.dayOfMonth.toString(),
+            color = if (isSelected) MaterialTheme.colorScheme.inverseOnSurface else MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier
+                .background(
+                    color = when {
+                        isSelected -> MaterialTheme.colorScheme.primary
+                        isToday -> MaterialTheme.colorScheme.surfaceVariant
+                        else -> MaterialTheme.colorScheme.background
+                    },
+                    shape = CircleShape
+                )
+                .size(30.dp) // Asegura que el tamaño del fondo sea circular
+                .wrapContentSize(align = Alignment.Center) // Centra el contenido dentro del fondo
         )
-
     }
 }
