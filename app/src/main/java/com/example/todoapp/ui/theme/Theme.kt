@@ -94,7 +94,7 @@ fun TodoAppTheme(
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
+    val appScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
@@ -104,7 +104,7 @@ fun TodoAppTheme(
         else -> LightColorScheme
     }
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = appScheme,
         typography = Typography,
         content = content
     )
