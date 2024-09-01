@@ -94,4 +94,8 @@ dependencies {
 
     // LocalDate: libreria añadida para poder usar el localDate en la api (24+)
     implementation(libs.threetenabp)
+
+    // Pager
+    implementation(libs.androidx.foundation)
+
 }
