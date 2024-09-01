@@ -2,6 +2,7 @@ package com.example.todoapp.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,9 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -240,6 +243,17 @@ fun DayCell(
     onDateSelected: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val backgroundColor by rememberUpdatedState(
+        when {
+            isSelected -> MaterialTheme.colorScheme.primaryContainer
+            isToday -> MaterialTheme.colorScheme.surfaceVariant
+            else -> MaterialTheme.colorScheme.background
+        }
+    )
+
+    // Crear un InteractionSource personalizado que no realice ninguna acción
+    val interactionSource = remember { MutableInteractionSource() }
+
     CalendarCell(
         date = date,
         onDateSelected = onDateSelected,
@@ -250,15 +264,17 @@ fun DayCell(
             color = if (isSelected) MaterialTheme.colorScheme.inverseOnSurface else MaterialTheme.colorScheme.onBackground,
             modifier = Modifier
                 .background(
-                    color = when {
-                        isSelected -> MaterialTheme.colorScheme.primary
-                        isToday -> MaterialTheme.colorScheme.surfaceVariant
-                        else -> MaterialTheme.colorScheme.background
-                    },
+                    color = backgroundColor,
                     shape = CircleShape
                 )
-                .size(30.dp) // Asegura que el tamaño del fondo sea circular
-                .wrapContentSize(align = Alignment.Center) // Centra el contenido dentro del fondo
+                .size(40.dp)
+                .wrapContentSize(align = Alignment.Center)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) {
+                    onDateSelected(date)
+                }
         )
     }
 }
