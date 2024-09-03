@@ -1,5 +1,6 @@
 package com.example.todoapp.ui.components
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,8 +49,8 @@ fun CalendarComponent(
     var currentMonth by remember { mutableStateOf(initialDate.withDayOfMonth(1)) }
 
     val pagerState = rememberPagerState(
-        pageCount = { Int.MAX_VALUE }, // Unbounded page count
-        initialPage = calculateInitialPage(initialDate)
+        initialPage = calculateInitialPage(initialDate),
+        pageCount = { Int.MAX_VALUE }
     )
     val coroutineScope = rememberCoroutineScope()
 
@@ -58,18 +58,20 @@ fun CalendarComponent(
         val yearMonth = pageToYearMonth(pagerState.currentPage)
         currentMonth = yearMonth.atDay(1)
         selectedDate = if (selectedDate.month != currentMonth.month) {
-            currentMonth.withDayOfMonth(minOf(selectedDate.dayOfMonth, currentMonth.lengthOfMonth()))
+            currentMonth.withDayOfMonth(
+                minOf(
+                    selectedDate.dayOfMonth,
+                    currentMonth.lengthOfMonth()
+                )
+            )
         } else {
             selectedDate
         }
     }
 
-    Column(
-        modifier = modifier
-            .padding(bottom = 20.dp)
-    ) {
+    Column {
         Header(
-            currentMonth,
+            date = currentMonth,
             onPreviousMonth = {
                 coroutineScope.launch {
                     pagerState.animateScrollToPage(pagerState.currentPage - 1)
@@ -88,27 +90,30 @@ fun CalendarComponent(
             pageSpacing = 8.dp,
         ) { page ->
             val yearMonth = pageToYearMonth(page)
-            DaysOfTheMonth(
-                currentMonthFirstDay = yearMonth.atDay(1),
-                selectedDate = selectedDate,
-                currentDay = LocalDate.now(),
-                onDateSelected = { date ->
-                    selectedDate = date
-                    onDateSelected(date)
-                }
-            )
+            Crossfade(targetState = yearMonth, label = "") { month ->
+                DaysOfTheMonth(
+                    currentMonthFirstDay = month.atDay(1),
+                    selectedDate = selectedDate,
+                    currentDay = LocalDate.now(),
+                    onDateSelected = { date ->
+                        selectedDate = date
+                        onDateSelected(date)
+                    }
+                )
+            }
         }
     }
 }
 
 fun calculateInitialPage(initialDate: LocalDate): Int {
     val yearMonth = YearMonth.from(initialDate)
-    val yearOffset = 100 // Offset for range of 100 years
+    val yearOffset = 100 // Offset para cubrir un rango de 100 años
     return ((yearMonth.year - (initialDate.year - yearOffset)) * 12) + (yearMonth.monthValue - 1)
 }
 
+// Convertir la página a YearMonth para gestionar el calendario
 fun pageToYearMonth(page: Int): YearMonth {
-    val yearOffset = 100 // Offset for range of 100 years
+    val yearOffset = 100
     val year = (page / 12) + (initialYear - yearOffset)
     val month = (page % 12) + 1
     return YearMonth.of(year, month)
@@ -123,13 +128,12 @@ fun Header(
     onNextMonth: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         NavigationIcon(
-            onClick = onPreviousMonth,  // Pass the callback for previous month
+            onClick = onPreviousMonth,
             iconId = R.drawable.ic_round_arrow_left,
             contentDescription = "Previous"
         )
@@ -140,20 +144,20 @@ fun Header(
             fontSize = 20.sp
         )
         NavigationIcon(
-            onClick = onNextMonth,  // Pass the callback for next month
+            onClick = onNextMonth,
             iconId = R.drawable.ic_round_arrow_right,
             contentDescription = "Next"
         )
     }
 }
 
+
 @Composable
 fun DaysOfTheWeek() {
-    val daysOfWeek = remember { listOf("Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab") }
+    val daysOfWeek = listOf("Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab")
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         daysOfWeek.forEach { day ->
@@ -166,6 +170,7 @@ fun DaysOfTheWeek() {
     }
 }
 
+
 @Composable
 fun DaysOfTheMonth(
     currentMonthFirstDay: LocalDate,
@@ -174,8 +179,8 @@ fun DaysOfTheMonth(
     onDateSelected: (LocalDate) -> Unit,
 ) {
     val daysInMonth = currentMonthFirstDay.lengthOfMonth()
-    val firstDayOfWeek = remember(currentMonthFirstDay) { currentMonthFirstDay.dayOfWeek.value % 7 }
-    val numRows = remember(daysInMonth, firstDayOfWeek) { (daysInMonth + firstDayOfWeek + 6) / 7 }
+    val firstDayOfWeek = (currentMonthFirstDay.dayOfWeek.value % 7)
+    val numRows = 6 // Fijar siempre 6 filas para evitar movimientos de layout
 
     LazyColumn {
         items(numRows) { week ->
@@ -185,11 +190,11 @@ fun DaysOfTheMonth(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 for (day in 0 until 7) {
-                    if (week == 0 && day < firstDayOfWeek || (week * 7 + day - firstDayOfWeek + 1) > daysInMonth) {
+                    val dayIndex = week * 7 + day - firstDayOfWeek + 1
+                    if (dayIndex < 1 || dayIndex > daysInMonth) {
                         EmptyDayCell(modifier = Modifier.weight(1f))
                     } else {
-                        val date =
-                            currentMonthFirstDay.plusDays((week * 7 + day - firstDayOfWeek).toLong())
+                        val date = currentMonthFirstDay.plusDays(dayIndex.toLong() - 1)
                         DayCell(
                             date = date,
                             isSelected = date == selectedDate,
