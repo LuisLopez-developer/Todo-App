@@ -2,15 +2,18 @@ package com.example.todoapp.taskcategory.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role.Companion.Checkbox
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
@@ -23,6 +26,9 @@ fun TaskCategoryScreen(
 ) {
     var categoryText by remember { mutableStateOf("") }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+
+    // Estado para categorías seleccionadas utilizando SnapshotStateList
+    val selectedCategories = remember { mutableStateListOf<TaskCategoryModel>() }
 
     // Observa el estado de UI desde el ViewModel
     val uiState by produceState<TaskCategoryUiState>(
@@ -51,7 +57,10 @@ fun TaskCategoryScreen(
             }
             is TaskCategoryUiState.Success -> {
                 // Muestra las categorías cuando el estado es de éxito
-                CategoryList((uiState as TaskCategoryUiState.Success).categories)
+                CategoryList(
+                    categories = (uiState as TaskCategoryUiState.Success).categories,
+                    selectedCategories = selectedCategories // Pasar el parámetro correcto
+                )
             }
         }
 
@@ -77,14 +86,50 @@ fun TaskCategoryScreen(
         ) {
             Text("Create Category")
         }
+
+        // Botón para eliminar categorías seleccionadas
+        Button(
+            onClick = {
+                selectedCategories.forEach { taskCategoryViewModel.onTaskCategoryRemove(it) }
+                selectedCategories.clear() // Limpia la selección después de eliminar
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = selectedCategories.isNotEmpty() // Solo habilitado si hay categorías seleccionadas
+        ) {
+            Text("Delete category/s")
+        }
     }
 }
 
 @Composable
-fun CategoryList(categories: List<TaskCategoryModel>) {
+fun CategoryList(categories: List<TaskCategoryModel>,
+                 selectedCategories: SnapshotStateList<TaskCategoryModel> // Cambiado a SnapshotStateList
+) {
     Column {
         categories.forEach { category ->
-            Text(text = category.category, modifier = Modifier.padding(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                // Checkbox para seleccionar la categoría
+                Checkbox(
+                    checked = selectedCategories.contains(category),
+                    onCheckedChange = { isChecked ->
+                        if (isChecked) {
+                            selectedCategories.add(category)
+                        } else {
+                            selectedCategories.remove(category)
+                        }
+                    }
+                )
+                Text(
+                    text = category.category,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .weight(1f)
+                )
+            }
         }
     }
 }
