@@ -1,6 +1,8 @@
 package com.example.todoapp.ui.components
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -261,16 +263,21 @@ fun DayCell(
     onDateSelected: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val backgroundColor by rememberUpdatedState(
-        when {
+    val backgroundColor by animateColorAsState(
+        targetValue = when {
             isSelected -> colorScheme.primaryContainer
             isToday -> colorScheme.surfaceVariant
             else -> colorScheme.background
-        }
+        }, label = ""
     )
 
-    // Crear un InteractionSource personalizado que no realice ninguna acción
+    val textColor by animateColorAsState(
+        targetValue = if (isSelected) colorScheme.inverseOnSurface else colorScheme.onBackground,
+        animationSpec = tween(durationMillis = 300), label = "" // Duración de la animación
+    )
+
     val interactionSource = remember { MutableInteractionSource() }
+
 
     CalendarCell(
         date = date,
@@ -279,7 +286,7 @@ fun DayCell(
     ) {
         Text(
             text = date.dayOfMonth.toString(),
-            color = if (isSelected) colorScheme.inverseOnSurface else colorScheme.onBackground,
+            color = textColor,
             modifier = Modifier
                 .background(
                     color = backgroundColor,
