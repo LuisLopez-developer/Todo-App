@@ -14,7 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
-import com.example.todoapp.navigation.Routes.Pantalla2
+import com.example.todoapp.ui.navigation.Routes.Pantalla2
 
 @Composable
 fun Screen1(navigationController: NavHostController) {

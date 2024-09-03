@@ -27,11 +27,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.todoapp.Screen2
 import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.TasksScreen
-import com.example.todoapp.navigation.Routes.Calendar
-import com.example.todoapp.navigation.Routes.Pantalla2
-import com.example.todoapp.navigation.Routes.TaskCategory
 import com.example.todoapp.taskcategory.ui.TaskCategoryScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
+import com.example.todoapp.ui.navigation.Routes.Calendar
+import com.example.todoapp.ui.navigation.Routes.Pantalla2
+import com.example.todoapp.ui.navigation.Routes.TaskCategory
 
 @Composable
 fun MainLayout() {
@@ -42,7 +42,7 @@ fun MainLayout() {
 
     Scaffold(
         topBar = { MyTopAppBar() },
-        bottomBar = { BottomNavigationBar(navigationController) } // Utilizamos la barra de navegación inferior
+        bottomBar = { BottomNavigationBar(navigationController) }
     ) { innerPadding ->
         NavHost(
             navController = navigationController,
