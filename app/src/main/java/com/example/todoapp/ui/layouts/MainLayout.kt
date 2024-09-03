@@ -21,25 +21,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.example.todoapp.Screen1
 import com.example.todoapp.Screen2
-import com.example.todoapp.Screen3
 import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.TasksScreen
 import com.example.todoapp.navigation.Routes.Calendar
-import com.example.todoapp.navigation.Routes.Pantalla1
 import com.example.todoapp.navigation.Routes.Pantalla2
-import com.example.todoapp.navigation.Routes.Pantalla3
+import com.example.todoapp.navigation.Routes.TaskCategory
+import com.example.todoapp.taskcategory.ui.TaskCategoryScreen
+import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 
 @Composable
 fun MainLayout() {
 
     val taskViewModel: TaskViewModel = viewModel()
+    val taskCategoryModel: TaskCategoryViewModel = viewModel()
     val navigationController = rememberNavController()
 
     Scaffold(
@@ -57,16 +55,14 @@ fun MainLayout() {
                     navigationController
                 )
             }
-            composable(Pantalla1.route) { Screen1(navigationController) }
-            composable(Pantalla2.route) { Screen2(navigationController) }
-            composable(
-                Pantalla3.route,
-                arguments = listOf(navArgument("id") { type = NavType.IntType })
-            ) { backStackEntry ->
-                Screen3(
-                    navigationController,
-                    backStackEntry.arguments?.getInt("id") ?: 0
+            composable(TaskCategory.route) {
+                TaskCategoryScreen(
+                    taskCategoryModel,
+                    navigationController
                 )
+            }
+            composable(Pantalla2.route) {
+                Screen2(navigationController)
             }
         }
     }
@@ -90,7 +86,7 @@ fun BottomNavigationBar(navigationController: NavController) {
             horizontalArrangement = SpaceAround
         ) {
             IconButton(
-                onClick = { navigationController.navigate(Pantalla1.route) }
+                onClick = { navigationController.navigate(Calendar.route) }
             ) {
                 Icon(
                     imageVector = Icons.Default.Call,
@@ -99,7 +95,7 @@ fun BottomNavigationBar(navigationController: NavController) {
             }
 
             IconButton(
-                onClick = { navigationController.navigate(Pantalla2.route) }
+                onClick = { navigationController.navigate(TaskCategory.route) }
             ) {
                 Icon(
                     imageVector = Icons.Default.Check,
@@ -108,7 +104,7 @@ fun BottomNavigationBar(navigationController: NavController) {
             }
 
             IconButton(
-                onClick = { navigationController.navigate(Pantalla3.createRoute(2)) }
+                onClick = { navigationController.navigate(Pantalla2.route) }
             ) {
                 Icon(
                     imageVector = Icons.Default.AddCircle,
