@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -39,6 +41,7 @@ import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
 import org.threeten.bp.format.DateTimeFormatter
+import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -89,18 +92,17 @@ fun CalendarComponent(
 
         HorizontalPager(
             state = pagerState,
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.Top,
+            modifier = Modifier.fillMaxWidth()
         ) { page ->
-            val yearMonth = pageToYearMonth(page)
-
             DaysOfTheMonth(
-                currentMonthFirstDay = yearMonth.atDay(1),
                 selectedDate = selectedDate,
-                currentDay = LocalDate.now(),
                 onDateSelected = { date ->
                     selectedDate = date
                     onDateSelected(date)
-                }
+                },
+                pagerState = pagerState,
+                page = page
             )
 
         }
@@ -110,22 +112,20 @@ fun CalendarComponent(
 fun calculateInitialPage(initialDate: LocalDate): Int {
     val yearMonth = YearMonth.from(initialDate)
     val yearOffset = 100
-    val calculatedPage = ((yearMonth.year - (initialDate.year - yearOffset)) * 12) + (yearMonth.monthValue - 1)
+    val calculatedPage =
+        ((yearMonth.year - (initialDate.year - yearOffset)) * 12) + (yearMonth.monthValue - 1)
 
     // Asegurarte de que la página esté dentro de un rango válido
     return calculatedPage.coerceIn(0, 12 * 200)
 }
 
-
 // Convertir la página a YearMonth para gestionar el calendario
 fun pageToYearMonth(page: Int): YearMonth {
     val yearOffset = 100
-    val year = (page / 12) + (initialYear - yearOffset)
+    val year = (page / 12) + (LocalDate.now().year - yearOffset)
     val month = (page % 12) + 1
     return YearMonth.of(year, month)
 }
-
-private val initialYear = LocalDate.now().year
 
 @Composable
 fun Header(
@@ -176,22 +176,38 @@ fun DaysOfTheWeek() {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DaysOfTheMonth(
-    currentMonthFirstDay: LocalDate,
     selectedDate: LocalDate,
-    currentDay: LocalDate,
+    currentDay: LocalDate = LocalDate.now(),
     onDateSelected: (LocalDate) -> Unit,
+    pagerState: PagerState,
+    page: Int,
 ) {
+    val yearMonth = pageToYearMonth(page)
+    val currentMonthFirstDay = yearMonth.atDay(1)
     val daysInMonth = currentMonthFirstDay.lengthOfMonth()
     val firstDayOfWeek = (currentMonthFirstDay.dayOfWeek.value % 7)
     val numRows = ((daysInMonth + firstDayOfWeek - 1) / 7) + 1
 
+    // Calcula el desplazamiento de la página actual desde su posición ideal
+    // Se utiliza para animar la altura de la última fila de días
+    // Nota: se podria crear un funcion que te devuelva eldesplazamiento al pasarle una pagina, para reutilizarla en futuro
+    val pageOffset = pagerState.getOffsetFractionForPage(page).absoluteValue
+
     LazyColumn {
         items(numRows) { week ->
+            // Ajusta la altura dinámicamente en función del desplazamiento de la página
+            val height = if (week == 5) {
+                40.dp * (1 - pageOffset)
+            } else {
+                40.dp
+            }
+
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .height(height),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 for (day in 0 until 7) {
