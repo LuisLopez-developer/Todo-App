@@ -99,4 +99,6 @@ dependencies {
     // Pager
     implementation(libs.androidx.foundation)
 
+    //Test
+    implementation("io.coil-kt:coil-compose:2.7.0")
 }

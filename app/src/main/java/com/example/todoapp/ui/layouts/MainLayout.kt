@@ -62,7 +62,7 @@ fun MainLayout() {
                 )
             }
             composable(Pantalla2.route) {
-                Screen2(navigationController)
+                Screen2()
             }
         }
     }
