@@ -30,8 +30,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.ui.components.BottomSheetComponent
 import com.example.todoapp.ui.components.CalendarComponent
-import com.example.todoapp.ui.components.DialogComponent
 
 @Composable
 fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostController) {
@@ -80,20 +80,19 @@ fun Container(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            // Contenedor para el DatePicker
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                CalendarComponent()
-            }
-
-            // Lista de tareas ocupa el espacio restante
+            CalendarComponent()
             TasksList(tasks, taskViewModel, navigationController)
         }
 
-        DialogComponent(
-            showDialog = showDialog,
+        FabDialog(
+            Modifier
+                .align(Alignment.BottomEnd) // Alínea el FAB al final de la caja (absoluto)
+                .padding(16.dp),
+            taskViewModel
+        )
+
+        BottomSheetComponent(
+            showSheet = showDialog,
             onDismiss = { taskViewModel.onDialogClose() },
             onConfirm = { taskText ->
                 taskViewModel.onTaskCreated(taskText)
@@ -102,16 +101,8 @@ fun Container(
             buttonText = "Añadir",
             initialText = ""
         )
-
-        FabDialog(
-            Modifier
-                .align(Alignment.BottomEnd) // Alínea el FAB al final de la caja (absoluto)
-                .padding(16.dp),
-            taskViewModel
-        )
     }
 }
-
 
 @Composable
 fun TasksList(
