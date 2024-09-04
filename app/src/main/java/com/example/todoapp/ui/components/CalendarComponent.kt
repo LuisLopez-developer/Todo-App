@@ -199,11 +199,7 @@ fun DaysOfTheMonth(
     LazyColumn {
         items(numRows) { week ->
             // Ajusta la altura dinámicamente en función del desplazamiento de la página
-            val height = if (week == 5) {
-                40.dp * (1 - pageOffset)
-            } else {
-                40.dp
-            }
+            val height = if (week == 5) 40.dp * (1 - pageOffset) else 40.dp
 
             Row(
                 modifier = Modifier
