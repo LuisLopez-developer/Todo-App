@@ -2,6 +2,7 @@ package com.example.todoapp.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -39,6 +40,7 @@ import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
 import org.threeten.bp.format.DateTimeFormatter
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CalendarComponent(
     modifier: Modifier = Modifier,
@@ -50,7 +52,7 @@ fun CalendarComponent(
 
     val pagerState = rememberPagerState(
         initialPage = calculateInitialPage(initialDate),
-        pageCount = { Int.MAX_VALUE }
+        pageCount = { 12 * 200 }
     )
     val coroutineScope = rememberCoroutineScope()
 
@@ -107,9 +109,13 @@ fun CalendarComponent(
 
 fun calculateInitialPage(initialDate: LocalDate): Int {
     val yearMonth = YearMonth.from(initialDate)
-    val yearOffset = 100 // Offset para cubrir un rango de 100 años
-    return ((yearMonth.year - (initialDate.year - yearOffset)) * 12) + (yearMonth.monthValue - 1)
+    val yearOffset = 100
+    val calculatedPage = ((yearMonth.year - (initialDate.year - yearOffset)) * 12) + (yearMonth.monthValue - 1)
+
+    // Asegurarte de que la página esté dentro de un rango válido
+    return calculatedPage.coerceIn(0, 12 * 200)
 }
+
 
 // Convertir la página a YearMonth para gestionar el calendario
 fun pageToYearMonth(page: Int): YearMonth {
@@ -265,12 +271,12 @@ fun DayCell(
             isSelected -> colorScheme.primaryContainer
             isToday -> colorScheme.surfaceVariant
             else -> colorScheme.background
-        }, label = ""
+        }, animationSpec = tween(durationMillis = 500), label = ""
     )
 
     val textColor by animateColorAsState(
         targetValue = if (isSelected) colorScheme.inverseOnSurface else colorScheme.onBackground,
-        animationSpec = tween(durationMillis = 300), label = "" // Duración de la animación
+        label = "" // Duración de la animación
     )
 
     val interactionSource = remember { MutableInteractionSource() }
