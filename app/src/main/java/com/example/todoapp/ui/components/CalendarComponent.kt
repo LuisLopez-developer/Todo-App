@@ -1,6 +1,5 @@
 package com.example.todoapp.ui.components
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -27,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -89,20 +87,20 @@ fun CalendarComponent(
 
         HorizontalPager(
             state = pagerState,
-            pageSpacing = 8.dp,
+            verticalAlignment = Alignment.Top
         ) { page ->
             val yearMonth = pageToYearMonth(page)
-            Crossfade(targetState = yearMonth, label = "") { month ->
-                DaysOfTheMonth(
-                    currentMonthFirstDay = month.atDay(1),
-                    selectedDate = selectedDate,
-                    currentDay = LocalDate.now(),
-                    onDateSelected = { date ->
-                        selectedDate = date
-                        onDateSelected(date)
-                    }
-                )
-            }
+
+            DaysOfTheMonth(
+                currentMonthFirstDay = yearMonth.atDay(1),
+                selectedDate = selectedDate,
+                currentDay = LocalDate.now(),
+                onDateSelected = { date ->
+                    selectedDate = date
+                    onDateSelected(date)
+                }
+            )
+
         }
     }
 }
@@ -172,7 +170,6 @@ fun DaysOfTheWeek() {
     }
 }
 
-
 @Composable
 fun DaysOfTheMonth(
     currentMonthFirstDay: LocalDate,
@@ -182,7 +179,7 @@ fun DaysOfTheMonth(
 ) {
     val daysInMonth = currentMonthFirstDay.lengthOfMonth()
     val firstDayOfWeek = (currentMonthFirstDay.dayOfWeek.value % 7)
-    val numRows = 6 // Fijar siempre 6 filas para evitar movimientos de layout
+    val numRows = ((daysInMonth + firstDayOfWeek - 1) / 7) + 1
 
     LazyColumn {
         items(numRows) { week ->
@@ -193,9 +190,7 @@ fun DaysOfTheMonth(
             ) {
                 for (day in 0 until 7) {
                     val dayIndex = week * 7 + day - firstDayOfWeek + 1
-                    if (dayIndex < 1 || dayIndex > daysInMonth) {
-                        EmptyDayCell(modifier = Modifier.weight(1f))
-                    } else {
+                    if (dayIndex in 1..daysInMonth) {
                         val date = currentMonthFirstDay.plusDays(dayIndex.toLong() - 1)
                         DayCell(
                             date = date,
@@ -204,6 +199,8 @@ fun DaysOfTheMonth(
                             onDateSelected = onDateSelected,
                             modifier = Modifier.weight(1f)
                         )
+                    } else {
+                        EmptyDayCell(modifier = Modifier.weight(1f))
                     }
                 }
             }
