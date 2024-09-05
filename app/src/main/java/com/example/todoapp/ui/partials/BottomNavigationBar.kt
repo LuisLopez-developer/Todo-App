@@ -21,33 +21,47 @@ import com.example.todoapp.ui.navigation.Routes.TaskCategory
 fun BottomNavigationBar(navigationController: NavController) {
     BottomAppBar {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = SpaceAround
+            modifier = Modifier.fillMaxWidth(), horizontalArrangement = SpaceAround
         ) {
-            IconButton(
-                onClick = { navigationController.navigate(Calendar.route) }
-            ) {
+            IconButton(onClick = {
+                navigationController.navigate(Calendar.route) {
+                    popUpTo(navigationController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }) {
                 Icon(
-                    imageVector = Icons.Default.Call,
-                    contentDescription = "Pantalla 1"
+                    imageVector = Icons.Default.Call, contentDescription = "Pantalla 1"
                 )
             }
 
-            IconButton(
-                onClick = { navigationController.navigate(TaskCategory.route) }
-            ) {
+            IconButton(onClick = {
+                navigationController.navigate(TaskCategory.route) {
+                    popUpTo(navigationController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }) {
                 Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Pantalla 2"
+                    imageVector = Icons.Default.Check, contentDescription = "Pantalla 2"
                 )
             }
 
-            IconButton(
-                onClick = { navigationController.navigate(Pantalla2.route) }
-            ) {
+            IconButton(onClick = {
+                navigationController.navigate(Pantalla2.route) {
+                    popUpTo(navigationController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }) {
                 Icon(
-                    imageVector = Icons.Default.AddCircle,
-                    contentDescription = "Pantalla 3"
+                    imageVector = Icons.Default.AddCircle, contentDescription = "Pantalla 3"
                 )
             }
         }
