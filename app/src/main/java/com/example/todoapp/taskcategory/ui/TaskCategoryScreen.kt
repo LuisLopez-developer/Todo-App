@@ -14,6 +14,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +36,9 @@ fun TaskCategoryScreen(
     navigationController: NavHostController,
 ) {
     var categoryText by remember { mutableStateOf("") }
+    var searchIdText by remember { mutableStateOf("") } // Estado para la entrada de búsqueda por ID
+    var searchResult by remember { mutableStateOf<TaskCategoryModel?>(null) } // Estado para el resultado de búsqueda
+
     val lifecycle = LocalLifecycleOwner.current.lifecycle
 
     // Estado para categorías seleccionadas utilizando SnapshotStateList
@@ -47,15 +51,7 @@ fun TaskCategoryScreen(
     var editCategoryText by remember { mutableStateOf("") }
 
     // Observa el estado de UI desde el ViewModel
-    val uiState by produceState<TaskCategoryUiState>(
-        initialValue = TaskCategoryUiState.Loading,
-        key1 = lifecycle,
-        key2 = taskCategoryViewModel
-    ) {
-        lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
-            taskCategoryViewModel.uiState.collect { value = it }
-        }
-    }
+    val uiState by taskCategoryViewModel.uiState.collectAsState(TaskCategoryUiState.Loading)
 
     Column(
         modifier = Modifier
@@ -77,6 +73,31 @@ fun TaskCategoryScreen(
                     selectedCategories = selectedCategories // Pasar el parámetro correcto
                 )
             }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Campo de entrada para la búsqueda por ID
+        TextField(
+            value = searchIdText,
+            onValueChange = { searchIdText = it },
+            label = { Text("Search by ID") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Button(
+            onClick = {
+                searchResult = (uiState as? TaskCategoryUiState.Success)?.categories
+                    ?.find { it.id.toString() == searchIdText }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Search")
+        }
+
+        // Mostrar el resultado de búsqueda
+        searchResult?.let {
+            Text(text = "Category Name: ${it.category}")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -147,6 +168,7 @@ fun TaskCategoryScreen(
         )
     }
 }
+
 
 @Composable
 fun CategoryList(
