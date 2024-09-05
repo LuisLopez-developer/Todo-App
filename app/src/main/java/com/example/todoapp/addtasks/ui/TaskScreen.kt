@@ -35,7 +35,7 @@ import androidx.navigation.NavHostController
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.ui.components.BottomSheetComponent
 import com.example.todoapp.ui.components.CalendarComponent
-import com.example.todoapp.ui.navigation.Routes.EditTask
+import com.example.todoapp.ui.navigation.EditTaskRoute
 
 @Composable
 fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostController) {
@@ -140,7 +140,9 @@ fun ItemTask(
                     },
                     onTap = {
                         if (!isLongPress) {
-                            navigationController.navigate(EditTask.route)
+                            navigationController.navigate(EditTaskRoute(
+                                id = taskModel.id
+                            ))
                         }
                     }
                 )

@@ -4,7 +4,7 @@ plugins {
     id("dagger.hilt.android.plugin")
     id("kotlin-kapt")
     id("com.google.devtools.ksp")
-
+    alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
 android {
@@ -51,7 +51,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
+        kotlinCompilerExtensionVersion = "1.5.4"
     }
     packaging {
         resources {
@@ -88,6 +88,8 @@ dependencies {
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
+    //Serialization
+    implementation(libs.kotlinx.serialization.json)
 
     // Dagger Hilt
     implementation(libs.hilt.android)

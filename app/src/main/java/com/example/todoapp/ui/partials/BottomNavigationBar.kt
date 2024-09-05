@@ -13,9 +13,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import com.example.todoapp.ui.navigation.Routes.Calendar
-import com.example.todoapp.ui.navigation.Routes.Pantalla2
-import com.example.todoapp.ui.navigation.Routes.TaskCategory
+import com.example.todoapp.ui.navigation.CalendarRoute
+import com.example.todoapp.ui.navigation.Pantalla2Route
+import com.example.todoapp.ui.navigation.TaskCategoryRoute
+
 
 @Composable
 fun BottomNavigationBar(navigationController: NavController) {
@@ -24,7 +25,7 @@ fun BottomNavigationBar(navigationController: NavController) {
             modifier = Modifier.fillMaxWidth(), horizontalArrangement = SpaceAround
         ) {
             IconButton(onClick = {
-                navigationController.navigate(Calendar.route) {
+                navigationController.navigate(CalendarRoute) {
                     popUpTo(navigationController.graph.startDestinationId) {
                         saveState = true
                     }
@@ -38,7 +39,7 @@ fun BottomNavigationBar(navigationController: NavController) {
             }
 
             IconButton(onClick = {
-                navigationController.navigate(TaskCategory.route) {
+                navigationController.navigate(TaskCategoryRoute) {
                     popUpTo(navigationController.graph.startDestinationId) {
                         saveState = true
                     }
@@ -52,7 +53,7 @@ fun BottomNavigationBar(navigationController: NavController) {
             }
 
             IconButton(onClick = {
-                navigationController.navigate(Pantalla2.route) {
+                navigationController.navigate(Pantalla2Route) {
                     popUpTo(navigationController.graph.startDestinationId) {
                         saveState = true
                     }
