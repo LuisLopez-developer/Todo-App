@@ -20,7 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -111,7 +114,7 @@ fun TasksList(
     taskViewModel: TaskViewModel,
     navigationController: NavHostController,
 ) {
-    LazyColumn() {
+    LazyColumn {
         items(tasks, key = { it.id }) { task ->
             ItemTask(taskModel = task, taskViewModel = taskViewModel, navigationController)
         }
@@ -124,24 +127,30 @@ fun ItemTask(
     taskViewModel: TaskViewModel,
     navigationController: NavHostController,
 ) {
+    var isLongPress by remember { mutableStateOf(false) }
+
     Card(
         Modifier
             .fillMaxWidth()
             .pointerInput(Unit) {
-                detectTapGestures(onLongPress = {
-                    taskViewModel.onItemRemove(taskModel)
-                })
-            }
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = {
-                    navigationController.navigate(EditTask.route)
-                })
+                detectTapGestures(
+                    onLongPress = {
+                        isLongPress = true
+                        taskViewModel.onItemRemove(taskModel)
+                    },
+                    onTap = {
+                        if (!isLongPress) {
+                            navigationController.navigate(EditTask.route)
+                        }
+                    }
+                )
             }
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Checkbox(
                 checked = taskModel.selected,
-                onCheckedChange = { taskViewModel.onCheckBox(taskModel) })
+                onCheckedChange = { taskViewModel.onCheckBox(taskModel) }
+            )
             Text(
                 text = taskModel.task,
                 Modifier.weight(1f)
