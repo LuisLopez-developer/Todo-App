@@ -32,6 +32,7 @@ import androidx.navigation.NavHostController
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.ui.components.BottomSheetComponent
 import com.example.todoapp.ui.components.CalendarComponent
+import com.example.todoapp.ui.navigation.Routes.EditTask
 
 @Composable
 fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostController) {
@@ -130,7 +131,13 @@ fun ItemTask(
                 detectTapGestures(onLongPress = {
                     taskViewModel.onItemRemove(taskModel)
                 })
-            }) {
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    navigationController.navigate(EditTask.route)
+                })
+            }
+    ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Checkbox(
                 checked = taskModel.selected,

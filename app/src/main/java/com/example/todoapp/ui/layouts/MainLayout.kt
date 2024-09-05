@@ -49,6 +49,9 @@ fun MainLayout() {
                     navigationController
                 )
             }
+            composable(EditTask.route) {
+                EditTaskScreen(taskCategoryModel)
+            }
             composable(Pantalla2.route) {
                 Screen2()
             }
