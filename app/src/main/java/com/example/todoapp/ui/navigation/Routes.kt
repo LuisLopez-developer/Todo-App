@@ -1,8 +1,19 @@
 package com.example.todoapp.ui.navigation
 
-sealed class Routes(val route: String) {
-    data object Calendar : Routes("Calendar")
-    data object TaskCategory : Routes("TaskCategory")
-    data object EditTask : Routes("EditTask")
-    data object Pantalla2 : Routes("Pantalla2")
+data class ScreenConfig(
+    val route: String,
+    val hasTopBar: Boolean = true,
+    val hasBottomBar: Boolean = true
+)
+
+object Routes {
+    val Calendar = ScreenConfig("Calendar")
+    val TaskCategory = ScreenConfig("TaskCategory")
+    val EditTask = ScreenConfig("EditTask", hasTopBar = false, hasBottomBar = false)
+    val Pantalla2 = ScreenConfig("Pantalla2")
+
+    private val allRoutes = listOf(Calendar, TaskCategory, EditTask, Pantalla2)
+
+    // Map para obtener rápidamente la configuración de cada ruta
+    val routeMap = allRoutes.associateBy { it.route }
 }
