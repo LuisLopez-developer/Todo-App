@@ -66,7 +66,7 @@ fun MainLayout() {
                 )
             }
             composable(EditTask.route) {
-                EditTaskScreen(taskCategoryViewModel)
+                EditTaskScreen(taskViewModel)
             }
             composable(Pantalla2.route) {
                 Screen2()

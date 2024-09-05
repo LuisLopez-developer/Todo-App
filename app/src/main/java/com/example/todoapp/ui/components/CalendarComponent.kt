@@ -2,7 +2,6 @@ package com.example.todoapp.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -43,7 +42,6 @@ import org.threeten.bp.YearMonth
 import org.threeten.bp.format.DateTimeFormatter
 import kotlin.math.absoluteValue
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CalendarComponent(
     modifier: Modifier = Modifier,
@@ -176,7 +174,6 @@ fun DaysOfTheWeek() {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DaysOfTheMonth(
     selectedDate: LocalDate,
@@ -194,7 +191,7 @@ fun DaysOfTheMonth(
     // Calcula el desplazamiento de la página actual desde su posición ideal
     // Se utiliza para animar la altura de la última fila de días
     // Nota: se podria crear un funcion que te devuelva eldesplazamiento al pasarle una pagina, para reutilizarla en futuro
-    val pageOffset = pagerState.getOffsetFractionForPage(page).absoluteValue
+    val pageOffset = pagerState.getOffsetDistanceInPages(page).absoluteValue
 
     LazyColumn {
         items(numRows) { week ->

@@ -26,7 +26,7 @@ class TaskCategoryViewModel @Inject constructor(
 ) : ViewModel() {
 
     val uiState: StateFlow<TaskCategoryUiState> = getCategoryUseCase()
-        .map { categories -> Success(categories) as TaskCategoryUiState }
+        .map { categories -> Success(categories)}
         .catch { exception -> TaskCategoryUiState.Error(exception) }
         .stateIn(
             scope = viewModelScope,

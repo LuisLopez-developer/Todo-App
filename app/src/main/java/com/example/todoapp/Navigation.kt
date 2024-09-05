@@ -2,7 +2,6 @@ package com.example.todoapp
 
 import android.util.Log
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,9 +22,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-
 import androidx.compose.material.icons.rounded.Favorite
-
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults.elevatedCardColors
@@ -53,7 +50,6 @@ import kotlin.math.roundToInt
  * https://dribbble.com/shots/17117814--Drag-This-audio-player-prototype
  */
 @Preview
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Screen2() {
     Box(
@@ -64,7 +60,7 @@ fun Screen2() {
         val pagerState = rememberPagerState(pageCount = { 10 })
         HorizontalPager(
             pageSpacing = 16.dp,
-            beyondBoundsPageCount = 2,
+            beyondViewportPageCount = 2,
             state = pagerState,
             modifier = Modifier.fillMaxSize()
         ) { page ->
@@ -82,12 +78,12 @@ fun Screen2() {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+
 @Composable
 fun SongInformationCard(
     pagerState: PagerState,
     page: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier
@@ -98,7 +94,7 @@ fun SongInformationCard(
         colors = elevatedCardColors(containerColor = Color.White)
     ) {
         Column(modifier = Modifier) {
-            val pageOffset = pagerState.getOffsetFractionForPage(page).absoluteValue
+            val pageOffset = pagerState.getOffsetDistanceInPages(page).absoluteValue
             Log.d("dribble", "Page: $page pageOffset $pageOffset")
             Image(
                 modifier = Modifier
