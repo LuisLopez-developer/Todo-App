@@ -20,12 +20,14 @@ import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.TasksScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
+import com.example.todoapp.ui.constants.StylesTopBar
 import com.example.todoapp.ui.navigation.CalendarRoute
 import com.example.todoapp.ui.navigation.EditTaskRoute
 import com.example.todoapp.ui.navigation.Pantalla2Route
 import com.example.todoapp.ui.navigation.TaskCategoryRoute
 import com.example.todoapp.ui.partials.BottomNavigationBar
 import com.example.todoapp.ui.partials.TopAppBar
+import com.example.todoapp.ui.partials.TopAppBarSecondary
 import com.example.todoapp.ui.utils.extractCleanRoute
 
 @Composable
@@ -35,6 +37,7 @@ fun MainLayout() {
     val navigationController = rememberNavController()
 
     val bottomBarState = rememberSaveable { mutableStateOf(true) }
+    val styleTopBarState = rememberSaveable { mutableStateOf(StylesTopBar.MAIN) }
 
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
 
@@ -43,15 +46,28 @@ fun MainLayout() {
         val currentRoute = navBackStackEntry?.destination?.route
 
         val cleanedRoute = extractCleanRoute(currentRoute ?: "")
-        bottomBarState.value = when (cleanedRoute) {
-            extractCleanRoute(EditTaskRoute.toString()) -> false
-            else -> true
+        when (cleanedRoute) {
+            extractCleanRoute(EditTaskRoute.toString()) -> {
+                bottomBarState.value = false
+                styleTopBarState.value = StylesTopBar.SECONDARY_BACK_OPTIONS
+            }
+            else -> {
+                bottomBarState.value = true
+                styleTopBarState.value = StylesTopBar.MAIN
+            }
         }
     }
 
     Scaffold(
         topBar = {
-            TopAppBar()
+            if (styleTopBarState.value == StylesTopBar.MAIN) {
+                TopAppBar()
+            } else {
+                TopAppBarSecondary(
+                    style = styleTopBarState.value,
+                    navController = navigationController
+                )
+            }
         },
         bottomBar = {
             if (bottomBarState.value) {
