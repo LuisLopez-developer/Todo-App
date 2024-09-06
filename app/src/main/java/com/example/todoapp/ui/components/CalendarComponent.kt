@@ -31,11 +31,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.todoapp.R
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
@@ -47,6 +49,7 @@ fun CalendarComponent(
     modifier: Modifier = Modifier,
     initialDate: LocalDate = LocalDate.now(),
     onDateSelected: (LocalDate) -> Unit = {},
+    showAdjacentMonthDays: Boolean = false,
 ) {
     var selectedDate by remember { mutableStateOf(initialDate) }
     var currentMonth by remember { mutableStateOf(initialDate.withDayOfMonth(1)) }
@@ -93,17 +96,24 @@ fun CalendarComponent(
             verticalAlignment = Alignment.Top,
             modifier = Modifier.fillMaxWidth()
         ) { page ->
-            DaysOfTheMonth(
-                selectedDate = selectedDate,
-                onDateSelected = { date ->
-                    selectedDate = date
-                    onDateSelected(date)
-                },
-                pagerState = pagerState,
-                page = page
-            )
-
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                DaysOfTheMonth(
+                    selectedDate = selectedDate,
+                    onDateSelected = { date ->
+                        selectedDate = date
+                        onDateSelected(date)
+                    },
+                    pagerState = pagerState,
+                    page = page,
+                    showAdjacentMonthDays = showAdjacentMonthDays,
+                    coroutineScope = coroutineScope // Pasar el scope
+                )
+            }
         }
+
     }
 }
 
@@ -181,21 +191,22 @@ fun DaysOfTheMonth(
     onDateSelected: (LocalDate) -> Unit,
     pagerState: PagerState,
     page: Int,
+    showAdjacentMonthDays: Boolean = false,
+    coroutineScope: CoroutineScope = rememberCoroutineScope(),
 ) {
     val yearMonth = pageToYearMonth(page)
     val currentMonthFirstDay = yearMonth.atDay(1)
     val daysInMonth = currentMonthFirstDay.lengthOfMonth()
     val firstDayOfWeek = (currentMonthFirstDay.dayOfWeek.value % 7)
+    val previousMonth = yearMonth.minusMonths(1)
+    val previousMonthLastDay = previousMonth.atEndOfMonth().dayOfMonth
+    val nextMonth = yearMonth.plusMonths(1)
     val numRows = ((daysInMonth + firstDayOfWeek - 1) / 7) + 1
 
-    // Calcula el desplazamiento de la página actual desde su posición ideal
-    // Se utiliza para animar la altura de la última fila de días
-    // Nota: se podria crear un funcion que te devuelva eldesplazamiento al pasarle una pagina, para reutilizarla en futuro
     val pageOffset = pagerState.getOffsetDistanceInPages(page).absoluteValue
 
     LazyColumn {
         items(numRows) { week ->
-            // Ajusta la altura dinámicamente en función del desplazamiento de la página
             val height = if (week == 5) 40.dp * (1 - pageOffset) else 40.dp
 
             Row(
@@ -205,23 +216,53 @@ fun DaysOfTheMonth(
             ) {
                 for (day in 0 until 7) {
                     val dayIndex = week * 7 + day - firstDayOfWeek + 1
-                    if (dayIndex in 1..daysInMonth) {
-                        val date = currentMonthFirstDay.plusDays(dayIndex.toLong() - 1)
-                        DayCell(
-                            date = date,
-                            isSelected = date == selectedDate,
-                            isToday = date == currentDay,
-                            onDateSelected = onDateSelected,
-                            modifier = Modifier.weight(1f)
-                        )
-                    } else {
-                        EmptyDayCell(modifier = Modifier.weight(1f))
+                    when {
+                        dayIndex in 1..daysInMonth -> {
+                            val date = currentMonthFirstDay.plusDays(dayIndex.toLong() - 1)
+                            DayCell(
+                                date = date,
+                                isSelected = date == selectedDate,
+                                isToday = date == currentDay,
+                                onDateSelected = {
+                                    onDateSelected(date)
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        showAdjacentMonthDays -> {
+                            val adjacentDate = when {
+                                dayIndex < 1 -> previousMonth.atDay(previousMonthLastDay + dayIndex)
+                                else -> nextMonth.atDay(dayIndex - daysInMonth)
+                            }
+                            DayCell(
+                                date = adjacentDate,
+                                isSelected = false,
+                                isToday = false,
+                                isExtraDay = true, // Indicar que es un día extra
+                                onDateSelected = { date ->
+                                    // Navegar al mes correspondiente y seleccionar el día
+                                    val targetPage = YearMonth.from(date).atDay(1)
+                                        .let { calculateInitialPage(it) }
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(targetPage)
+                                    }
+                                    onDateSelected(date)
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        else -> {
+                            EmptyDayCell(modifier = Modifier.weight(1f))
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun NavigationIcon(onClick: () -> Unit, iconId: Int, contentDescription: String) {
@@ -269,31 +310,39 @@ fun EmptyDayCell(modifier: Modifier = Modifier) {
 
 @Composable
 fun DayCell(
+    modifier: Modifier = Modifier,
     date: LocalDate,
     isSelected: Boolean,
     isToday: Boolean,
+    isExtraDay: Boolean = false,
     onDateSelected: (LocalDate) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val backgroundColor by animateColorAsState(
         targetValue = when {
             isSelected -> colorScheme.primaryContainer
             isToday -> colorScheme.surfaceVariant
-            else -> colorScheme.background
-        }, animationSpec = tween(durationMillis = 500), label = ""
+            else -> Color.Transparent
+        },
+        animationSpec = tween(durationMillis = 500),
+        label = ""
     )
 
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) colorScheme.inverseOnSurface else colorScheme.onBackground,
-        label = "" // Duración de la animación
+        targetValue = when {
+            isSelected -> colorScheme.inverseOnSurface
+            isExtraDay -> colorScheme.onSurface.copy(alpha = 0.5f)
+            else -> colorScheme.onBackground
+        },
+        label = ""
     )
 
     val interactionSource = remember { MutableInteractionSource() }
 
-
     CalendarCell(
         date = date,
-        onDateSelected = onDateSelected,
+        onDateSelected = {
+            onDateSelected(date)
+        },
         modifier = modifier
     ) {
         Text(
