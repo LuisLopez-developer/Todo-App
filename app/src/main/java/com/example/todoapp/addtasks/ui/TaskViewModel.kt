@@ -27,7 +27,7 @@ class TaskViewModel @Inject constructor(
     private val addTaskUseCase: AddTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
-    private val getTaskUseCase: GetTaskUseCase,
+    getTaskUseCase: GetTaskUseCase,
     private val getTaskByIdUseCase: GetTaskByIdUseCase // Añadido
 ) : ViewModel() {
 
