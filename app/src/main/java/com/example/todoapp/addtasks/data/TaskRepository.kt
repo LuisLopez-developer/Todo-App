@@ -27,6 +27,11 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao){
         taskDao.deleteTask(taskModel.toData())
     }
 
+    suspend fun getTaskById(taskId: Int): TaskModel? {
+        val taskEntity = taskDao.getTaskById(taskId)
+        return taskEntity?.let { TaskModel(it.id, it.task, it.selected) }
+    }
+
 }
 
 fun TaskModel.toData() :TaskEntity{

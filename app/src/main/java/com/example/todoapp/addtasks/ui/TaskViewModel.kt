@@ -8,6 +8,7 @@ import com.example.todoapp.addtasks.domain.AddTaskUseCase
 import com.example.todoapp.addtasks.domain.DeleteTaskUseCase
 import com.example.todoapp.addtasks.domain.GetTaskUseCase
 import com.example.todoapp.addtasks.domain.UpdateTaskUseCase
+import com.example.todoapp.addtasks.domain.GetTaskByIdUseCase // Añadido
 import com.example.todoapp.addtasks.ui.TasksUiState.Error
 import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
@@ -26,8 +27,10 @@ class TaskViewModel @Inject constructor(
     private val addTaskUseCase: AddTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
-    getTaskUseCase: GetTaskUseCase,
+    private val getTaskUseCase: GetTaskUseCase,
+    private val getTaskByIdUseCase: GetTaskByIdUseCase // Añadido
 ) : ViewModel() {
+
     val uiState: StateFlow<TasksUiState> = getTaskUseCase().map(::Success)
         .catch { Error(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
@@ -35,13 +38,15 @@ class TaskViewModel @Inject constructor(
     private val _showDialog = MutableLiveData<Boolean>()
     val showDialog: LiveData<Boolean> = _showDialog
 
+    private val _task = MutableLiveData<TaskModel?>()
+    val task: LiveData<TaskModel?> = _task
+
     fun onDialogClose() {
         _showDialog.value = false
     }
 
     fun onTaskCreated(task: String) {
         _showDialog.value = false
-
         viewModelScope.launch {
             addTaskUseCase(TaskModel(task = task))
         }
@@ -62,4 +67,12 @@ class TaskViewModel @Inject constructor(
             deleteTaskUseCase(taskModel)
         }
     }
+
+    // Obtiene una tarea por ID
+    fun getTaskById(taskId: Int) {
+        viewModelScope.launch {
+            _task.value = getTaskByIdUseCase.execute(taskId)
+        }
+    }
 }
+
