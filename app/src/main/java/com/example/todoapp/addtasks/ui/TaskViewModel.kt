@@ -38,8 +38,8 @@ class TaskViewModel @Inject constructor(
     private val _showDialog = MutableLiveData<Boolean>()
     val showDialog: LiveData<Boolean> = _showDialog
 
-    private val _task = MutableLiveData<TaskModel?>()
-    val task: LiveData<TaskModel?> = _task
+    private val _taskUiState = MutableLiveData<TaskUiState>(TaskUiState.Empty)
+    val taskUiState: LiveData<TaskUiState> = _taskUiState
 
     fun onDialogClose() {
         _showDialog.value = false
@@ -68,10 +68,19 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    // Obtiene una tarea por ID
     fun getTaskById(taskId: Int) {
+        _taskUiState.value = TaskUiState.Loading
         viewModelScope.launch {
-            _task.value = getTaskByIdUseCase.execute(taskId)
+            try {
+                val task = getTaskByIdUseCase.execute(taskId)
+                _taskUiState.value = if (task != null) {
+                    TaskUiState.Success(task)
+                } else {
+                    TaskUiState.Empty
+                }
+            } catch (e: Exception) {
+                _taskUiState.value = TaskUiState.Error(e)
+            }
         }
     }
 }
