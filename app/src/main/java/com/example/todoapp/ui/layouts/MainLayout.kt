@@ -3,10 +3,15 @@ package com.example.todoapp.ui.layouts
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.todoapp.Screen2
@@ -21,6 +26,7 @@ import com.example.todoapp.ui.navigation.Pantalla2Route
 import com.example.todoapp.ui.navigation.TaskCategoryRoute
 import com.example.todoapp.ui.partials.BottomNavigationBar
 import com.example.todoapp.ui.partials.TopAppBar
+import com.example.todoapp.ui.utils.extractCleanRoute
 
 @Composable
 fun MainLayout() {
@@ -28,16 +34,29 @@ fun MainLayout() {
     val taskCategoryViewModel: TaskCategoryViewModel = viewModel()
     val navigationController = rememberNavController()
 
+    val bottomBarState = rememberSaveable { mutableStateOf(true) }
+
+    val navBackStackEntry by navigationController.currentBackStackEntryAsState()
+
+    //Agregar rutas que no necesiten el bottomBar
+    LaunchedEffect(navBackStackEntry) {
+        val currentRoute = navBackStackEntry?.destination?.route
+
+        val cleanedRoute = extractCleanRoute(currentRoute ?: "")
+        bottomBarState.value = when (cleanedRoute) {
+            extractCleanRoute(EditTaskRoute.toString()) -> false
+            else -> true
+        }
+    }
+
     Scaffold(
         topBar = {
-
             TopAppBar()
-
         },
         bottomBar = {
-
-            BottomNavigationBar(navigationController)
-
+            if (bottomBarState.value) {
+                BottomNavigationBar(navigationController)
+            }
         }
     ) { innerPadding ->
         NavHost(
