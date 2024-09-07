@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,7 +46,7 @@ import kotlin.math.absoluteValue
 
 sealed class CalendarStyle {
     data object Regular : CalendarStyle()
-    data object Compact : CalendarStyle()
+    data object MaxRow : CalendarStyle()
 }
 
 private val CellSize = 40.dp
@@ -92,10 +93,12 @@ fun CalendarComponent(
                 },
                 pagerState = pagerState,
                 page = page,
+                style = style // Aquí pasas el estilo seleccionado
             )
         }
     }
 }
+
 
 fun calculateInitialPage(initialDate: LocalDate): Int {
     val yearMonth = YearMonth.from(initialDate)
@@ -169,6 +172,7 @@ fun DaysOfTheMonth(
     onDateSelected: (LocalDate) -> Unit,
     pagerState: PagerState,
     page: Int,
+    style: CalendarStyle, // Añadimos el estilo como parámetro
 ) {
     val yearMonth = pageToYearMonth(page)
     val firstDayOfMonth = yearMonth.atDay(1)
@@ -177,15 +181,14 @@ fun DaysOfTheMonth(
     val previousMonth = yearMonth.minusMonths(1)
     val nextMonth = yearMonth.plusMonths(1)
 
-    val numRows = ((daysInMonth + firstDayOfWeek - 1) / 7) + 1
+    val numRows = if (style == CalendarStyle.MaxRow) 6 else ((daysInMonth + firstDayOfWeek - 1) / 7) + 1
     val pageOffset = pagerState.getOffsetDistanceInPages(page).absoluteValue
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
 
-    val showAdjacentMonthDays = true
-
     LazyColumn {
         items(numRows) { week ->
-            val height = if (week == 5) CellSize * (1 - pageOffset) else CellSize
+            // Aplicamos la animación de altura solo si el estilo es Regular
+            val height = if (style == CalendarStyle.Regular && week == 5) CellSize * (1 - pageOffset) else CellSize
 
             Row(
                 modifier = Modifier.height(height)
@@ -194,45 +197,35 @@ fun DaysOfTheMonth(
                     val dayIndex = week * 7 + day - firstDayOfWeek + 1
                     val date = when {
                         dayIndex in 1..daysInMonth -> firstDayOfMonth.plusDays(dayIndex.toLong() - 1)
-                        showAdjacentMonthDays -> {
+                        else -> {
                             when {
                                 dayIndex < 1 -> previousMonth.atDay(previousMonth.lengthOfMonth() + dayIndex)
                                 else -> nextMonth.atDay(dayIndex - daysInMonth)
                             }
                         }
-
-                        else -> null
                     }
 
-                    val isExtraDay = date != null && (date.month != yearMonth.month)
+                    val isExtraDay = date.month != yearMonth.month
 
-                    if (date != null) {
-                        DayCell(
-                            date = date,
-                            isSelected = date == selectedDate,
-                            isToday = date == currentDay,
-                            isExtraDay = isExtraDay,
-                            onDateSelected = { it ->
-                                onDateSelected(it)
-                                if (showAdjacentMonthDays) {
-                                    val targetPage =
-                                        YearMonth.from(it).atDay(1).let { calculateInitialPage(it) }
-                                    coroutineScope.launch {
-                                        pagerState.animateScrollToPage(targetPage)
-                                    }
+                    DayCell(
+                        date = date,
+                        isSelected = date == selectedDate,
+                        isToday = date == currentDay,
+                        isExtraDay = isExtraDay,
+                        onDateSelected = { it ->
+                            onDateSelected(it)
+                            if (isExtraDay) {
+                                val targetPage =
+                                    YearMonth.from(it).atDay(1).let { calculateInitialPage(it) }
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(targetPage)
                                 }
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(CellSize)
-                        )
-                    } else {
-                        EmptyDayCell(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(CellSize)
-                        )
-                    }
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(CellSize)
+                    )
                 }
             }
         }

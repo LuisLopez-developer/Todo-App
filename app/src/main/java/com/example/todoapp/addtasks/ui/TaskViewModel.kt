@@ -38,6 +38,17 @@ class TaskViewModel @Inject constructor(
     private val _showDialog = MutableLiveData<Boolean>()
     val showDialog: LiveData<Boolean> = _showDialog
 
+    private val _showTimePicker = MutableLiveData<Boolean>()
+    val showTimePicker: LiveData<Boolean> = _showTimePicker
+
+    fun onShowTimePicker() {
+        _showTimePicker.value = true
+    }
+
+    fun onHideTimePicker() {
+        _showTimePicker.value = false
+    }
+
     private val _taskUiState = MutableLiveData<TaskUiState>(TaskUiState.Empty)
     val taskUiState: LiveData<TaskUiState> = _taskUiState
 
@@ -59,6 +70,12 @@ class TaskViewModel @Inject constructor(
     fun onCheckBox(taskModel: TaskModel) {
         viewModelScope.launch {
             updateTaskUseCase(taskModel.copy(selected = !taskModel.selected))
+        }
+    }
+
+    fun updateTask(taskModel: TaskModel) {
+        viewModelScope.launch {
+            updateTaskUseCase(taskModel)
         }
     }
 
