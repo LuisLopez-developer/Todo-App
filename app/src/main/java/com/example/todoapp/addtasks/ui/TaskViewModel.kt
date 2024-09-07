@@ -20,8 +20,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -58,17 +56,10 @@ class TaskViewModel @Inject constructor(
         _showDialog.value = false
     }
 
-    fun onTaskCreated(task: String, startDate: LocalDate, endDate: LocalDate, time: LocalTime) {
+    fun onTaskCreated(task: String) {
         _showDialog.value = false
         viewModelScope.launch {
-            addTaskUseCase(
-                TaskModel(
-                    task = task,
-                    startDate = startDate,
-                    endDate = endDate,
-                    time = time
-                )
-            )
+            addTaskUseCase(TaskModel(task = task))
         }
     }
 
@@ -82,15 +73,9 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun updateTask(taskModel: TaskModel, startDate: LocalDate, endDate: LocalDate, time: LocalTime) {
+    fun updateTask(taskModel: TaskModel) {
         viewModelScope.launch {
-            updateTaskUseCase(
-                taskModel.copy(
-                    startDate = startDate,
-                    endDate = endDate,
-                    time = time
-                )
-            )
+            updateTaskUseCase(taskModel)
         }
     }
 
