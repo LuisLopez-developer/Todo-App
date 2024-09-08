@@ -56,10 +56,10 @@ class TaskViewModel @Inject constructor(
         _showDialog.value = false
     }
 
-    fun onTaskCreated(task: String) {
+    fun onTaskCreated(task: String, startDate: String? = null, endDate: String? = null, time: String? = null, details: String? = null) {
         _showDialog.value = false
         viewModelScope.launch {
-            addTaskUseCase(TaskModel(task = task))
+            addTaskUseCase(TaskModel(task = task, startDate = startDate, endDate = endDate, time = time, details = details))
         }
     }
 
