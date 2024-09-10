@@ -1,6 +1,5 @@
 package com.example.todoapp.addtasks.ui
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,12 +38,15 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.todoapp.R
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.addtasks.ui.utils.formatDate
+import com.example.todoapp.addtasks.ui.utils.formatTime
 import com.example.todoapp.ui.components.AdvancedTimePickerComponent
 import com.example.todoapp.ui.components.CalendarComponent
-import com.example.todoapp.ui.components.CalendarStyle
 import com.example.todoapp.ui.components.TextFieldComponent
+import com.example.todoapp.ui.components.TextFieldWithButtonComponent
 import com.example.todoapp.ui.theme.Typography
 import org.threeten.bp.LocalDate
+import org.threeten.bp.LocalTime
 
 @Composable
 fun EditTaskScreen(taskViewModel: TaskViewModel, id: Int) {
@@ -55,8 +56,9 @@ fun EditTaskScreen(taskViewModel: TaskViewModel, id: Int) {
     }
 
     val taskUiState by taskViewModel.taskUiState.observeAsState(TaskUiState.Empty)
-    val showDialog: Boolean by taskViewModel.showDialog.observeAsState(false)
+    val showDatePicker: Boolean by taskViewModel.showDatePicker.observeAsState(false)
     val showTimePicker: Boolean by taskViewModel.showTimePicker.observeAsState(false)
+    var localTask by remember { mutableStateOf<TaskModel?>(null) }
 
     when (taskUiState) {
         is TaskUiState.Loading -> {
@@ -68,12 +70,15 @@ fun EditTaskScreen(taskViewModel: TaskViewModel, id: Int) {
         }
 
         is TaskUiState.Success -> {
+            localTask = (taskUiState as TaskUiState.Success).task
             Container(
-                showDialog,
+                showDatePicker,
                 showTimePicker,
                 taskViewModel,
-                (taskUiState as TaskUiState.Success).task
-            )
+                localTask!!
+            ) { updatedTask ->
+                localTask = updatedTask
+            }
         }
 
         is TaskUiState.Empty -> {
@@ -85,35 +90,34 @@ fun EditTaskScreen(taskViewModel: TaskViewModel, id: Int) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Container(
-    showDialog: Boolean,
+    showDatePicker: Boolean,
     showTimePicker: Boolean,
     taskViewModel: TaskViewModel,
     task: TaskModel,
+    onTaskUpdated: (TaskModel) -> Unit, // Callback para actualizar la tarea localmente
 ) {
-
     var taskText by remember { mutableStateOf(task.task) }
-    var taskDetail by remember { mutableStateOf("") }
-
-    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-
-    var selectedTime: TimePickerState? by remember { mutableStateOf(null) }
+    var taskDetail by remember { mutableStateOf(task.details ?: "") }
+    val temporaryDate by taskViewModel.temporaryDate.observeAsState(task.startDate)
+    val temporaryTime by taskViewModel.temporaryTime.observeAsState(task.time)
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column {
+        Column(verticalArrangement = Arrangement.Top) {
             TextField(
                 value = taskText,
                 textStyle = Typography.bodyLarge,
                 onValueChange = {
                     taskText = it
-                    taskViewModel.updateTask(task.copy(task = taskText)) // Actualizar la tarea en el ViewModel
+                    val updatedTask = task.copy(task = taskText)
+                    onTaskUpdated(updatedTask)
                 },
                 placeholder = { Text(text = "Editar tarea", style = Typography.bodyLarge) },
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     cursorColor = colorScheme.onSurface.copy(alpha = 0.5f),
-                    focusedContainerColor = colorScheme.errorContainer,
-                    unfocusedContainerColor = colorScheme.errorContainer,
+                    focusedContainerColor = colorScheme.secondaryContainer,
+                    unfocusedContainerColor = colorScheme.secondaryContainer,
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions.Default.copy(
@@ -131,19 +135,24 @@ fun Container(
                 },
                 value = taskDetail,
                 textStyle = Typography.bodyMedium,
-                onValueChange = { taskDetail = it },
+                onValueChange = {
+                    taskDetail = it
+                    val updatedTask = task.copy(details = taskDetail)
+                    onTaskUpdated(updatedTask)
+                },
                 placeholder = "Agregar detalles",
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(colorScheme.secondaryContainer)
-                    .padding(horizontal = 7.dp, vertical = 7.dp),
+                    .padding(start = 15.5.dp, end = 12.5.dp, top = 7.dp, bottom = 7.dp)
             )
 
             TextButton(
-                onClick = { taskViewModel.onShowDialogClick() },
+                onClick = { taskViewModel.onShowDateDialogClick() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(colorScheme.secondaryContainer)
+                    .padding(start = 3.5.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -154,21 +163,41 @@ fun Container(
                         painter = painterResource(id = R.drawable.ic_access_time),
                         contentDescription = "Icono para agregar fecha/hora",
                         tint = colorScheme.onBackground,
-                        modifier = Modifier.padding(start = 2.dp, end = 6.dp)
+                        modifier = Modifier.padding(end = 6.dp)
                     )
-                    Text(
-                        text = "Agregar Fecha/Hora",
-                        color = colorScheme.onBackground,
-                        style = Typography.bodyMedium
-                    )
+
+                    if (task.startDate != null) {
+                        val formattedDate = formatDate(task.startDate)
+                        var formattedTime = task.time?.let { formatTime(it) }
+
+                        formattedTime = if (formattedTime.isNullOrEmpty()) {
+                            ""
+                        } else {
+                            ", $formattedTime"
+                        }
+
+                        TextFieldWithButtonComponent(
+                            text = "$formattedDate $formattedTime",
+                            onIconClick = {
+                                taskViewModel.resetTaskDateTime(task.id)
+                                taskViewModel.resetTemporaryDateTime()
+                            }
+                        )
+
+                    } else {
+                        Text(
+                            text = "Agregar Fecha/Hora",
+                            color = colorScheme.onBackground,
+                            style = Typography.bodyMedium
+                        )
+                    }
                 }
             }
         }
 
-
-        if (showDialog) {
+        if (showDatePicker) {
             Dialog(
-                onDismissRequest = { taskViewModel.onDialogClose() },
+                onDismissRequest = { taskViewModel.onHideDatePicker() },
                 properties = DialogProperties(usePlatformDefaultWidth = false),
             ) {
                 Surface(
@@ -186,10 +215,10 @@ fun Container(
                     Column {
                         CalendarComponent(
                             modifier = Modifier.padding(20.dp),
-                            style = CalendarStyle.MaxRow,
+                            initialDate = temporaryDate
+                                ?: LocalDate.now(), // Usa el valor temporal o la fecha actual
                             onDateSelected = { date ->
-                                selectedDate = date
-                                Log.d("date", "Fecha seleccionada: $date")
+                                taskViewModel.setTemporaryDate(date)
                             }
                         )
                         HorizontalDivider(
@@ -211,11 +240,22 @@ fun Container(
                                     tint = colorScheme.onBackground,
                                     modifier = Modifier.padding(start = 2.dp, end = 6.dp)
                                 )
-                                Text(
-                                    text = "Agregar Fecha/Hora",
-                                    color = colorScheme.onBackground,
-                                    style = Typography.bodyMedium
-                                )
+
+                                // Verifica si se ha seleccionado una hora
+                                if (temporaryTime != null) {
+                                    val formattedTime = formatTime(temporaryTime!!)
+                                    TextFieldWithButtonComponent(
+                                        text = formattedTime,
+                                        onIconClick = {
+                                            taskViewModel.setTemporaryTime(null)
+                                        })
+                                } else {
+                                    Text(
+                                        text = "Agregar Hora",
+                                        color = colorScheme.onBackground,
+                                        style = Typography.bodyMedium
+                                    )
+                                }
                             }
                         }
 
@@ -227,10 +267,21 @@ fun Container(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            TextButton(onClick = { taskViewModel.onDialogClose() }) {
+                            TextButton(onClick = { taskViewModel.onHideDatePicker() }) {
                                 Text(text = "Cancelar")
                             }
-                            TextButton(onClick = { taskViewModel.onDialogClose() }) {
+                            TextButton(onClick = {
+                                // Actualiza la tarea y localmente para reflejar los cambios
+                                val updatedTask = task.copy(
+                                    startDate = taskViewModel.temporaryDate.value
+                                        ?: LocalDate.now(), // Usa la fecha actual si es null
+                                    time = taskViewModel.temporaryTime.value
+                                )
+                                onTaskUpdated(updatedTask)
+                                taskViewModel.updateTask(updatedTask)
+                                taskViewModel.resetTemporaryDateTime()
+                                taskViewModel.onHideDatePicker()
+                            }) {
                                 Text(text = "Aceptar")
                             }
                         }
@@ -242,7 +293,12 @@ fun Container(
         if (showTimePicker) {
             AdvancedTimePickerComponent(
                 onConfirm = { timePickerState ->
-                    selectedTime = timePickerState
+                    taskViewModel.setTemporaryTime(
+                        LocalTime.of(
+                            timePickerState.hour,
+                            timePickerState.minute
+                        )
+                    )
                     taskViewModel.onHideTimePicker()
                 },
                 onDismiss = {
