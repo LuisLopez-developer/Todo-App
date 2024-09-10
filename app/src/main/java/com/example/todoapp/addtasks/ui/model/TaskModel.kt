@@ -7,7 +7,7 @@ data class TaskModel(
     val id: Int = System.currentTimeMillis().hashCode(), //Obtener la fecha actual incluido los milisegundos
     val task: String,
     var selected: Boolean = false,
-    val startDate: LocalDate = LocalDate.now(),
+    val startDate: LocalDate? = LocalDate.now(),
     val endDate: LocalDate? = null,
     val time: LocalTime? = null,
     val details: String? = null
