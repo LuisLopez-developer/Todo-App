@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDate
+import org.threeten.bp.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -56,7 +58,7 @@ class TaskViewModel @Inject constructor(
         _showDialog.value = false
     }
 
-    fun onTaskCreated(task: String, startDate: String? = null, endDate: String? = null, time: String? = null, details: String? = null) {
+    fun onTaskCreated(task: String, startDate: LocalDate? = null, endDate: LocalDate? = null, time: LocalTime? = null, details: String? = null) {
         _showDialog.value = false
         viewModelScope.launch {
             addTaskUseCase(TaskModel(task = task, startDate = startDate, endDate = endDate, time = time, details = details))

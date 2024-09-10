@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalTime
+import java.util.Date
 
 @Entity
 data class TaskEntity(
