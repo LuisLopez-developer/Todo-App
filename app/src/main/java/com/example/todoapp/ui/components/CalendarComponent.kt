@@ -285,24 +285,29 @@ fun DayCell(
     isExtraDay: Boolean = false,
     onDateSelected: (LocalDate) -> Unit,
 ) {
+    // Determinar el color de fondo
     val backgroundColor by animateColorAsState(
         targetValue = when {
             isSelected -> colorScheme.primaryContainer
-            isToday -> colorScheme.surfaceVariant
             else -> Color.Transparent
-        }, animationSpec = tween(durationMillis = 500), label = ""
+        }, label = ""
     )
 
+    // Determinar el color del texto
     val textColor by animateColorAsState(
         targetValue = when {
             isSelected -> colorScheme.inverseOnSurface
+            isToday && !isSelected -> colorScheme.tertiary  // Color primario si es hoy y no está seleccionado
             isExtraDay -> colorScheme.onSurface.copy(alpha = 0.4f)
             else -> colorScheme.onBackground
         }, label = ""
     )
 
+    // Renderizar la celda del día
     CalendarCell(
-        date = date, onDateSelected = onDateSelected, modifier = modifier
+        date = date,
+        onDateSelected = onDateSelected,
+        modifier = modifier
     ) {
         Text(
             text = date.dayOfMonth.toString(),
