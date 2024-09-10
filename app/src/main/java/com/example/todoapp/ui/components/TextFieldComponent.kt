@@ -3,7 +3,6 @@ package com.example.todoapp.ui.components
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,11 +24,12 @@ fun TextFieldComponent(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+
     enabled: Boolean = true,
     readOnly: Boolean = false,
     textStyle: TextStyle = LocalTextStyle.current,
-    leadingIcon: @Composable() (() -> Unit)? = null,
-    trailingIcon: @Composable() (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions(),
@@ -39,9 +39,9 @@ fun TextFieldComponent(
     placeholder: String = "",
     onTextLayout: (TextLayoutResult) -> Unit = {},
     cursorBrush: Brush = SolidColor(Color.Black),
+    rowModifier: Modifier = Modifier,
 ) {
-    BasicTextField(modifier = modifier
-        .fillMaxWidth(),
+    BasicTextField(
         value = value,
         onValueChange = onValueChange,
         singleLine = singleLine,
@@ -55,20 +55,27 @@ fun TextFieldComponent(
         keyboardActions = keyboardActions,
         onTextLayout = onTextLayout,
         cursorBrush = cursorBrush,
+        modifier = modifier, // Asegurar que el ancho se ajuste al contenido
         decorationBox = { innerTextField ->
             Row(
-                modifier,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = rowModifier // Ajustar al ancho completo del contenedor
             ) {
-                if (leadingIcon != null) leadingIcon()
-                Box(Modifier.weight(1f)) {
-                    if (value.isEmpty()) Text(
-                        placeholder,
-                        style = textStyle
-                    )
+                if (leadingIcon != null) {
+                    leadingIcon()
+                }
+                Box {
+                    if (value.isEmpty()) {
+                        Text(
+                            placeholder,
+                            style = textStyle
+                        )
+                    }
                     innerTextField()
                 }
-                if (trailingIcon != null) trailingIcon()
+                if (trailingIcon != null) {
+                    trailingIcon()
+                }
             }
         }
     )
