@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.todoapp.R
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.utils.formatDate
@@ -50,7 +51,8 @@ import org.threeten.bp.LocalTime
 
 @Composable
 fun EditTaskScreen(taskViewModel: TaskViewModel, id: Int) {
-    // Obtener la tarea por primera vez
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+
     LaunchedEffect(id) {
         taskViewModel.getTaskById(id)
     }
@@ -108,8 +110,7 @@ fun Container(
                 textStyle = Typography.bodyLarge,
                 onValueChange = {
                     taskText = it
-                    val updatedTask = task.copy(task = taskText)
-                    onTaskUpdated(updatedTask)
+                    taskViewModel.updateTask(task.copy(task = it))
                 },
                 placeholder = { Text(text = "Editar tarea", style = Typography.bodyLarge) },
                 colors = TextFieldDefaults.colors(
@@ -137,8 +138,7 @@ fun Container(
                 textStyle = Typography.bodyMedium,
                 onValueChange = {
                     taskDetail = it
-                    val updatedTask = task.copy(details = taskDetail)
-                    onTaskUpdated(updatedTask)
+                    taskViewModel.updateTask(task.copy(details = it))
                 },
                 placeholder = "Agregar detalles",
                 modifier = Modifier
