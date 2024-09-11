@@ -7,6 +7,7 @@ import com.example.todoapp.addtasks.domain.AddTaskUseCase
 import com.example.todoapp.addtasks.domain.DeleteTaskUseCase
 import com.example.todoapp.addtasks.domain.GetTaskByIdUseCase
 import com.example.todoapp.addtasks.domain.GetTaskUseCase
+import com.example.todoapp.addtasks.domain.GetTasksByDateUseCase
 import com.example.todoapp.addtasks.domain.UpdateTaskUseCase
 import com.example.todoapp.addtasks.ui.TasksUiState.Error
 import com.example.todoapp.addtasks.ui.TasksUiState.Loading
@@ -31,6 +32,7 @@ class TaskViewModel @Inject constructor(
     private val deleteTaskUseCase: DeleteTaskUseCase,
     getTaskUseCase: GetTaskUseCase,
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
+    private val getTasksByDateUseCase: GetTasksByDateUseCase,
 ) : ViewModel() {
 
     val uiState: StateFlow<TasksUiState> = getTaskUseCase().map(::Success)
@@ -40,6 +42,8 @@ class TaskViewModel @Inject constructor(
     private val _taskFlowUiState = MutableStateFlow<TaskUiState>(TaskUiState.Empty)
     val taskFlowUiState: StateFlow<TaskUiState> = _taskFlowUiState
 
+    private val _tasksFlowUiState = MutableStateFlow<TasksUiState>(TasksUiState.Loading)
+    val tasksFlowUiState: StateFlow<TasksUiState> = _tasksFlowUiState
 
     private val _showDialog = MutableStateFlow(false)
     val showDialog: StateFlow<Boolean> = _showDialog
@@ -141,6 +145,21 @@ class TaskViewModel @Inject constructor(
         }
     }
 
+    fun getTasksByDate(date: LocalDate) {
+        _tasksFlowUiState.value = TasksUiState.Loading
+        viewModelScope.launch {
+            try {
+                val tasks = getTasksByDateUseCase(date)
+                if (tasks.isNotEmpty()) {
+                    _tasksFlowUiState.value = TasksUiState.Success(tasks)
+                } else {
+                    _tasksFlowUiState.value = TasksUiState.Success(emptyList())
+                }
+            } catch (e: Exception) {
+                _tasksFlowUiState.value = TasksUiState.Error(e)
+            }
+        }
+    }
 
     private val _temporaryDate = MutableStateFlow<LocalDate?>(null)
     val temporaryDate: StateFlow<LocalDate?> = _temporaryDate
