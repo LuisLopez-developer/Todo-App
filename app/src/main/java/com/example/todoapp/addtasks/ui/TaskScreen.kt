@@ -18,8 +18,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -40,7 +40,7 @@ import com.example.todoapp.ui.navigation.EditTaskRoute
 @Composable
 fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostController) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
-    val showDialog: Boolean by taskViewModel.showDialog.observeAsState(false)
+    val showDialog: Boolean by taskViewModel.showDialog.collectAsState(false)
 
     val uiState by produceState<TasksUiState>(
         initialValue = TasksUiState.Loading,
@@ -140,9 +140,11 @@ fun ItemTask(
                     },
                     onTap = {
                         if (!isLongPress) {
-                            navigationController.navigate(EditTaskRoute(
-                                id = taskModel.id
-                            ))
+                            navigationController.navigate(
+                                EditTaskRoute(
+                                    id = taskModel.id
+                                )
+                            )
                         }
                     }
                 )

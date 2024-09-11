@@ -23,8 +23,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,7 +36,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.todoapp.R
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.utils.formatDate
@@ -51,16 +50,15 @@ import org.threeten.bp.LocalTime
 
 @Composable
 fun EditTaskScreen(taskViewModel: TaskViewModel, id: Int) {
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    // Observe the StateFlow changes for the task UI state and other states
+    val taskUiState by taskViewModel.taskFlowUiState.collectAsState()
+    val showDatePicker by taskViewModel.showDatePicker.collectAsState()
+    val showTimePicker by taskViewModel.showTimePicker.collectAsState()
 
+    // Launch effect to load the task by id when the composable is first launched or id changes
     LaunchedEffect(id) {
         taskViewModel.getTaskById(id)
     }
-
-    val taskUiState by taskViewModel.taskUiState.observeAsState(TaskUiState.Empty)
-    val showDatePicker: Boolean by taskViewModel.showDatePicker.observeAsState(false)
-    val showTimePicker: Boolean by taskViewModel.showTimePicker.observeAsState(false)
-    var localTask by remember { mutableStateOf<TaskModel?>(null) }
 
     when (taskUiState) {
         is TaskUiState.Loading -> {
@@ -72,15 +70,12 @@ fun EditTaskScreen(taskViewModel: TaskViewModel, id: Int) {
         }
 
         is TaskUiState.Success -> {
-            localTask = (taskUiState as TaskUiState.Success).task
             Container(
                 showDatePicker,
                 showTimePicker,
                 taskViewModel,
-                localTask!!
-            ) { updatedTask ->
-                localTask = updatedTask
-            }
+                (taskUiState as TaskUiState.Success).task
+            )
         }
 
         is TaskUiState.Empty -> {
@@ -89,6 +84,7 @@ fun EditTaskScreen(taskViewModel: TaskViewModel, id: Int) {
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Container(
@@ -96,12 +92,11 @@ fun Container(
     showTimePicker: Boolean,
     taskViewModel: TaskViewModel,
     task: TaskModel,
-    onTaskUpdated: (TaskModel) -> Unit, // Callback para actualizar la tarea localmente
 ) {
     var taskText by remember { mutableStateOf(task.task) }
     var taskDetail by remember { mutableStateOf(task.details ?: "") }
-    val temporaryDate by taskViewModel.temporaryDate.observeAsState(task.startDate)
-    val temporaryTime by taskViewModel.temporaryTime.observeAsState(task.time)
+    val temporaryDate by taskViewModel.temporaryDate.collectAsState(task.startDate)
+    val temporaryTime by taskViewModel.temporaryTime.collectAsState(task.time)
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(verticalArrangement = Arrangement.Top) {
@@ -168,22 +163,16 @@ fun Container(
 
                     if (task.startDate != null) {
                         val formattedDate = formatDate(task.startDate)
-                        var formattedTime = task.time?.let { formatTime(it) }
-
-                        formattedTime = if (formattedTime.isNullOrEmpty()) {
-                            ""
-                        } else {
-                            ", $formattedTime"
-                        }
+                        val formattedTime = task.time?.let { formatTime(it) }
+                        val displayText = "$formattedDate${formattedTime?.let { ", $it" } ?: ""}"
 
                         TextFieldWithButtonComponent(
-                            text = "$formattedDate $formattedTime",
+                            text = displayText,
                             onIconClick = {
                                 taskViewModel.resetTaskDateTime(task.id)
                                 taskViewModel.resetTemporaryDateTime()
                             }
                         )
-
                     } else {
                         Text(
                             text = "Agregar Fecha/Hora",
@@ -241,7 +230,6 @@ fun Container(
                                     modifier = Modifier.padding(start = 2.dp, end = 6.dp)
                                 )
 
-                                // Verifica si se ha seleccionado una hora
                                 if (temporaryTime != null) {
                                     val formattedTime = formatTime(temporaryTime!!)
                                     TextFieldWithButtonComponent(
@@ -271,13 +259,11 @@ fun Container(
                                 Text(text = "Cancelar")
                             }
                             TextButton(onClick = {
-                                // Actualiza la tarea y localmente para reflejar los cambios
                                 val updatedTask = task.copy(
                                     startDate = taskViewModel.temporaryDate.value
-                                        ?: LocalDate.now(), // Usa la fecha actual si es null
+                                        ?: LocalDate.now(),
                                     time = taskViewModel.temporaryTime.value
                                 )
-                                onTaskUpdated(updatedTask)
                                 taskViewModel.updateTask(updatedTask)
                                 taskViewModel.resetTemporaryDateTime()
                                 taskViewModel.onHideDatePicker()

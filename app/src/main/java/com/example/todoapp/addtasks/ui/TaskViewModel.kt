@@ -1,7 +1,6 @@
 package com.example.todoapp.addtasks.ui
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.addtasks.domain.AddTaskUseCase
@@ -14,6 +13,7 @@ import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -30,21 +30,25 @@ class TaskViewModel @Inject constructor(
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
     getTaskUseCase: GetTaskUseCase,
-    private val getTaskByIdUseCase: GetTaskByIdUseCase, // Añadido
+    private val getTaskByIdUseCase: GetTaskByIdUseCase,
 ) : ViewModel() {
 
     val uiState: StateFlow<TasksUiState> = getTaskUseCase().map(::Success)
         .catch { Error(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
 
-    private val _showDialog = MutableLiveData<Boolean>()
-    val showDialog: LiveData<Boolean> = _showDialog
+    private val _taskFlowUiState = MutableStateFlow<TaskUiState>(TaskUiState.Empty)
+    val taskFlowUiState: StateFlow<TaskUiState> = _taskFlowUiState
 
-    private val _showDatePicker = MutableLiveData<Boolean>()
-    val showDatePicker: LiveData<Boolean> = _showDatePicker
 
-    private val _showTimePicker = MutableLiveData<Boolean>()
-    val showTimePicker: LiveData<Boolean> = _showTimePicker
+    private val _showDialog = MutableStateFlow(false)
+    val showDialog: StateFlow<Boolean> = _showDialog
+
+    private val _showDatePicker = MutableStateFlow(false)
+    val showDatePicker: StateFlow<Boolean> = _showDatePicker
+
+    private val _showTimePicker = MutableStateFlow(false)
+    val showTimePicker: StateFlow<Boolean> = _showTimePicker
 
     fun onShowTimePicker() {
         _showTimePicker.value = true
@@ -61,9 +65,6 @@ class TaskViewModel @Inject constructor(
     fun onHideDatePicker() {
         _showDatePicker.value = false
     }
-
-    private val _taskUiState = MutableLiveData<TaskUiState>(TaskUiState.Empty)
-    val taskUiState: LiveData<TaskUiState> = _taskUiState
 
     fun onDialogClose() {
         _showDialog.value = false
@@ -100,13 +101,20 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun updateTask(taskModel: TaskModel) {
+    fun updateTask(updatedTask: TaskModel) {
+        // Implementa la lógica para actualizar la tarea en la base de datos o repositorio
         viewModelScope.launch {
-            updateTaskUseCase(taskModel)
-            // Notifica a la UI que la tarea ha sido actualizada
-            _taskUiState.value = TaskUiState.Success(taskModel)
+            try {
+                updateTaskUseCase(updatedTask) // Suponiendo que uses un repositorio para manejar las tareas
+                _taskFlowUiState.value = TaskUiState.Success(updatedTask)
+            } catch (e: Exception) {
+                _taskFlowUiState.value =
+                    TaskUiState.Error(throwable = Throwable("Error al actualizar la tarea"))
+                Log.e("error", e.message.toString())
+            }
         }
     }
+
 
     fun onItemRemove(taskModel: TaskModel) {
         viewModelScope.launch {
@@ -115,11 +123,11 @@ class TaskViewModel @Inject constructor(
     }
 
     fun getTaskById(taskId: Int) {
-        _taskUiState.value = TaskUiState.Loading
+        _taskFlowUiState.value = TaskUiState.Loading
         viewModelScope.launch {
             try {
                 val task = getTaskByIdUseCase.execute(taskId)
-                _taskUiState.value = if (task != null) {
+                _taskFlowUiState.value = if (task != null) {
                     // Aquí actualizamos los valores temporales
                     setTemporaryDate(task.startDate)
                     setTemporaryTime(task.time)
@@ -128,21 +136,21 @@ class TaskViewModel @Inject constructor(
                     TaskUiState.Empty
                 }
             } catch (e: Exception) {
-                _taskUiState.value = TaskUiState.Error(e)
+                _taskFlowUiState.value = TaskUiState.Error(e)
             }
         }
     }
 
 
-    private val _temporaryDate = MutableLiveData<LocalDate?>(null)
-    val temporaryDate: LiveData<LocalDate?> = _temporaryDate
+    private val _temporaryDate = MutableStateFlow<LocalDate?>(null)
+    val temporaryDate: StateFlow<LocalDate?> = _temporaryDate
 
-    private val _temporaryTime = MutableLiveData<LocalTime?>(null)
-    val temporaryTime: LiveData<LocalTime?> = _temporaryTime
+    private val _temporaryTime = MutableStateFlow<LocalTime?>(null)
+    val temporaryTime: StateFlow<LocalTime?> = _temporaryTime
 
     fun onShowDateDialogClick() {
         // Verifica si el estado actual es Success antes de acceder a task
-        val currentState = _taskUiState.value
+        val currentState = _taskFlowUiState.value
         if (currentState is TaskUiState.Success) {
             _temporaryDate.value = currentState.task.startDate
             _temporaryTime.value = currentState.task.time
@@ -173,7 +181,7 @@ class TaskViewModel @Inject constructor(
                 // Actualiza la tarea en la base de datos
                 updateTaskUseCase(updatedTask)
                 // Actualiza el estado de la UI
-                _taskUiState.value = TaskUiState.Success(updatedTask)
+                _taskFlowUiState.value = TaskUiState.Success(updatedTask)
             }
         }
     }
