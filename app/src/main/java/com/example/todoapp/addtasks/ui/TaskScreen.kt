@@ -84,7 +84,10 @@ fun Container(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            CalendarComponent()
+            val taskDates = tasks
+                .mapNotNull { it.startDate } // Filtra tareas sin fecha antes de mapear la lista
+
+            CalendarComponent(taskDates = taskDates)
             TasksList(tasks, taskViewModel, navigationController)
         }
 
