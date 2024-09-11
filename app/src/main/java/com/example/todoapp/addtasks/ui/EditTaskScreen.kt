@@ -8,15 +8,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.shapes
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -34,19 +29,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.example.todoapp.R
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.utils.formatDate
 import com.example.todoapp.addtasks.ui.utils.formatTime
-import com.example.todoapp.ui.components.AdvancedTimePickerComponent
-import com.example.todoapp.ui.components.CalendarComponent
+import com.example.todoapp.ui.components.DatePickerDialogComponent
 import com.example.todoapp.ui.components.TextFieldComponent
 import com.example.todoapp.ui.components.TextFieldWithButtonComponent
+import com.example.todoapp.ui.components.TimePickerDialogComponent
 import com.example.todoapp.ui.theme.Typography
 import org.threeten.bp.LocalDate
-import org.threeten.bp.LocalTime
 
 @Composable
 fun EditTaskScreen(taskViewModel: TaskViewModel, id: Int) {
@@ -84,8 +76,6 @@ fun EditTaskScreen(taskViewModel: TaskViewModel, id: Int) {
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Container(
     showDatePicker: Boolean,
@@ -95,11 +85,10 @@ fun Container(
 ) {
     var taskText by remember { mutableStateOf(task.task) }
     var taskDetail by remember { mutableStateOf(task.details ?: "") }
-    val temporaryDate by taskViewModel.temporaryDate.collectAsState(task.startDate)
-    val temporaryTime by taskViewModel.temporaryTime.collectAsState(task.time)
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(verticalArrangement = Arrangement.Top) {
+            // TextField for task title
             TextField(
                 value = taskText,
                 textStyle = Typography.bodyLarge,
@@ -121,6 +110,7 @@ fun Container(
                 )
             )
 
+            // TextField for task details
             TextFieldComponent(
                 leadingIcon = {
                     Icon(
@@ -142,6 +132,7 @@ fun Container(
                     .padding(start = 15.5.dp, end = 12.5.dp, top = 7.dp, bottom = 7.dp)
             )
 
+            // Button to show date picker
             TextButton(
                 onClick = { taskViewModel.onShowDateDialogClick() },
                 modifier = Modifier
@@ -184,112 +175,27 @@ fun Container(
             }
         }
 
+        // Mostrar DateTimePickerDialog si `showDatePicker` es verdadero
         if (showDatePicker) {
-            Dialog(
-                onDismissRequest = { taskViewModel.onHideDatePicker() },
-                properties = DialogProperties(usePlatformDefaultWidth = false),
-            ) {
-                Surface(
-                    shape = shapes.extraLarge,
-                    tonalElevation = 6.dp,
-                    modifier =
-                    Modifier
-                        .wrapContentSize()
-                        .background(
-                            shape = shapes.extraLarge,
-                            color = colorScheme.surface
-                        )
-                        .padding(horizontal = 30.dp),
-                ) {
-                    Column {
-                        CalendarComponent(
-                            modifier = Modifier.padding(20.dp),
-                            initialDate = temporaryDate
-                                ?: LocalDate.now(), // Usa el valor temporal o la fecha actual
-                            onDateSelected = { date ->
-                                taskViewModel.setTemporaryDate(date)
-                            }
-                        )
-                        HorizontalDivider(
-                            thickness = 2.dp
-                        )
-                        TextButton(
-                            onClick = { taskViewModel.onShowTimePicker() },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Start,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_access_time),
-                                    contentDescription = "Icono para agregar fecha/hora",
-                                    tint = colorScheme.onBackground,
-                                    modifier = Modifier.padding(start = 2.dp, end = 6.dp)
-                                )
-
-                                if (temporaryTime != null) {
-                                    val formattedTime = formatTime(temporaryTime!!)
-                                    TextFieldWithButtonComponent(
-                                        text = formattedTime,
-                                        onIconClick = {
-                                            taskViewModel.setTemporaryTime(null)
-                                        })
-                                } else {
-                                    Text(
-                                        text = "Agregar Hora",
-                                        color = colorScheme.onBackground,
-                                        style = Typography.bodyMedium
-                                    )
-                                }
-                            }
-                        }
-
-                        HorizontalDivider(
-                            thickness = 2.dp
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            TextButton(onClick = { taskViewModel.onHideDatePicker() }) {
-                                Text(text = "Cancelar")
-                            }
-                            TextButton(onClick = {
-                                val updatedTask = task.copy(
-                                    startDate = taskViewModel.temporaryDate.value
-                                        ?: LocalDate.now(),
-                                    time = taskViewModel.temporaryTime.value
-                                )
-                                taskViewModel.updateTask(updatedTask)
-                                taskViewModel.resetTemporaryDateTime()
-                                taskViewModel.onHideDatePicker()
-                            }) {
-                                Text(text = "Aceptar")
-                            }
-                        }
-                    }
+            DatePickerDialogComponent(
+                taskViewModel = taskViewModel,
+                onDismiss = { taskViewModel.onHideDatePicker() },
+                onConfirm = {
+                    val updatedTask = task.copy(
+                        startDate = taskViewModel.temporaryDate.value ?: LocalDate.now(),
+                        time = taskViewModel.temporaryTime.value
+                    )
+                    taskViewModel.updateTask(updatedTask)
+                    taskViewModel.resetTemporaryDateTime()
                 }
-            }
+            )
         }
 
+        // Mostrar TimePickerDialog si `showTimePicker` es verdadero
         if (showTimePicker) {
-            AdvancedTimePickerComponent(
-                onConfirm = { timePickerState ->
-                    taskViewModel.setTemporaryTime(
-                        LocalTime.of(
-                            timePickerState.hour,
-                            timePickerState.minute
-                        )
-                    )
-                    taskViewModel.onHideTimePicker()
-                },
-                onDismiss = {
-                    taskViewModel.onHideTimePicker()
-                }
+            TimePickerDialogComponent(
+                taskViewModel = taskViewModel,
+                onDismiss = { taskViewModel.onHideTimePicker() }
             )
         }
     }
