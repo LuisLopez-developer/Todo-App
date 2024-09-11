@@ -104,7 +104,7 @@ fun Container(
             onConfirm = { taskText ->
                 taskViewModel.onTaskCreated(taskText)
             },
-            title = "Añade tu tarea",
+            placeholder = "Añade tu tarea",
             buttonText = "Añadir",
             initialText = ""
         )

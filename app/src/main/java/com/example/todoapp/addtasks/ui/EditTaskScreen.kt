@@ -129,7 +129,7 @@ fun Container(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(colorScheme.secondaryContainer)
-                    .padding(start = 15.5.dp, end = 12.5.dp, top = 7.dp, bottom = 7.dp)
+                    .padding(start = 8.dp, end = 12.5.dp, top = 7.dp, bottom = 7.dp)
             )
 
             // Button to show date picker
