@@ -2,6 +2,7 @@ package com.example.todoapp.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -12,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -27,10 +29,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,7 +40,7 @@ fun BottomSheetComponent(
     showSheet: Boolean,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
-    title: String = "Title",
+    placeholder: String = "",
     buttonText: String = "Confirm",
     initialText: String = "",
 ) {
@@ -66,17 +67,12 @@ fun BottomSheetComponent(
                     .imePadding()
                     .background(colorScheme.background)
                     .padding(16.dp)
+                    .align(Alignment.CenterHorizontally),
             ) {
-                Text(
-                    text = title,
-                    fontSize = 16.sp,
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.size(16.dp))
                 TextField(
                     value = inputText,
                     onValueChange = { inputText = it },
+                    placeholder = { Text(text = placeholder) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Done
@@ -91,16 +87,30 @@ fun BottomSheetComponent(
                         .focusRequester(focusRequester)
                 )
                 Spacer(modifier = Modifier.size(16.dp))
-                Button(
-                    onClick = {
-                        onConfirm(inputText)
-                        inputText = ""
-                        coroutineScope.launch { sheetState.hide() }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = buttonText)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                    TextFieldComponent(
+                        value = "Categoría",
+                        onValueChange = { },
+                        cornerRadius = 10.dp,
+                        borderWidth = 1.dp,
+                        borderColor = colorScheme.inverseSurface,
+                        textStyle = typography.labelSmall.copy(textAlign = TextAlign.Center),
+                        rowModifier = Modifier.padding(4.dp)
+                    )
+
+                    Button(
+                        onClick = {
+                            onConfirm(inputText)
+                            inputText = ""
+                            coroutineScope.launch { sheetState.hide() }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = buttonText)
+                    }
                 }
+
             }
         }
     }

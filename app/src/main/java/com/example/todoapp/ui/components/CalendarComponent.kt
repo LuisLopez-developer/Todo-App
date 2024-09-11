@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -55,6 +56,7 @@ fun CalendarComponent(
     initialDate: LocalDate = LocalDate.now(),
     onDateSelected: (LocalDate) -> Unit = {},
     style: CalendarStyle = CalendarStyle.Regular,
+    taskDates: List<LocalDate> = emptyList(), // Lista de fechas con tareas
 ) {
     var selectedDate by remember { mutableStateOf(initialDate) }
     var currentMonth by remember { mutableStateOf(initialDate.withDayOfMonth(1)) }
@@ -85,13 +87,14 @@ fun CalendarComponent(
         HorizontalPager(state = pagerState, verticalAlignment = Alignment.Top) { page ->
             DaysOfTheMonth(
                 selectedDate = selectedDate,
+                taskDates = taskDates,  // Pasar las fechas de tareas
                 onDateSelected = {
                     selectedDate = it
                     onDateSelected(it)
                 },
                 pagerState = pagerState,
                 page = page,
-                style = style // Aquí pasas el estilo seleccionado
+                style = style
             )
         }
     }
@@ -166,11 +169,12 @@ fun DaysOfTheWeek() {
 @Composable
 fun DaysOfTheMonth(
     selectedDate: LocalDate,
+    taskDates: List<LocalDate>,  // Recibir la lista de fechas con tareas
     currentDay: LocalDate = LocalDate.now(),
     onDateSelected: (LocalDate) -> Unit,
     pagerState: PagerState,
     page: Int,
-    style: CalendarStyle, // Añadimos el estilo como parámetro
+    style: CalendarStyle,
 ) {
     val yearMonth = pageToYearMonth(page)
     val firstDayOfMonth = yearMonth.atDay(1)
@@ -186,7 +190,6 @@ fun DaysOfTheMonth(
 
     LazyColumn {
         items(numRows) { week ->
-            // Aplicamos la animación de altura solo si el estilo es Regular
             val height =
                 if (style == CalendarStyle.Regular && week == 5) CellSize * (1 - pageOffset) else CellSize
 
@@ -206,12 +209,15 @@ fun DaysOfTheMonth(
                     }
 
                     val isExtraDay = date.month != yearMonth.month
+                    val hasTask =
+                        taskDates.contains(date)  // Verificar si hay una tarea en esa fecha
 
                     DayCell(
                         date = date,
                         isSelected = date == selectedDate,
                         isToday = date == currentDay,
                         isExtraDay = isExtraDay,
+                        hasTask = hasTask,  // Pasar la variable hasTask para mostrar el punto
                         onDateSelected = { it ->
                             onDateSelected(it)
                             if (isExtraDay) {
@@ -231,7 +237,6 @@ fun DaysOfTheMonth(
         }
     }
 }
-
 
 @Composable
 fun NavigationIcon(onClick: () -> Unit, iconId: Int, contentDescription: String) {
@@ -283,9 +288,9 @@ fun DayCell(
     isSelected: Boolean,
     isToday: Boolean,
     isExtraDay: Boolean = false,
+    hasTask: Boolean = false,  // Indicar si tiene una tarea
     onDateSelected: (LocalDate) -> Unit,
 ) {
-    // Determinar el color de fondo
     val backgroundColor by animateColorAsState(
         targetValue = when {
             isSelected -> colorScheme.primaryContainer
@@ -293,29 +298,45 @@ fun DayCell(
         }, label = ""
     )
 
-    // Determinar el color del texto
     val textColor by animateColorAsState(
         targetValue = when {
             isSelected -> colorScheme.inverseOnSurface
-            isToday && !isSelected -> colorScheme.tertiary  // Color primario si es hoy y no está seleccionado
+            isToday && !isSelected -> colorScheme.tertiary
             isExtraDay -> colorScheme.onSurface.copy(alpha = 0.4f)
             else -> colorScheme.onBackground
         }, label = ""
     )
 
-    // Renderizar la celda del día
     CalendarCell(
         date = date,
         onDateSelected = onDateSelected,
         modifier = modifier
     ) {
-        Text(
-            text = date.dayOfMonth.toString(),
-            color = textColor,
+        Box(
             modifier = Modifier
-                .background(color = backgroundColor, shape = CircleShape)
-                .size(30.dp)
-                .wrapContentSize(align = Alignment.Center)
-        )
+                .wrapContentSize(),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            // Texto del día
+            Text(
+                text = date.dayOfMonth.toString(),
+                color = textColor,
+                modifier = Modifier
+                    .background(color = backgroundColor, shape = CircleShape)
+                    .size(30.dp)
+                    .wrapContentSize(align = Alignment.Center)
+            )
+
+            // Punto indicador de tarea, superpuesto en la parte inferior
+            if (hasTask) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .align(Alignment.BottomCenter)  // Alinea el punto en la parte inferior
+                        .offset(y = 0.dp)  // Ajusta la posición del punto sin desplazar el texto
+                        .background(colorScheme.primaryContainer, CircleShape)
+                )
+            }
+        }
     }
 }
