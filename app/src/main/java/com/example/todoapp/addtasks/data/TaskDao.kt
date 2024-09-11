@@ -26,5 +26,5 @@ interface TaskDao {
     suspend fun getTaskById(taskId: Int): TaskEntity?
 
     @Query("SELECT * FROM TaskEntity WHERE startDate = :date ORDER BY id DESC")
-    suspend fun getTasksByDate(date: String): List<TaskEntity>
+    fun getTasksByDate(date: String): Flow<List<TaskEntity>>
 }

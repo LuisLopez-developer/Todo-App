@@ -12,7 +12,7 @@ data class TaskEntity(
     val id: Int,
     val task: String,
     var selected:Boolean = false,
-    val startDate: LocalDate? = LocalDate.now(),  // Fecha de inicio opcional
+    val startDate: LocalDate = LocalDate.now(),
     val endDate: LocalDate? = null,    // Fecha de fin opcional
     val time: LocalTime? = null,       // Hora opcional
     val details: String? = null     // Detalles opcionales

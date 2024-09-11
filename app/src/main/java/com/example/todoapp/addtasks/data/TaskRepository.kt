@@ -10,8 +10,8 @@ import javax.inject.Singleton
 @Singleton
 class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
 
-    val tasks: Flow<List<TaskModel>> = taskDao.getTasks().map {
-        items -> items.map {
+    val tasks: Flow<List<TaskModel>> = taskDao.getTasks().map { items ->
+        items.map {
             TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details)
         }
     }
@@ -35,14 +35,32 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
         }
     }
 
-    suspend fun getTasksByDate(date: LocalDate): List<TaskModel> {
+    fun getTasksByDateFlow(date: LocalDate): Flow<List<TaskModel>> {
         val dateString = date.format(org.threeten.bp.format.DateTimeFormatter.ISO_LOCAL_DATE)
-        return taskDao.getTasksByDate(dateString).map {
-            TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details)
+        return taskDao.getTasksByDate(dateString).map { items ->
+            items.map {
+                TaskModel(
+                    it.id,
+                    it.task,
+                    it.selected,
+                    it.startDate,
+                    it.endDate,
+                    it.time,
+                    it.details
+                )
+            }
         }
     }
 }
 
 fun TaskModel.toData(): TaskEntity {
-    return TaskEntity(this.id, this.task, this.selected, this.startDate, this.endDate, this.time, this.details)
+    return TaskEntity(
+        this.id,
+        this.task,
+        this.selected,
+        this.startDate,
+        this.endDate,
+        this.time,
+        this.details
+    )
 }

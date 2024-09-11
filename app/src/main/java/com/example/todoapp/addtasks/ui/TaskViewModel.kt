@@ -39,11 +39,20 @@ class TaskViewModel @Inject constructor(
         .catch { Error(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
 
+    private val _tasksByDateState = MutableStateFlow<TasksUiState>(Loading)
+    val tasksByDateState: StateFlow<TasksUiState> = _tasksByDateState
+
+    fun fetchTasksByDate(date: LocalDate) {
+        viewModelScope.launch {
+            getTasksByDateUseCase(date)
+                .map { Success(it) }
+                .catch { Error(it) }
+                .collect { _tasksByDateState.value = it }
+        }
+    }
+
     private val _taskFlowUiState = MutableStateFlow<TaskUiState>(TaskUiState.Empty)
     val taskFlowUiState: StateFlow<TaskUiState> = _taskFlowUiState
-
-    private val _tasksFlowUiState = MutableStateFlow<TasksUiState>(TasksUiState.Loading)
-    val tasksFlowUiState: StateFlow<TasksUiState> = _tasksFlowUiState
 
     private val _showDialog = MutableStateFlow(false)
     val showDialog: StateFlow<Boolean> = _showDialog
@@ -76,7 +85,7 @@ class TaskViewModel @Inject constructor(
 
     fun onTaskCreated(
         task: String,
-        startDate: LocalDate? = null,
+        startDate: LocalDate = LocalDate.now(),
         endDate: LocalDate? = null,
         time: LocalTime? = null,
         details: String? = null,
@@ -145,22 +154,6 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun getTasksByDate(date: LocalDate) {
-        _tasksFlowUiState.value = TasksUiState.Loading
-        viewModelScope.launch {
-            try {
-                val tasks = getTasksByDateUseCase(date)
-                if (tasks.isNotEmpty()) {
-                    _tasksFlowUiState.value = TasksUiState.Success(tasks)
-                } else {
-                    _tasksFlowUiState.value = TasksUiState.Success(emptyList())
-                }
-            } catch (e: Exception) {
-                _tasksFlowUiState.value = TasksUiState.Error(e)
-            }
-        }
-    }
-
     private val _temporaryDate = MutableStateFlow<LocalDate?>(null)
     val temporaryDate: StateFlow<LocalDate?> = _temporaryDate
 
@@ -196,7 +189,7 @@ class TaskViewModel @Inject constructor(
             val currentTask = getTaskByIdUseCase.execute(taskId)
             if (currentTask != null) {
                 // Crea una nueva instancia de la tarea con startDate y time como null
-                val updatedTask = currentTask.copy(startDate = null, time = null)
+                val updatedTask = currentTask.copy(startDate = LocalDate.now(), time = null)
                 // Actualiza la tarea en la base de datos
                 updateTaskUseCase(updatedTask)
                 // Actualiza el estado de la UI
