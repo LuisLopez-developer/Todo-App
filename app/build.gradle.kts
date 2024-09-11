@@ -78,8 +78,8 @@ dependencies {
     implementation(libs.androidx.material3)
 
     // Retrofit dependencies
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation (libs.converter.gson)
+    implementation (libs.retrofit)
 
     // Test dependencies
     testImplementation(libs.junit)
