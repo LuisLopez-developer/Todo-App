@@ -105,7 +105,7 @@ fun Container(
                 taskViewModel.onTaskCreated(taskText)
             },
             placeholder = "Añade tu tarea",
-            buttonText = "Añadir",
+            buttonText = "Agregar",
             initialText = ""
         )
     }

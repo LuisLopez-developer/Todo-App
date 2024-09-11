@@ -1,6 +1,7 @@
 package com.example.todoapp.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,10 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
@@ -29,9 +33,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.todoapp.R
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,12 +92,16 @@ fun BottomSheetComponent(
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
                 )
-                Spacer(modifier = Modifier.size(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-
+                Spacer(modifier = Modifier.size(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    // TextFieldComponent
                     TextFieldComponent(
                         value = "Categoría",
                         onValueChange = { },
+                        enabled = false,
                         cornerRadius = 10.dp,
                         borderWidth = 1.dp,
                         borderColor = colorScheme.inverseSurface,
@@ -99,18 +109,39 @@ fun BottomSheetComponent(
                         rowModifier = Modifier.padding(4.dp)
                     )
 
+                    // IconButtons
+                    IconButton(onClick = { }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_notes),
+                            contentDescription = "Details",
+                            tint = colorScheme.inverseSurface
+                        )
+                    }
+
+                    IconButton(onClick = { }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_access_time),
+                            contentDescription = "Select Date",
+                            tint = colorScheme.inverseSurface
+                        )
+                    }
+
+                    // Spacer to push the Button to the end
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // Adjusted Button
                     Button(
                         onClick = {
                             onConfirm(inputText)
                             inputText = ""
                             coroutineScope.launch { sheetState.hide() }
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .widthIn(min = 100.dp, max = 200.dp) // Ancho mínimo y máximo para el botón
                     ) {
                         Text(text = buttonText)
                     }
                 }
-
             }
         }
     }
