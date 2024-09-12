@@ -1,14 +1,14 @@
 package com.example.todoapp.holidays.data.network
 
 import com.example.todoapp.core.network.RetrofitHelper
-import com.example.todoapp.holidays.data.network.response.holiDaysResponse
+import com.example.todoapp.holidays.data.network.response.HoliDaysResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class HoliDaysService {
     private val retrofit = RetrofitHelper.getRetrofit()
 
-    suspend fun holidays(): List<holiDaysResponse>? {
+    suspend fun holidays(): List<HoliDaysResponse>? {
         return withContext(Dispatchers.IO) {
             val response = retrofit.create(HoliDays::class.java).holidays()
             if (response.isSuccessful) {
@@ -19,7 +19,7 @@ class HoliDaysService {
         }
     }
 
-    suspend fun holidayByDate(fecha: String): holiDaysResponse? {
+    suspend fun holidayByDate(fecha: String): HoliDaysResponse? {
         return withContext(Dispatchers.IO) {
             val response = retrofit.create(HoliDays::class.java).holidayByDate(fecha)
             if (response.isSuccessful) {
