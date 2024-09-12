@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.components.BottomSheetComponent
 import com.example.todoapp.ui.components.CalendarComponent
@@ -45,6 +46,7 @@ fun TasksScreen(
     taskViewModel: TaskViewModel,
     taskCategoryViewModel: TaskCategoryViewModel,
     navigationController: NavHostController,
+    holidaysViewModel: HolidaysViewModel,
 ) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
 
@@ -61,6 +63,9 @@ fun TasksScreen(
 
     // Recuperamos todas las fechas de las tareas
     val taskDates by taskViewModel.taskDatesFlow.collectAsState(emptyList())
+    val holidayDates by holidaysViewModel.holidays.collectAsState(emptyList())
+
+    val combinedDates = taskDates.union(holidayDates).toList()
 
     // Maneja el estado general de tareas
     when (uiStateByDate) {
@@ -78,7 +83,7 @@ fun TasksScreen(
                 taskViewModel = taskViewModel,
                 taskCategoryViewModel = taskCategoryViewModel,
                 tasks = (uiStateByDate as TasksUiState.Success).tasks,
-                taskDates = taskDates, // Pasa todas las fechas de tareas
+                dates = combinedDates, // Pasa todas las fechas de tareas
                 navigationController = navigationController
             )
         }
@@ -91,7 +96,7 @@ fun Container(
     taskViewModel: TaskViewModel,
     taskCategoryViewModel: TaskCategoryViewModel,
     tasks: List<TaskModel>,
-    taskDates: List<LocalDate>, // Recibe la lista de fechas
+    dates: List<LocalDate>, // Recibe la lista de fechas
     navigationController: NavHostController,
 ) {
     Box(
@@ -101,7 +106,7 @@ fun Container(
             modifier = Modifier.fillMaxSize()
         ) {
             CalendarComponent(
-                taskDates = taskDates,
+                taskDates = dates,
                 onDateSelected = { date -> taskViewModel.setDate(date) } // De acuerdo al dia seleccionado mostrar las tareas de ese día
             )
             TasksList(tasks, taskViewModel, navigationController)

@@ -18,6 +18,7 @@ import com.example.todoapp.Screen2
 import com.example.todoapp.addtasks.ui.EditTaskScreen
 import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.TasksScreen
+import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.constants.StylesTopBar
@@ -34,6 +35,7 @@ import com.example.todoapp.ui.utils.extractCleanRoute
 fun MainLayout() {
     val taskViewModel: TaskViewModel = viewModel()
     val taskCategoryViewModel: TaskCategoryViewModel = viewModel()
+    val holidaysModel: HolidaysViewModel = viewModel()
     val navigationController = rememberNavController()
 
     val bottomBarState = rememberSaveable { mutableStateOf(true) }
@@ -84,6 +86,7 @@ fun MainLayout() {
                 TasksScreen(
                     taskViewModel = taskViewModel,
                     taskCategoryViewModel = taskCategoryViewModel,
+                    holidaysViewModel = holidaysModel,
                     navigationController = navigationController
                 )
             }
