@@ -152,25 +152,17 @@ fun Container(
                         modifier = Modifier.padding(end = 6.dp)
                     )
 
-                    if (task.startDate != null) {
-                        val formattedDate = formatDate(task.startDate)
-                        val formattedTime = task.time?.let { formatTime(it) }
-                        val displayText = "$formattedDate${formattedTime?.let { ", $it" } ?: ""}"
+                    val formattedDate = formatDate(task.startDate)
+                    val formattedTime = task.time?.let { formatTime(it) }
+                    val displayText = "$formattedDate${formattedTime?.let { ", $it" } ?: ""}"
 
-                        TextFieldWithButtonComponent(
-                            text = displayText,
-                            onIconClick = {
-                                taskViewModel.resetTaskDateTime(task.id)
-                                taskViewModel.resetTemporaryDateTime()
-                            }
-                        )
-                    } else {
-                        Text(
-                            text = "Agregar Fecha/Hora",
-                            color = colorScheme.onBackground,
-                            style = Typography.bodyMedium
-                        )
-                    }
+                    TextFieldWithButtonComponent(
+                        text = displayText,
+                        onIconClick = {
+                            taskViewModel.resetTaskDateTime(task.id)
+                            taskViewModel.resetTemporaryDateTime()
+                        }
+                    )
                 }
             }
         }

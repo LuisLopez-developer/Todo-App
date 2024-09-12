@@ -21,43 +21,46 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.components.BottomSheetComponent
 import com.example.todoapp.ui.components.CalendarComponent
 import com.example.todoapp.ui.navigation.EditTaskRoute
-import org.threeten.bp.LocalDate
 
 @Composable
-fun TasksScreen(taskViewModel: TaskViewModel,taskCategoryViewModel: TaskCategoryViewModel, navigationController: NavHostController) {
+fun TasksScreen(
+    taskViewModel: TaskViewModel,
+    taskCategoryViewModel: TaskCategoryViewModel,
+    navigationController: NavHostController,
+) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
     val showDialog: Boolean by taskViewModel.showDialog.collectAsState(false)
 
-    val uiState by taskViewModel.uiState.collectAsState()
-    val tasksByDateState by taskViewModel.tasksByDateState.collectAsState()
-    val selectedDate by taskViewModel.selectedDate.collectAsState()
 
-    // Filtrar tareas basadas en la fecha seleccionada
-    val filteredTasks = remember(tasksByDateState, selectedDate) {
-        when (tasksByDateState) {
-            is TasksUiState.Success -> {
-                (tasksByDateState as TasksUiState.Success).tasks.filter {
-                    it.startDate == selectedDate
-                }
-            }
-
-            else -> emptyList()
+    // Recuperamos el estado de las tareas por fecha
+    val uiStateByDate by produceState<TasksUiState>(
+        initialValue = TasksUiState.Loading,
+        key1 = lifecycle,
+        key2 = taskViewModel
+    ) {
+        lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
+            taskViewModel.tasksByDateState.collect { value = it }
         }
     }
 
     // Maneja el estado general de tareas
-    when (uiState) {
+    when (uiStateByDate) {
         is TasksUiState.Error -> {
             // Maneja el estado de error
         }
@@ -71,15 +74,13 @@ fun TasksScreen(taskViewModel: TaskViewModel,taskCategoryViewModel: TaskCategory
                 showDialog,
                 taskViewModel,
                 taskCategoryViewModel,
-                filteredTasks,
-                navigationController,
-                onDateSelected = { date ->
-                    taskViewModel.setSelectedDate(date)
-                }
+                (uiStateByDate as TasksUiState.Success).tasks,
+                navigationController
             )
         }
     }
 }
+
 @Composable
 fun Container(
     showDialog: Boolean,
@@ -87,7 +88,6 @@ fun Container(
     taskCategoryViewModel: TaskCategoryViewModel,
     tasks: List<TaskModel>,
     navigationController: NavHostController,
-    onDateSelected: (LocalDate) -> Unit,
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -96,10 +96,9 @@ fun Container(
             modifier = Modifier.fillMaxSize()
         ) {
             val taskDates = tasks.map { it.startDate }
-
             CalendarComponent(
                 taskDates = taskDates,
-                onDateSelected = { date -> onDateSelected(date) }
+                onDateSelected = { date -> taskViewModel.setDate(date) } // De acuerdo al dia seleccionado mostrar las tareas de ese día
             )
             TasksList(tasks, taskViewModel, navigationController)
         }

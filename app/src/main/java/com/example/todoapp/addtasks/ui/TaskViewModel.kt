@@ -1,7 +1,9 @@
 package com.example.todoapp.addtasks.ui
 
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.addtasks.domain.AddTaskUseCase
 import com.example.todoapp.addtasks.domain.DeleteTaskUseCase
@@ -14,10 +16,12 @@ import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -35,21 +39,30 @@ class TaskViewModel @Inject constructor(
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
 ) : ViewModel() {
 
+    // Estado para recuperar todas las tareas
+    // Por ahora no se usa
+    // NOTA: No Eliminar
     val uiState: StateFlow<TasksUiState> = getTaskUseCase().map(::Success)
         .catch { Error(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
 
-    private val _tasksByDateState = MutableStateFlow<TasksUiState>(Loading)
-    val tasksByDateState: StateFlow<TasksUiState> = _tasksByDateState
+    // Sirve para dar un valor incial a "tasksByDateState"
+    private val _selectedDate = MutableLiveData(LocalDate.now())
 
-    fun fetchTasksByDate(date: LocalDate) {
-        viewModelScope.launch {
-            getTasksByDateUseCase(date)
-                .map { Success(it) }
-                .catch { Error(it) }
-                .collect { _tasksByDateState.value = it }
-        }
+    // Método para actualizar la fecha seleccionada
+    fun setDate(date: LocalDate) {
+        _selectedDate.value = date
     }
+
+    // Estado para recuperar todas las tareas de un día en especifico
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val tasksByDateState: StateFlow<TasksUiState> = _selectedDate.asFlow()
+        .flatMapLatest { date ->
+            getTasksByDateUseCase(date).map(::Success)
+        }
+        .catch { Error(it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
+
 
     private val _taskFlowUiState = MutableStateFlow<TaskUiState>(TaskUiState.Empty)
     val taskFlowUiState: StateFlow<TaskUiState> = _taskFlowUiState
@@ -62,15 +75,6 @@ class TaskViewModel @Inject constructor(
 
     private val _showTimePicker = MutableStateFlow(false)
     val showTimePicker: StateFlow<Boolean> = _showTimePicker
-
-    private val _selectedDate = MutableStateFlow(LocalDate.now())
-    val selectedDate: StateFlow<LocalDate> = _selectedDate
-
-    fun setSelectedDate(date: LocalDate) {
-        _selectedDate.value = date
-        Log.d("TaskViewModel", "Selected Date: $date")
-        fetchTasksByDate(date)
-    }
 
 
     fun onShowTimePicker() {
