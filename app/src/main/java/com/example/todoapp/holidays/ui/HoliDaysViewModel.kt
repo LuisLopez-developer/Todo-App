@@ -2,36 +2,35 @@ package com.example.todoapp.holidays.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import com.example.todoapp.holidays.domain.HoliDaysUseCase
+import com.example.todoapp.holidays.domain.GetHolidayByDateUseCase
+import com.example.todoapp.holidays.domain.GetHolidaysUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class HoliDaysViewModel : ViewModel() {
+@HiltViewModel
+class HolidaysViewModel @Inject constructor(
+    private val getHolidaysUseCase: GetHolidaysUseCase,
+    private val getHolidayByDateCaseUse: GetHolidayByDateUseCase,
+) : ViewModel() {
 
-    private val useCase = HoliDaysUseCase()
-
-    // LiveData para obtener todos los días festivos
-    private val _holidays = MutableLiveData<String>()
-    val holidays: LiveData<String> get() = _holidays
-
-    // LiveData para obtener festividades por fecha específica
-    private val _holidayByDate = MutableLiveData<String>()
-    val holidayByDate: LiveData<String> get() = _holidayByDate
+    init {
+        fetchHolidays()
+    }
 
     // Obtener todos los días festivos
-    fun fetchHolidays() {
+    private fun fetchHolidays() {
         viewModelScope.launch {
-            val result = useCase.invoke()
-            _holidays.postValue(result)
+            getHolidaysUseCase()?.map {
+                it.date
+            }
         }
     }
 
     // Obtener festividad por fecha específica
     fun fetchHolidayByDate(fecha: String) {
         viewModelScope.launch {
-            val result = useCase.holidayByDate(fecha)
-            _holidayByDate.postValue(result)
+            getHolidayByDateCaseUse(fecha)
         }
     }
 }

@@ -38,7 +38,6 @@ class TaskCategoryViewModel @Inject constructor(
         viewModelScope.launch {
             addCategoryUseCase(TaskCategoryModel(category = category))
         }
-
     }
 
     fun onTaskCategoryUpdate(category: TaskCategoryModel) {
