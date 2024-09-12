@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "104dba0548f264b12b889fdbd3561b2d",
+    "identityHash": "fef5d27f7f5aac3e52d3dfbb328f1f22",
     "entities": [
       {
         "tableName": "TaskEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `task` TEXT NOT NULL, `selected` INTEGER NOT NULL, `startDate` TEXT NOT NULL, `endDate` TEXT, `time` TEXT, `details` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `task` TEXT NOT NULL, `selected` INTEGER NOT NULL, `startDate` TEXT NOT NULL, `endDate` TEXT, `time` TEXT, `details` TEXT, `category` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -49,6 +49,12 @@
             "columnName": "details",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -64,7 +70,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '104dba0548f264b12b889fdbd3561b2d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fef5d27f7f5aac3e52d3dfbb328f1f22')"
     ]
   }
 }

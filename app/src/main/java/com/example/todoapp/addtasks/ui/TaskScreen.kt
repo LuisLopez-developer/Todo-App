@@ -16,6 +16,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -116,8 +117,8 @@ fun Container(
         BottomSheetComponent(
             showSheet = showDialog,
             onDismiss = { taskViewModel.onDialogClose() },
-            onConfirm = { taskText ->
-                taskViewModel.onTaskCreated(taskText)
+            onConfirm = { taskText, selectedCategory ->
+                taskViewModel.onTaskCreated(taskText, selectedCategory = selectedCategory)
             },
             placeholder = "Añade tu tarea",
             buttonText = "Agregar",
@@ -133,12 +134,30 @@ fun TasksList(
     taskViewModel: TaskViewModel,
     navigationController: NavHostController,
 ) {
+    // Agrupa las tareas por categoría
+    val groupedTasks = tasks.groupBy { it.category }
+
     LazyColumn {
-        items(tasks, key = { it.id }) { task ->
-            ItemTask(taskModel = task, taskViewModel = taskViewModel, navigationController)
+        groupedTasks.forEach { (category, tasks) ->
+            // Añadir encabezado de categoría, maneja null para category
+            item {
+                Text(
+                    text = category ?: "Sin categoría", // Maneja el caso null de category
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    style = MaterialTheme.typography.headlineLarge
+                )
+            }
+
+            // Añadir las tareas bajo la categoría
+            items(tasks, key = { it.id }) { task ->
+                ItemTask(taskModel = task, taskViewModel = taskViewModel, navigationController)
+            }
         }
     }
 }
+
 
 @Composable
 fun ItemTask(

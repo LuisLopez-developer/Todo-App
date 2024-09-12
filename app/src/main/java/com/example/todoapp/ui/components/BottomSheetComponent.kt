@@ -19,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -38,7 +37,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.todoapp.R
 import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
@@ -51,16 +49,17 @@ import kotlinx.coroutines.launch
 fun BottomSheetComponent(
     showSheet: Boolean,
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit,
+    onConfirm: (String, TaskCategoryModel?) -> Unit, // Ajustado para incluir la categoría seleccionada
     placeholder: String = "",
     buttonText: String = "Confirm",
     initialText: String = "",
-    taskCategoryViewModel: TaskCategoryViewModel // Agregado para acceder a las categorías
+    taskCategoryViewModel: TaskCategoryViewModel
 ) {
     var inputText by remember { mutableStateOf(initialText) }
     val focusRequester = remember { FocusRequester() }
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
 
     // Estado para manejar la visibilidad del menú desplegable
     var expanded by remember { mutableStateOf(false) }
@@ -98,8 +97,9 @@ fun BottomSheetComponent(
                         imeAction = ImeAction.Done
                     ),
                     keyboardActions = KeyboardActions(onDone = {
-                        onConfirm(inputText)
+                        onConfirm(inputText, selectedCategory) // Pasa ambos parámetros
                         inputText = ""
+                        selectedCategory = null // Reiniciar categoría seleccionada después de confirmar
                         coroutineScope.launch { sheetState.hide() }
                     }),
                     modifier = Modifier
@@ -138,7 +138,10 @@ fun BottomSheetComponent(
                                 }
                             }
                             else -> {
-                                Text("Loading...")
+                                DropdownMenuItem(
+                                    text = { Text("Loading...") },
+                                    onClick = {} // No se puede seleccionar mientras se carga
+                                )
                             }
                         }
                     }
@@ -163,11 +166,12 @@ fun BottomSheetComponent(
                     // Spacer to push the Button to the end
                     Spacer(modifier = Modifier.weight(1f))
 
-                    // Adjusted Button
+                    // Ajustado Button
                     Button(
                         onClick = {
-                            onConfirm(inputText)
+                            onConfirm(inputText, selectedCategory) // Pasa ambos parámetros
                             inputText = ""
+                            selectedCategory = null // Reiniciar categoría seleccionada después de confirmar
                             coroutineScope.launch { sheetState.hide() }
                         },
                         modifier = Modifier

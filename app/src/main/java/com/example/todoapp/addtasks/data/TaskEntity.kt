@@ -15,5 +15,6 @@ data class TaskEntity(
     val startDate: LocalDate = LocalDate.now(),
     val endDate: LocalDate? = null,    // Fecha de fin opcional
     val time: LocalTime? = null,       // Hora opcional
-    val details: String? = null     // Detalles opcionales
+    val details: String? = null,     // Detalles opcionales
+    val category: String?     // Categoría opcional
 )
