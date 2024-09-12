@@ -7,7 +7,6 @@ import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
 class GetTasksByDateUseCase @Inject constructor(private val taskRepository: TaskRepository) {
-    operator fun invoke(date: LocalDate): Flow<List<TaskModel>> {
-        return taskRepository.getTasksByDateFlow(date)
-    }
+    operator fun invoke(date: LocalDate): Flow<List<TaskModel>> =
+        taskRepository.getTasksByDateFlow(date)
 }
