@@ -29,13 +29,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.components.BottomSheetComponent
 import com.example.todoapp.ui.components.CalendarComponent
 import com.example.todoapp.ui.navigation.EditTaskRoute
 import org.threeten.bp.LocalDate
 
 @Composable
-fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostController) {
+fun TasksScreen(taskViewModel: TaskViewModel,taskCategoryViewModel: TaskCategoryViewModel, navigationController: NavHostController) {
     val showDialog: Boolean by taskViewModel.showDialog.collectAsState(false)
 
     val uiState by taskViewModel.uiState.collectAsState()
@@ -76,6 +77,7 @@ fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostContr
             Container(
                 showDialog,
                 taskViewModel,
+                taskCategoryViewModel,
                 filteredTasks,
                 navigationController,
                 onDateSelected = { date ->
@@ -90,6 +92,7 @@ fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostContr
 fun Container(
     showDialog: Boolean,
     taskViewModel: TaskViewModel,
+    taskCategoryViewModel: TaskCategoryViewModel,
     tasks: List<TaskModel>,
     navigationController: NavHostController,
     onDateSelected: (LocalDate) -> Unit,
@@ -127,7 +130,8 @@ fun Container(
             },
             placeholder = "Añade tu tarea",
             buttonText = "Agregar",
-            initialText = ""
+            initialText = "",
+            taskCategoryViewModel = taskCategoryViewModel
         )
     }
 }

@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,6 +26,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +41,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.todoapp.R
+import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
+import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
+import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,11 +55,19 @@ fun BottomSheetComponent(
     placeholder: String = "",
     buttonText: String = "Confirm",
     initialText: String = "",
+    taskCategoryViewModel: TaskCategoryViewModel // Agregado para acceder a las categorías
 ) {
     var inputText by remember { mutableStateOf(initialText) }
     val focusRequester = remember { FocusRequester() }
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // Estado para manejar la visibilidad del menú desplegable
+    var expanded by remember { mutableStateOf(false) }
+    var selectedCategory by remember { mutableStateOf<TaskCategoryModel?>(null) }
+
+    // Observa el estado de UI de las categorías desde el ViewModel
+    val uiState by taskCategoryViewModel.uiState.collectAsState(TaskCategoryUiState.Loading)
 
     // Solicita el enfoque al abrir el bottom sheet
     LaunchedEffect(showSheet) {
@@ -97,17 +111,37 @@ fun BottomSheetComponent(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Start
                 ) {
-                    // TextFieldComponent
-                    TextFieldComponent(
-                        value = "Categoría",
-                        onValueChange = { },
-                        enabled = false,
-                        cornerRadius = 10.dp,
-                        borderWidth = 1.dp,
-                        borderColor = colorScheme.inverseSurface,
-                        textStyle = typography.labelSmall.copy(textAlign = TextAlign.Center),
-                        rowModifier = Modifier.padding(4.dp)
-                    )
+                    // Botón de Categoría con DropdownMenu
+                    Button(
+                        onClick = { expanded = true }, // Mostrar el menú desplegable
+                        modifier = Modifier.padding(4.dp)
+                    ) {
+                        Text(text = selectedCategory?.category ?: "Categoría")
+                    }
+
+                    // Menú desplegable
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        when (uiState) {
+                            is TaskCategoryUiState.Success -> {
+                                val categories = (uiState as TaskCategoryUiState.Success).categories
+                                categories.forEach { category ->
+                                    DropdownMenuItem(
+                                        text = { Text(category.category) },
+                                        onClick = {
+                                            selectedCategory = category
+                                            expanded = false // Cierra el menú al seleccionar
+                                        }
+                                    )
+                                }
+                            }
+                            else -> {
+                                Text("Loading...")
+                            }
+                        }
+                    }
 
                     // IconButtons
                     IconButton(onClick = { }) {
