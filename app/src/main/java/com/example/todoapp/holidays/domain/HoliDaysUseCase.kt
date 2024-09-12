@@ -9,16 +9,13 @@ class HoliDaysUseCase {
     suspend operator fun invoke(): String {
         val holidays: List<holiDaysResponse>? = repository.holidays()
 
-        return if (holidays != null) {
-            holidays.joinToString(separator = "\n") { holiday ->
-                "Fecha: ${holiday.fecha}, Nombre: ${holiday.nombre}"
-            }
-        } else {
-            "No se pudieron obtener los días festivos"
+        return holidays?.joinToString(separator = "\n") { holiday ->
+            "Fecha: ${holiday.fecha}, Nombre: ${holiday.nombre}"
         }
+            ?: "No se pudieron obtener los días festivos"
     }
 
-    suspend fun HolidayByDate(fecha: String): String {
+    suspend fun holidayByDate(fecha: String): String {
         val holiday: holiDaysResponse? = repository.holidayByDate(fecha)
 
         return if (holiday != null) {

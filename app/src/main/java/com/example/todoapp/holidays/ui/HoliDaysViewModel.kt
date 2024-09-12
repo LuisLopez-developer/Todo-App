@@ -30,7 +30,7 @@ class HoliDaysViewModel : ViewModel() {
     // Obtener festividad por fecha específica
     fun fetchHolidayByDate(fecha: String) {
         viewModelScope.launch {
-            val result = useCase.HolidayByDate(fecha)
+            val result = useCase.holidayByDate(fecha)
             _holidayByDate.postValue(result)
         }
     }
