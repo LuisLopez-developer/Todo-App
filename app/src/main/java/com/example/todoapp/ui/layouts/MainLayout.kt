@@ -82,8 +82,9 @@ fun MainLayout() {
         ) {
             composable<CalendarRoute> {
                 TasksScreen(
-                    taskViewModel,
-                    navigationController
+                    taskViewModel = taskViewModel,
+                    taskCategoryViewModel = taskCategoryViewModel,
+                    navigationController = navigationController
                 )
             }
             composable<TaskCategoryRoute> {
