@@ -15,6 +15,7 @@ import com.example.todoapp.addtasks.ui.TasksUiState.Error
 import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -123,8 +124,10 @@ class TaskViewModel @Inject constructor(
         endDate: LocalDate? = null,
         time: LocalTime? = null,
         details: String? = null,
+        selectedCategory: TaskCategoryModel?
     ) {
         _showDialog.value = false
+
         viewModelScope.launch {
             addTaskUseCase(
                 TaskModel(
@@ -132,11 +135,14 @@ class TaskViewModel @Inject constructor(
                     startDate = startDate,
                     endDate = endDate,
                     time = time,
-                    details = details
+                    details = details,
+                    category = selectedCategory?.category // Usa la propiedad adecuada de TaskCategoryModel
                 )
             )
         }
     }
+
+
 
     fun onShowDialogClick() {
         _showDialog.value = true

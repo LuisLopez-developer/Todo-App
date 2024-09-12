@@ -12,7 +12,7 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
 
     val tasks: Flow<List<TaskModel>> = taskDao.getTasks().map { items ->
         items.map {
-            TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details)
+            TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.category)
         }
     }
 
@@ -31,7 +31,7 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
     suspend fun getTaskById(taskId: Int): TaskModel? {
         val taskEntity = taskDao.getTaskById(taskId)
         return taskEntity?.let {
-            TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details)
+            TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.category)
         }
     }
 
@@ -46,7 +46,8 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
                     it.startDate,
                     it.endDate,
                     it.time,
-                    it.details
+                    it.details,
+                    it.category
                 )
             }
         }
@@ -61,6 +62,7 @@ fun TaskModel.toData(): TaskEntity {
         this.startDate,
         this.endDate,
         this.time,
-        this.details
+        this.details,
+        this.category
     )
 }
