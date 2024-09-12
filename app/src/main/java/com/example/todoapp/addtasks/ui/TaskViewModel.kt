@@ -1,6 +1,7 @@
 package com.example.todoapp.addtasks.ui
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asFlow
@@ -69,6 +70,7 @@ class TaskViewModel @Inject constructor(
 
     // Sirve para dar un valor incial a "tasksByDateState"
     private val _selectedDate = MutableLiveData(LocalDate.now())
+    val selectedDate: LiveData<LocalDate> = _selectedDate
 
     // Método para actualizar la fecha seleccionada
     fun setDate(date: LocalDate) {
