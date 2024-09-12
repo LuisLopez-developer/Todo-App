@@ -6,4 +6,3 @@ data class HolidayModel(
     val date: LocalDate,
     val name: String,
 )
-

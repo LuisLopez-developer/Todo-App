@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -34,6 +35,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
+import com.example.todoapp.holidays.ui.model.HolidayModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.components.BottomSheetComponent
 import com.example.todoapp.ui.components.CalendarComponent
@@ -60,9 +62,11 @@ fun TasksScreen(
         }
     }
 
-    // Recuperamos todas las fechas de las tareas
+    // Recuperamos todas las fechas de las tareas y días festivos
     val taskDates by taskViewModel.taskDatesFlow.collectAsState(emptyList())
     val holidays by holidaysViewModel.holidays.collectAsState(emptyList())
+
+    val selectedDate: LocalDate by taskViewModel.selectedDate.observeAsState(LocalDate.now())
 
     val combinedDates = taskDates.union(holidays.map { it.date }).toList()
 
@@ -83,11 +87,14 @@ fun TasksScreen(
                 taskCategoryViewModel = taskCategoryViewModel,
                 tasks = (uiStateByDate as TasksUiState.Success).tasks,
                 dates = combinedDates, // Pasa todas las fechas de tareas
-                navigationController = navigationController
+                holidays = holidays,   // Pasa todos los días festivos
+                navigationController = navigationController,
+                selectedDate = selectedDate
             )
         }
     }
 }
+
 
 @Composable
 fun Container(
@@ -95,8 +102,10 @@ fun Container(
     taskViewModel: TaskViewModel,
     taskCategoryViewModel: TaskCategoryViewModel,
     tasks: List<TaskModel>,
-    dates: List<LocalDate>, // Recibe la lista de fechas
+    dates: List<LocalDate>,
+    holidays: List<HolidayModel>, // Recibe la lista de días festivos
     navigationController: NavHostController,
+    selectedDate: LocalDate,
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -108,7 +117,13 @@ fun Container(
                 taskDates = dates,
                 onDateSelected = { date -> taskViewModel.setDate(date) } // De acuerdo al dia seleccionado mostrar las tareas de ese día
             )
-            TasksList(tasks, taskViewModel, navigationController)
+            TasksList(
+                tasks = tasks,
+                holidays = holidays,
+                selectedDate = selectedDate,
+                taskViewModel = taskViewModel,
+                navigationController = navigationController
+            )
         }
 
         FabDialog(
@@ -132,15 +147,37 @@ fun Container(
     }
 }
 
+
 @Composable
 fun TasksList(
     tasks: List<TaskModel>,
+    holidays: List<HolidayModel>,
+    selectedDate: LocalDate,
     taskViewModel: TaskViewModel,
     navigationController: NavHostController,
 ) {
     LazyColumn {
         items(tasks, key = { it.id }) { task ->
             ItemTask(taskModel = task, taskViewModel = taskViewModel, navigationController)
+        }
+        items(holidays.filter { it.date == selectedDate }) { holiday ->
+            HolidayItem(holiday = holiday)
+        }
+    }
+}
+
+@Composable
+fun HolidayItem(holiday: HolidayModel) {
+    Card(
+        Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "${holiday.date}: ${holiday.name}",
+                Modifier.padding(16.dp)
+            )
         }
     }
 }
