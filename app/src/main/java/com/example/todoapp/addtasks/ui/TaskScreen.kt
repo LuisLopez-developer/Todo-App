@@ -63,9 +63,9 @@ fun TasksScreen(
 
     // Recuperamos todas las fechas de las tareas
     val taskDates by taskViewModel.taskDatesFlow.collectAsState(emptyList())
-    val holidayDates by holidaysViewModel.holidays.collectAsState(emptyList())
+    val holidays by holidaysViewModel.holidays.collectAsState(emptyList())
 
-    val combinedDates = taskDates.union(holidayDates).toList()
+    val combinedDates = taskDates.union(holidays.map { it.date }).toList()
 
     // Maneja el estado general de tareas
     when (uiStateByDate) {

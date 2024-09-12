@@ -1,25 +1,25 @@
 package com.example.todoapp.holidays.data
 
 import com.example.todoapp.holidays.data.network.HoliDaysService
-import com.example.todoapp.holidays.data.network.response.holiDaysResponse
-import com.example.todoapp.holidays.ui.model.HolidaysModel
+import com.example.todoapp.holidays.ui.model.HolidayModel
+import org.threeten.bp.LocalDate
 
 class HoliDaysRepository {
     private val api = HoliDaysService()
 
     // Obtener todas las festividades
-    suspend fun holidays(): List<HolidaysModel>? {
+    suspend fun holidays(): List<HolidayModel>? {
         // Devolver la transformación de holiDaysResponse a HolidaysModel
         return api.holidays()?.map { items ->
-            HolidaysModel(items.fecha, items.nombre)
+            HolidayModel(LocalDate.parse(items.fecha), items.nombre)
         }
     }
 
     // Obtener festividad por fecha específica
-    suspend fun holidayByDate(fecha: String): HolidaysModel? {
+    suspend fun holidayByDate(fecha: String): HolidayModel? {
         // Devolver la transformación de holiDaysResponse a HolidaysModel
         return api.holidayByDate(fecha).let { items ->
-            items?.let { HolidaysModel(items.fecha, it.nombre) }
+            items?.let { HolidayModel(LocalDate.parse(items.fecha), it.nombre) }
         }
     }
 }

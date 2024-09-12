@@ -5,11 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.holidays.domain.GetHolidayByDateUseCase
 import com.example.todoapp.holidays.domain.GetHolidaysUseCase
+import com.example.todoapp.holidays.ui.model.HolidayModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,22 +22,23 @@ class HolidaysViewModel @Inject constructor(
         fetchHolidays()
     }
 
-    private val _holidays = MutableStateFlow<List<LocalDate>>(emptyList())
-    val holidays: StateFlow<List<LocalDate>> = _holidays
+    private val _holidays = MutableStateFlow<List<HolidayModel>>(emptyList())
+    val holidays: StateFlow<List<HolidayModel>> = _holidays
 
     // Obtener todos los días festivos y guardarlo en _holidays
     // Nota: actualmente getHolidaysUseCase su Date es un String con formato yyyy-MM-dd
     private fun fetchHolidays() {
         viewModelScope.launch {
-            getHolidaysUseCase()?.map {
-                LocalDate.parse(it.date) // Transformación a LocalDate
-            }?.let { dates ->
-                _holidays.value = dates
-            } ?: run {
-                Log.e("HolidaysViewModel", "No se encontró ninguna fecha")
-            }
+            // Ejecutará el bloque solo si getHolidaysUseCase() no es null
+            getHolidaysUseCase()?.let { holidays ->
+                // Mapea la lista de respuestas a una lista de HolidayModel
+                _holidays.value = holidays.map { item ->
+                    HolidayModel(item.date, item.name)
+                }
+            } ?: Log.e("HolidaysViewModel", "No se encontraron días festivos")
         }
     }
+
 
     // Obtener festividad por fecha específica
     private fun fetchHolidayByDate(fecha: String) {
