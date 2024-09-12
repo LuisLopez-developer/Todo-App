@@ -36,28 +36,19 @@ import org.threeten.bp.LocalDate
 
 @Composable
 fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostController) {
-    val showDialog: Boolean by taskViewModel.showDialog.collectAsState(false)
-
+    val showDialog by taskViewModel.showDialog.collectAsState()
     val uiState by taskViewModel.uiState.collectAsState()
     val tasksByDateState by taskViewModel.tasksByDateState.collectAsState()
-
-    // Estado para la fecha seleccionada en el calendario
-    var selectedDate by remember { mutableStateOf<LocalDate>(LocalDate.now()) }
-
-    // Llama a fetchTasksByDate si la fecha seleccionada cambia
-    selectedDate.let { date ->
-        taskViewModel.fetchTasksByDate(date)
-    }
+    val selectedDate by taskViewModel.selectedDate.collectAsState()
 
     // Filtrar tareas basadas en la fecha seleccionada
-    val filteredTasks = tasksByDateState.let { state ->
-        when (state) {
+    val filteredTasks = remember(tasksByDateState, selectedDate) {
+        when (tasksByDateState) {
             is TasksUiState.Success -> {
-                state.tasks.filter {
+                (tasksByDateState as TasksUiState.Success).tasks.filter {
                     it.startDate == selectedDate
                 }
             }
-
             else -> emptyList()
         }
     }
@@ -67,11 +58,9 @@ fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostContr
         is TasksUiState.Error -> {
             // Maneja el estado de error
         }
-
         TasksUiState.Loading -> {
             CircularProgressIndicator()
         }
-
         is TasksUiState.Success -> {
             Container(
                 showDialog,
@@ -79,13 +68,12 @@ fun TasksScreen(taskViewModel: TaskViewModel, navigationController: NavHostContr
                 filteredTasks,
                 navigationController,
                 onDateSelected = { date ->
-                    selectedDate = date
+                    taskViewModel.setSelectedDate(date)
                 }
             )
         }
     }
 }
-
 @Composable
 fun Container(
     showDialog: Boolean,
@@ -95,26 +83,23 @@ fun Container(
     onDateSelected: (LocalDate) -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
-            val taskDates = tasks
-                .map { it.startDate } // Asegúrate de que solo se muestren fechas válidas
+            val taskDates = tasks.map { it.startDate }
 
             CalendarComponent(
                 taskDates = taskDates,
-                onDateSelected = { date -> onDateSelected(date) } // Callback para la selección de fechas
+                onDateSelected = { date -> onDateSelected(date) }
             )
             TasksList(tasks, taskViewModel, navigationController)
         }
 
         FabDialog(
             Modifier
-                .align(Alignment.BottomEnd) // Alínea el FAB al final de la caja (absoluto)
+                .align(Alignment.BottomEnd)
                 .padding(16.dp),
             taskViewModel
         )
@@ -131,7 +116,6 @@ fun Container(
         )
     }
 }
-
 
 @Composable
 fun TasksList(

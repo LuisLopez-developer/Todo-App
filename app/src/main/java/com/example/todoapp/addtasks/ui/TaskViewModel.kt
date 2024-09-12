@@ -63,6 +63,16 @@ class TaskViewModel @Inject constructor(
     private val _showTimePicker = MutableStateFlow(false)
     val showTimePicker: StateFlow<Boolean> = _showTimePicker
 
+    private val _selectedDate = MutableStateFlow(LocalDate.now())
+    val selectedDate: StateFlow<LocalDate> = _selectedDate
+
+    fun setSelectedDate(date: LocalDate) {
+        _selectedDate.value = date
+        Log.d("TaskViewModel", "Selected Date: $date")
+        fetchTasksByDate(date)
+    }
+
+
     fun onShowTimePicker() {
         _showTimePicker.value = true
     }
