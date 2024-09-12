@@ -37,6 +37,7 @@ import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.components.BottomSheetComponent
 import com.example.todoapp.ui.components.CalendarComponent
 import com.example.todoapp.ui.navigation.EditTaskRoute
+import org.threeten.bp.LocalDate
 
 @Composable
 fun TasksScreen(
@@ -45,8 +46,6 @@ fun TasksScreen(
     navigationController: NavHostController,
 ) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
-    val showDialog: Boolean by taskViewModel.showDialog.collectAsState(false)
-
 
     // Recuperamos el estado de las tareas por fecha
     val uiStateByDate by produceState<TasksUiState>(
@@ -58,6 +57,9 @@ fun TasksScreen(
             taskViewModel.tasksByDateState.collect { value = it }
         }
     }
+
+    // Recuperamos todas las fechas de las tareas
+    val taskDates by taskViewModel.taskDatesFlow.collectAsState(emptyList())
 
     // Maneja el estado general de tareas
     when (uiStateByDate) {
@@ -71,11 +73,12 @@ fun TasksScreen(
 
         is TasksUiState.Success -> {
             Container(
-                showDialog,
-                taskViewModel,
-                taskCategoryViewModel,
-                (uiStateByDate as TasksUiState.Success).tasks,
-                navigationController
+                showDialog = taskViewModel.showDialog.collectAsState().value,
+                taskViewModel = taskViewModel,
+                taskCategoryViewModel = taskCategoryViewModel,
+                tasks = (uiStateByDate as TasksUiState.Success).tasks,
+                taskDates = taskDates, // Pasa todas las fechas de tareas
+                navigationController = navigationController
             )
         }
     }
@@ -87,6 +90,7 @@ fun Container(
     taskViewModel: TaskViewModel,
     taskCategoryViewModel: TaskCategoryViewModel,
     tasks: List<TaskModel>,
+    taskDates: List<LocalDate>, // Recibe la lista de fechas
     navigationController: NavHostController,
 ) {
     Box(
@@ -95,7 +99,6 @@ fun Container(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            val taskDates = tasks.map { it.startDate }
             CalendarComponent(
                 taskDates = taskDates,
                 onDateSelected = { date -> taskViewModel.setDate(date) } // De acuerdo al dia seleccionado mostrar las tareas de ese día

@@ -34,10 +34,30 @@ class TaskViewModel @Inject constructor(
     private val addTaskUseCase: AddTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
-    getTaskUseCase: GetTaskUseCase,
+    private val getTaskUseCase: GetTaskUseCase,
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
 ) : ViewModel() {
+
+    // Flujo que mantiene todas las fechas de tareas
+    private val _taskDatesFlow = MutableStateFlow<List<LocalDate>>(emptyList())
+    val taskDatesFlow: StateFlow<List<LocalDate>> = _taskDatesFlow
+
+    init {
+        // Cargar todas las fechas al inicializar el ViewModel
+        getAllTaskDates()
+    }
+
+    private fun getAllTaskDates() {
+        viewModelScope.launch {
+            getTaskUseCase().map { taskList ->
+                // Extraemos solo las fechas de las tareas
+                taskList.map { it.startDate }
+            }.collect { dates ->
+                _taskDatesFlow.value = dates
+            }
+        }
+    }
 
     // Estado para recuperar todas las tareas
     // Por ahora no se usa
