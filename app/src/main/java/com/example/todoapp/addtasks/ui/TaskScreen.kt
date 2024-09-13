@@ -33,11 +33,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
+import com.example.todoapp.addtasks.ui.components.BottomSheetComponent
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.holidays.ui.model.HolidayModel
+import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
-import com.example.todoapp.ui.components.BottomSheetComponent
 import com.example.todoapp.ui.components.CalendarComponent
 import com.example.todoapp.ui.navigation.EditTaskRoute
 import org.threeten.bp.LocalDate
@@ -70,6 +71,14 @@ fun TasksScreen(
 
     val combinedDates = taskDates.union(holidays.map { it.date }).toList()
 
+    // Observar el modelo de las categorias
+    val categoryUiState by taskCategoryViewModel.uiState.collectAsState()
+
+    val categories = when (categoryUiState) {
+        is TaskCategoryUiState.Success -> (categoryUiState as TaskCategoryUiState.Success).categories.map { it.category }
+        else -> emptyList()
+    }
+
     // Maneja el estado general de tareas
     when (uiStateByDate) {
         is TasksUiState.Error -> {
@@ -84,28 +93,27 @@ fun TasksScreen(
             Container(
                 showDialog = taskViewModel.showDialog.collectAsState().value,
                 taskViewModel = taskViewModel,
-                taskCategoryViewModel = taskCategoryViewModel,
                 tasks = (uiStateByDate as TasksUiState.Success).tasks,
                 dates = combinedDates, // Pasa todas las fechas de tareas
                 holidays = holidays,   // Pasa todos los días festivos
                 navigationController = navigationController,
-                selectedDate = selectedDate
+                selectedDate = selectedDate,
+                categories = categories
             )
         }
     }
 }
 
-
 @Composable
 fun Container(
     showDialog: Boolean,
     taskViewModel: TaskViewModel,
-    taskCategoryViewModel: TaskCategoryViewModel,
     tasks: List<TaskModel>,
     dates: List<LocalDate>,
     holidays: List<HolidayModel>, // Recibe la lista de días festivos
     navigationController: NavHostController,
     selectedDate: LocalDate,
+    categories: List<String>,
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -137,12 +145,12 @@ fun Container(
             showSheet = showDialog,
             onDismiss = { taskViewModel.onDialogClose() },
             onConfirm = { taskText, selectedCategory ->
-                taskViewModel.onTaskCreated(taskText, selectedCategory = selectedCategory)
+                taskViewModel.onTaskCreated(task = taskText, category = selectedCategory)
             },
             placeholder = "Añade tu tarea",
             buttonText = "Agregar",
             initialText = "",
-            taskCategoryViewModel = taskCategoryViewModel
+            categories = categories
         )
     }
 }

@@ -126,7 +126,7 @@ class TaskViewModel @Inject constructor(
         endDate: LocalDate? = null,
         time: LocalTime? = null,
         details: String? = null,
-        selectedCategory: TaskCategoryModel?
+        category: String? = null
     ) {
         _showDialog.value = false
 
@@ -138,7 +138,7 @@ class TaskViewModel @Inject constructor(
                     endDate = endDate,
                     time = time,
                     details = details,
-                    category = selectedCategory?.category // Usa la propiedad adecuada de TaskCategoryModel
+                    category = category
                 )
             )
         }
