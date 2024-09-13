@@ -76,6 +76,7 @@ class TaskViewModel @Inject constructor(
         _selectedDate.value = date
     }
 
+
     // Estado para recuperar todas las tareas de un día en especifico
     @OptIn(ExperimentalCoroutinesApi::class)
     val tasksByDateState: StateFlow<TasksUiState> = _selectedDate.asFlow()
@@ -180,9 +181,6 @@ class TaskViewModel @Inject constructor(
             try {
                 val task = getTaskByIdUseCase.execute(taskId)
                 _taskFlowUiState.value = if (task != null) {
-                    // Aquí actualizamos los valores temporales
-                    setTemporaryDate(task.startDate)
-                    setTemporaryTime(task.time)
                     TaskUiState.Success(task)
                 } else {
                     TaskUiState.Empty
