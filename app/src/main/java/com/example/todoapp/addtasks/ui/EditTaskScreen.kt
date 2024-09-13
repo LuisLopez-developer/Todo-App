@@ -226,6 +226,7 @@ fun Container(
         // Mostrar DateTimePickerDialog si `showDatePicker` es verdadero
         if (showDatePicker) {
             DatePickerDialogComponent(
+                initialDate = task.startDate,
                 taskViewModel = taskViewModel,
                 onDismiss = { taskViewModel.onHideDatePicker() },
                 onConfirm = {
