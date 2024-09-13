@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Todo App</string>
 
+    <!-- Para la pantalla de tareas -->
+    <string name="tasks_title">Tareas</string>
+
     <!-- Para la pantalla de editar tarea -->
     <string name="edit_task_title">Editar tarea</string>
     <string name="edit_task_details">Agregar detalles</string>

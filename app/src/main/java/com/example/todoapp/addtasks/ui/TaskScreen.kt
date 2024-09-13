@@ -1,5 +1,6 @@
 package com.example.todoapp.addtasks.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,10 +13,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,11 +33,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
+import com.example.todoapp.R.drawable
+import com.example.todoapp.R.string
+import com.example.todoapp.R.string.ic_calendar
 import com.example.todoapp.addtasks.ui.components.BottomSheetComponent
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
@@ -122,16 +132,25 @@ fun Container(
             modifier = Modifier.fillMaxSize()
         ) {
             CalendarComponent(
+                modifier = Modifier.padding(10.dp),
                 taskDates = dates,
                 onDateSelected = { date -> taskViewModel.setDate(date) } // De acuerdo al dia seleccionado mostrar las tareas de ese día
             )
-            TasksList(
-                tasks = tasks,
-                holidays = holidays,
-                selectedDate = selectedDate,
-                taskViewModel = taskViewModel,
-                navigationController = navigationController
+            Text(
+                modifier = Modifier.padding(horizontal = 15.dp),
+                text = stringResource(string.tasks_title),
+                fontSize = typography.titleLarge.fontSize,
+                color = colorScheme.tertiary
             )
+            Box(modifier = Modifier.padding(10.dp)) {
+                TasksList(
+                    tasks = tasks,
+                    holidays = holidays,
+                    selectedDate = selectedDate,
+                    taskViewModel = taskViewModel,
+                    navigationController = navigationController
+                )
+            }
         }
 
         FabDialog(
@@ -187,17 +206,28 @@ fun HolidayItem(holiday: HolidayModel) {
     Card(
         Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(horizontal = 5.dp, vertical = 5.dp)
     ) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .background(colorScheme.tertiaryContainer.copy(alpha = 0.2f))
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(drawable.ic_outline_calendar_),
+                contentDescription = stringResource(ic_calendar),
+                tint = colorScheme.tertiary,
+                modifier = Modifier.padding(end = 10.dp)
+            )
             Text(
                 text = "${holiday.date}: ${holiday.name}",
-                Modifier.padding(16.dp)
+                color = colorScheme.tertiary
             )
         }
     }
 }
-
 
 @Composable
 fun ItemTask(
@@ -227,11 +257,33 @@ fun ItemTask(
                     }
                 )
             }
+            .padding(horizontal = 5.dp, vertical = 5.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .background(color = colorScheme.surfaceContainerHighest)
+                .padding(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Checkbox(
                 checked = taskModel.selected,
-                onCheckedChange = { taskViewModel.onCheckBox(taskModel) }
+                onCheckedChange = { taskViewModel.onCheckBox(taskModel) },
+                colors = CheckboxColors(
+                    checkedBoxColor = colorScheme.primaryContainer,
+                    uncheckedBoxColor = colorScheme.surfaceContainerHighest,
+                    disabledCheckedBoxColor = colorScheme.primary,
+                    disabledUncheckedBoxColor = colorScheme.primary,
+                    disabledIndeterminateBoxColor = colorScheme.primary,
+                    checkedBorderColor = colorScheme.primaryContainer,
+                    uncheckedBorderColor = colorScheme.outline,
+                    disabledBorderColor = colorScheme.primary,
+                    disabledUncheckedBorderColor = colorScheme.primary,
+                    disabledIndeterminateBorderColor = colorScheme.primary,
+                    checkedCheckmarkColor = colorScheme.onPrimary,
+                    uncheckedCheckmarkColor = colorScheme.primary
+                ),
             )
             Text(
                 text = taskModel.task,
