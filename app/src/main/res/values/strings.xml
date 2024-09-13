@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">Todo App</string>
+
+    <!-- Para la pantalla de editar tarea -->
+    <string name="edit_task_title">Editar tarea</string>
+    <string name="edit_task_details">Agregar detalles</string>
+    <string name="uncategorized">Sin categoría</string>
+    <string name="edit_date_and_time">Editar la fecha y hora</string>
+
+    <!-- Descripcion para iconos -->
+    <string name="ic_label_offer"> Icono de etiqueta</string>
+    <string name="ic_arrow_drop_down">Icono con flecha hacia abajo</string>
+    <string name="ic_notes">Icono de notas</string>
+    <string name="ic_access_time">Icono de acceso a tiempo</string>
+    <string name="ic_calendar">Icono de calendario</string>
 </resources>

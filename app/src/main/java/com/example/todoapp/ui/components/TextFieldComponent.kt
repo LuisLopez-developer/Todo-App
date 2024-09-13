@@ -48,6 +48,8 @@ fun TextFieldComponent(
     borderColor: Color = Color.Transparent,
     borderWidth: Dp = 0.dp,
     cornerRadius: Dp = 0.dp,
+    internalVerticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
+    internalHorizontalArrangement: Arrangement.Horizontal = Arrangement.Center,
 ) {
     Box(
         modifier = modifier
@@ -77,8 +79,8 @@ fun TextFieldComponent(
             cursorBrush = cursorBrush,
             decorationBox = { innerTextField ->
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center, // Centra el contenido horizontalmente
+                    verticalAlignment = internalVerticalAlignment,
+                    horizontalArrangement = internalHorizontalArrangement,
                     modifier = rowModifier
                 ) {
                     if (leadingIcon != null) {
