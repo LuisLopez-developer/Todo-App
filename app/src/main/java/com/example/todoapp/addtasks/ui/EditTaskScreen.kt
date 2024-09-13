@@ -298,7 +298,7 @@ fun Container(
                                     .clickable { taskViewModel.onShowDateDialogClick() }
                             ) {
                                 Icon(
-                                    painter = painterResource(id = drawable.ic_outline_label_offer),
+                                    painter = painterResource(id = drawable.ic_outline_calendar_),
                                     contentDescription = stringResource(string.ic_label_offer),
                                     modifier = Modifier.padding(end = 6.dp)
                                 )
