@@ -1,6 +1,8 @@
 package com.example.todoapp.addtasks.ui
 
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
@@ -20,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,6 +38,8 @@ import com.example.todoapp.R
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.utils.formatDate
 import com.example.todoapp.addtasks.ui.utils.formatTime
+import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
+import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.components.DatePickerDialogComponent
 import com.example.todoapp.ui.components.TextFieldComponent
 import com.example.todoapp.ui.components.TextFieldWithButtonComponent
@@ -41,16 +48,24 @@ import com.example.todoapp.ui.theme.Typography
 import org.threeten.bp.LocalDate
 
 @Composable
-fun EditTaskScreen(taskViewModel: TaskViewModel, id: Int) {
+fun EditTaskScreen(
+    taskViewModel: TaskViewModel,
+    taskCategoryViewModel: TaskCategoryViewModel,
+    id: Int,
+) {
     // Observe the StateFlow changes for the task UI state and other states
     val taskUiState by taskViewModel.taskFlowUiState.collectAsState()
     val showDatePicker by taskViewModel.showDatePicker.collectAsState()
     val showTimePicker by taskViewModel.showTimePicker.collectAsState()
 
-    // Launch effect to load the task by id when the composable is first launched or id changes
+    // Observar el modelo de las categorias
+    val categoryUiState by taskCategoryViewModel.uiState.collectAsState()
+
+    // Recibe y carga el task con el id correcto
     LaunchedEffect(id) {
         taskViewModel.getTaskById(id)
     }
+
 
     when (taskUiState) {
         is TaskUiState.Loading -> {
@@ -66,7 +81,9 @@ fun EditTaskScreen(taskViewModel: TaskViewModel, id: Int) {
                 showDatePicker,
                 showTimePicker,
                 taskViewModel,
-                (taskUiState as TaskUiState.Success).task
+                taskCategoryViewModel,
+                (taskUiState as TaskUiState.Success).task,
+                categoryUiState
             )
         }
 
@@ -81,13 +98,62 @@ fun Container(
     showDatePicker: Boolean,
     showTimePicker: Boolean,
     taskViewModel: TaskViewModel,
+    taskCategoryViewModel: TaskCategoryViewModel,
     task: TaskModel,
+    categoryUiState: TaskCategoryUiState,
 ) {
     var taskText by remember { mutableStateOf(task.task) }
     var taskDetail by remember { mutableStateOf(task.details ?: "") }
 
+    val categories = when (categoryUiState) {
+        is TaskCategoryUiState.Success -> categoryUiState.categories
+        else -> emptyList()
+    }
+    val isDropDownExpanded by taskCategoryViewModel.showDropDown.observeAsState(false)
+
+    Log.i("task", task.toString())
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(verticalArrangement = Arrangement.Top) {
+            // Boton para el drop menu
+
+            Box {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable {
+                        taskCategoryViewModel.setShowDropDown(true)
+                    }
+                ) {
+                    Text(text = task.category ?: "Sin categoría")
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_arrow_drop_down),
+                        contentDescription = "DropDown Icon"
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = isDropDownExpanded,
+                    onDismissRequest = { taskCategoryViewModel.setShowDropDown(false) }
+                ) {
+
+                    // Opción para "Sin categoría"
+                    DropdownMenuItem(
+                        text = { Text(text = "Sin categoría") },
+                        onClick = {
+                            taskCategoryViewModel.setSelectedCategory("Sin categoría")
+                            taskViewModel.updateTask(task.copy(category = null))
+                        }
+                    )
+                    categories.forEach { category ->
+                        DropdownMenuItem(text = { Text(text = category.category) }, onClick = {
+                            taskCategoryViewModel.setSelectedCategory(category.category)
+                            taskViewModel.updateTask(task.copy(category = category.category))
+                        })
+                    }
+                }
+            }
+
             // TextField for task title
             TextField(
                 value = taskText,

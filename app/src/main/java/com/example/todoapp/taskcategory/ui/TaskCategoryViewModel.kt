@@ -1,5 +1,6 @@
 package com.example.todoapp.taskcategory.ui
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.taskcategory.domain.AddCategoryUseCase
@@ -24,6 +25,20 @@ class TaskCategoryViewModel @Inject constructor(
     private val deleteCategoryUseCase: DeleteCategoryUseCase,
     private val updateCategoryUseCase: UpdateCategoryUseCase
 ) : ViewModel() {
+
+    private val _showDropDown = MutableLiveData(false)
+    val showDropDown: MutableLiveData<Boolean> = _showDropDown
+
+    fun setShowDropDown(show: Boolean) {
+        _showDropDown.value = show
+    }
+
+    private val _selectedCategory = MutableLiveData<String?>(null)
+
+    fun setSelectedCategory(category: String) {
+        _selectedCategory.value = category
+        _showDropDown.value = !_showDropDown.value!!
+    }
 
     val uiState: StateFlow<TaskCategoryUiState> = getCategoryUseCase()
         .map { categories -> Success(categories)}

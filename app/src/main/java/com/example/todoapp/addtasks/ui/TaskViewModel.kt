@@ -144,8 +144,6 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-
-
     fun onShowDialogClick() {
         _showDialog.value = true
     }

@@ -98,7 +98,7 @@ fun MainLayout() {
             }
             composable<EditTaskRoute> {
                 val args = it.toRoute<EditTaskRoute>()
-                EditTaskScreen(taskViewModel, args.id)
+                EditTaskScreen(taskViewModel,taskCategoryViewModel, args.id)
             }
             composable<Pantalla2Route> {
                 Screen2()
