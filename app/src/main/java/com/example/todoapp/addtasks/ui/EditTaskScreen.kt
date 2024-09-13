@@ -118,7 +118,7 @@ fun Container(
 
     Log.i("task", task.toString())
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().background(color = colorScheme.surface)) {
         Column {
             Card(
                 modifier = Modifier
@@ -130,7 +130,7 @@ fun Container(
                     modifier = Modifier
                         .wrapContentHeight()
                         .fillMaxWidth()
-                        .background(color = colorScheme.surface)
+                        .background(color = colorScheme.surfaceContainer)
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Column(
@@ -143,7 +143,7 @@ fun Container(
                             BasicTextField(
                                 value = task.category ?: stringResource(string.uncategorized),
                                 onValueChange = {},
-                                textStyle = typography.bodyMedium,
+                                textStyle = typography.bodyMedium.copy(color = colorScheme.onSurface),
                                 readOnly = true,
                                 decorationBox = { innerTextField ->
                                     Row(
@@ -234,7 +234,7 @@ fun Container(
                                 taskDetail = it
                                 taskViewModel.updateTask(task.copy(details = it))
                             },
-                            textStyle = typography.bodySmall,
+                            textStyle = typography.bodySmall.copy(color = colorScheme.onSurface),
                             decorationBox = { innerTextField ->
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -275,7 +275,7 @@ fun Container(
                     modifier = Modifier
                         .wrapContentHeight()
                         .fillMaxWidth()
-                        .background(color = colorScheme.surface)
+                        .background(color = colorScheme.surfaceContainer)
                         .align(Alignment.CenterHorizontally)
                         .padding(16.dp)
                 ) {
@@ -287,7 +287,7 @@ fun Container(
                     BasicTextField(
                         value = displayText,
                         onValueChange = {},
-                        textStyle = typography.bodyMedium,
+                        textStyle = typography.bodyMedium.copy(color = colorScheme.onSurface),
                         readOnly = true,
                         decorationBox = { innerTextField ->
                             Row(
