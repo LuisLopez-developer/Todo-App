@@ -34,11 +34,10 @@ fun DatePickerDialogComponent(
     taskViewModel: TaskViewModel,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    initialDate: LocalDate,
+    selectedDate: LocalDate,
 ) {
-    val temporaryTime by taskViewModel.temporaryTime.collectAsState()
-    Log.d("DatePickerDialogComponent", "Temporary Time: $temporaryTime")
-    Log.d("DatePickerDialogComponent", "initialDate: $initialDate")
+    val temporaryTime by taskViewModel.temporaryTime.collectAsState(null)
+    Log.d("DatePickerDialogComponent", "temporaryTime: $temporaryTime")
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = shapes.extraLarge,
@@ -49,7 +48,7 @@ fun DatePickerDialogComponent(
             Column(modifier = Modifier.background(colorScheme.surface)) {
                 CalendarComponent(
                     modifier = Modifier.padding(20.dp),
-                    initialDate = initialDate,
+                    initialDate = selectedDate,
                     onDateSelected = { date ->
                         taskViewModel.setTemporaryDate(date)
                     }
