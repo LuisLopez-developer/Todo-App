@@ -138,7 +138,7 @@ fun BottomSheetComponent(
                 }
 
                 if (isDateVisible) {
-                    val formattedDate = formatDate(selectedDate)
+                    val formattedDate = formatDate(taskViewModel.temporaryDate.value ?: selectedDate)
                     val formattedTime = selectedTime?.let { formatTime(it) }
                     val displayText = "$formattedDate${formattedTime?.let { ", $it" } ?: ""}"
                     TextFieldComponent(
@@ -212,13 +212,12 @@ fun BottomSheetComponent(
     // Mostrar DatePickerDialog
     if (showDatePicker) {
         DatePickerDialogComponent(
-            initialDate = selectedDate,
+            selectedDate = selectedDate,
             taskViewModel = taskViewModel,
             onDismiss = { taskViewModel.onHideDatePicker() },
             onConfirm = {
-                taskViewModel.temporaryDate.value ?: LocalDate.now()
+                taskViewModel.temporaryDate.value
                 selectedTime = taskViewModel.temporaryTime.value
-                taskViewModel.resetTemporaryDateTime()
                 isDateVisible = true
             }
         )
