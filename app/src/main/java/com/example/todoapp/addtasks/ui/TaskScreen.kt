@@ -142,15 +142,23 @@ fun Container(
         )
 
         BottomSheetComponent(
+            initialDate = selectedDate,
             showSheet = showDialog,
             onDismiss = { taskViewModel.onDialogClose() },
-            onConfirm = { taskText, selectedCategory ->
-                taskViewModel.onTaskCreated(task = taskText, category = selectedCategory)
+            onConfirm = { taskText, selectedCategory, details, date, time ->
+                taskViewModel.onTaskCreated(
+                    task = taskText,
+                    category = selectedCategory,
+                    details = details,
+                    startDate = date,
+                    time = time
+                )
             },
             placeholder = "Añade tu tarea",
             buttonText = "Agregar",
             initialText = "",
-            categories = categories
+            categories = categories,
+            taskViewModel = taskViewModel
         )
     }
 }

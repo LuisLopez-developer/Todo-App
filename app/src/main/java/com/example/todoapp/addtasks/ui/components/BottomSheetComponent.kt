@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -23,6 +24,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,34 +38,72 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.todoapp.R
+import com.example.todoapp.addtasks.ui.TaskViewModel
+import com.example.todoapp.addtasks.ui.utils.formatDate
+import com.example.todoapp.addtasks.ui.utils.formatTime
+import com.example.todoapp.ui.components.DatePickerDialogComponent
 import com.example.todoapp.ui.components.DropdownMenuComponent
+import com.example.todoapp.ui.components.TextFieldComponent
+import com.example.todoapp.ui.components.TimePickerDialogComponent
 import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDate
+import org.threeten.bp.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetComponent(
     showSheet: Boolean,
     onDismiss: () -> Unit,
-    onConfirm: (String, String?) -> Unit, // Cambiado para incluir la categoría como String en lugar de TaskCategoryModel
+    onConfirm: (String, String?, String?, LocalDate, LocalTime?) -> Unit,
     placeholder: String = "",
     buttonText: String = "Confirm",
     initialText: String = "",
-    categories: List<String>, // Cambiado para aceptar una lista de String en lugar de usar el ViewModel
+    categories: List<String>,
+    taskViewModel: TaskViewModel,
+    initialDate: LocalDate = LocalDate.now(),
 ) {
-    var inputText by remember { mutableStateOf(initialText) }
     val focusRequester = remember { FocusRequester() }
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    // Estado para manejar la visibilidad del menú desplegable
     var expanded by remember { mutableStateOf(false) }
+    var inputText by remember { mutableStateOf(initialText) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
+    var details by remember { mutableStateOf<String?>(null) }
+    var isDetailVisible by remember { mutableStateOf(false) }
+    var isDateVisible by remember { mutableStateOf(false) }
+
+    // Estados para fecha y hora
+    var selectedDate by remember { mutableStateOf<LocalDate?>(LocalDate.now()) }
+    var selectedTime by remember { mutableStateOf<LocalTime?>(null) }
+
+    val showDatePicker by taskViewModel.showDatePicker.collectAsState()
+    val showTimePicker by taskViewModel.showTimePicker.collectAsState()
 
     // Solicita el enfoque al abrir el bottom sheet
     LaunchedEffect(showSheet) {
         if (showSheet) {
             focusRequester.requestFocus()
         }
+    }
+
+    // Función auxiliar para manejar la confirmación y el reinicio del estado
+    fun handleConfirm() {
+        onConfirm(
+            inputText,
+            selectedCategory,
+            details,
+            selectedDate ?: LocalDate.now(),
+            selectedTime
+        )
+        inputText = ""
+        details = null
+        selectedCategory = null
+        selectedDate = LocalDate.now()
+        selectedTime = null
+        isDetailVisible = false
+        isDateVisible = false
+        coroutineScope.launch { sheetState.hide() }
     }
 
     if (showSheet) {
@@ -87,17 +127,32 @@ fun BottomSheetComponent(
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Done
                     ),
-                    keyboardActions = KeyboardActions(onDone = {
-                        onConfirm(inputText, selectedCategory) // Pasa ambos parámetros
-                        inputText = ""
-                        selectedCategory =
-                            null // Reiniciar categoría seleccionada después de confirmar
-                        coroutineScope.launch { sheetState.hide() }
-                    }),
+                    keyboardActions = KeyboardActions(onDone = { handleConfirm() }),
                     modifier = Modifier
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
                 )
+                if (isDetailVisible) {
+                    TextField(
+                        value = details ?: "",
+                        onValueChange = { details = it },
+                        placeholder = { Text(text = "Detalles") }
+                    )
+                }
+
+                if (isDateVisible) {
+                    val formattedDate = formatDate(selectedDate ?: LocalDate.now())
+                    val formattedTime = selectedTime?.let { formatTime(it) }
+                    val displayText = "$formattedDate${formattedTime?.let { ", $it" } ?: ""}"
+                    TextFieldComponent(
+                        value = displayText,
+                        onValueChange = {},
+                        enabled = false,
+                        modifier = Modifier
+                            .wrapContentWidth()
+                    )
+                }
+
                 Spacer(modifier = Modifier.size(8.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -105,7 +160,7 @@ fun BottomSheetComponent(
                 ) {
                     // Botón de Categoría con el nuevo DropdownMenu genérico
                     Button(
-                        onClick = { expanded = true }, // Mostrar el menú desplegable
+                        onClick = { expanded = true },
                         modifier = Modifier.padding(4.dp)
                     ) {
                         Text(text = selectedCategory ?: "Categoría")
@@ -115,16 +170,16 @@ fun BottomSheetComponent(
                     DropdownMenuComponent(
                         isDropDownExpanded = expanded,
                         onDismissRequest = { expanded = false },
-                        items = categories, // Pasa la lista de categorías como String
+                        items = categories,
                         defaultText = "Sin categoría",
                         onItemSelected = { category ->
                             selectedCategory = category
-                            expanded = false // Cierra el menú al seleccionar
+                            expanded = false
                         }
                     )
 
                     // IconButtons
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { isDetailVisible = true }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_notes),
                             contentDescription = "Details",
@@ -132,7 +187,7 @@ fun BottomSheetComponent(
                         )
                     }
 
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { taskViewModel.onShowDateDialogClick() }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_access_time),
                             contentDescription = "Select Date",
@@ -140,23 +195,15 @@ fun BottomSheetComponent(
                         )
                     }
 
-                    // Spacer to push the Button to the end
                     Spacer(modifier = Modifier.weight(1f))
 
-                    // Ajustado Button
                     Button(
-                        onClick = {
-                            onConfirm(inputText, selectedCategory) // Pasa ambos parámetros
-                            inputText = ""
-                            selectedCategory =
-                                null // Reiniciar categoría seleccionada después de confirmar
-                            coroutineScope.launch { sheetState.hide() }
-                        },
+                        onClick = { handleConfirm() },
                         modifier = Modifier
                             .widthIn(
                                 min = 100.dp,
                                 max = 200.dp
-                            ) // Ancho mínimo y máximo para el botón
+                            )
                     ) {
                         Text(text = buttonText)
                     }
@@ -164,4 +211,28 @@ fun BottomSheetComponent(
             }
         }
     }
+
+    // Mostrar DatePickerDialog
+    if (showDatePicker) {
+        DatePickerDialogComponent(
+            initialDate = initialDate,
+            taskViewModel = taskViewModel,
+            onDismiss = { taskViewModel.onHideDatePicker() },
+            onConfirm = {
+                selectedDate = taskViewModel.temporaryDate.value ?: LocalDate.now()
+                selectedTime = taskViewModel.temporaryTime.value
+                taskViewModel.resetTemporaryDateTime()
+                isDateVisible = true
+            }
+        )
+    }
+
+    // Mostrar TimePickerDialog
+    if (showTimePicker) {
+        TimePickerDialogComponent(
+            taskViewModel = taskViewModel,
+            onDismiss = { taskViewModel.onHideTimePicker() },
+        )
+    }
+
 }
