@@ -60,7 +60,7 @@ fun BottomSheetComponent(
     initialText: String = "",
     categories: List<String>,
     taskViewModel: TaskViewModel,
-    initialDate: LocalDate = LocalDate.now(),
+    selectedDate: LocalDate = LocalDate.now(),
 ) {
     val focusRequester = remember { FocusRequester() }
     val coroutineScope = rememberCoroutineScope()
@@ -72,13 +72,11 @@ fun BottomSheetComponent(
     var details by remember { mutableStateOf<String?>(null) }
     var isDetailVisible by remember { mutableStateOf(false) }
     var isDateVisible by remember { mutableStateOf(false) }
-
-    // Estados para fecha y hora
-    var selectedDate by remember { mutableStateOf<LocalDate?>(LocalDate.now()) }
     var selectedTime by remember { mutableStateOf<LocalTime?>(null) }
 
     val showDatePicker by taskViewModel.showDatePicker.collectAsState()
     val showTimePicker by taskViewModel.showTimePicker.collectAsState()
+
 
     // Solicita el enfoque al abrir el bottom sheet
     LaunchedEffect(showSheet) {
@@ -93,13 +91,12 @@ fun BottomSheetComponent(
             inputText,
             selectedCategory,
             details,
-            selectedDate ?: LocalDate.now(),
+            selectedDate,
             selectedTime
         )
         inputText = ""
         details = null
         selectedCategory = null
-        selectedDate = LocalDate.now()
         selectedTime = null
         isDetailVisible = false
         isDateVisible = false
@@ -141,7 +138,7 @@ fun BottomSheetComponent(
                 }
 
                 if (isDateVisible) {
-                    val formattedDate = formatDate(selectedDate ?: LocalDate.now())
+                    val formattedDate = formatDate(selectedDate)
                     val formattedTime = selectedTime?.let { formatTime(it) }
                     val displayText = "$formattedDate${formattedTime?.let { ", $it" } ?: ""}"
                     TextFieldComponent(
@@ -215,11 +212,11 @@ fun BottomSheetComponent(
     // Mostrar DatePickerDialog
     if (showDatePicker) {
         DatePickerDialogComponent(
-            initialDate = initialDate,
+            initialDate = selectedDate,
             taskViewModel = taskViewModel,
             onDismiss = { taskViewModel.onHideDatePicker() },
             onConfirm = {
-                selectedDate = taskViewModel.temporaryDate.value ?: LocalDate.now()
+                taskViewModel.temporaryDate.value ?: LocalDate.now()
                 selectedTime = taskViewModel.temporaryTime.value
                 taskViewModel.resetTemporaryDateTime()
                 isDateVisible = true

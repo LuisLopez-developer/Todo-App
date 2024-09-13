@@ -161,7 +161,7 @@ fun Container(
         )
 
         BottomSheetComponent(
-            initialDate = selectedDate,
+            selectedDate = selectedDate,
             showSheet = showDialog,
             onDismiss = { taskViewModel.onDialogClose() },
             onConfirm = { taskText, selectedCategory, details, date, time ->

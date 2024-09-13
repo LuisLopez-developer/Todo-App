@@ -1,10 +1,10 @@
 package com.example.todoapp.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
@@ -34,10 +34,11 @@ fun DatePickerDialogComponent(
     taskViewModel: TaskViewModel,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    initialDate: LocalDate = LocalDate.now(),
+    initialDate: LocalDate,
 ) {
     val temporaryTime by taskViewModel.temporaryTime.collectAsState()
-
+    Log.d("DatePickerDialogComponent", "Temporary Time: $temporaryTime")
+    Log.d("DatePickerDialogComponent", "initialDate: $initialDate")
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = shapes.extraLarge,

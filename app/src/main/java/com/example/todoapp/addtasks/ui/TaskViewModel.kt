@@ -16,7 +16,6 @@ import com.example.todoapp.addtasks.ui.TasksUiState.Error
 import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
-import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -70,7 +69,7 @@ class TaskViewModel @Inject constructor(
 
     // Sirve para dar un valor incial a "tasksByDateState"
     private val _selectedDate = MutableLiveData(LocalDate.now())
-    val selectedDate: LiveData<LocalDate> = _selectedDate
+    var selectedDate: LiveData<LocalDate> = _selectedDate
 
     // Método para actualizar la fecha seleccionada
     fun setDate(date: LocalDate) {
@@ -126,7 +125,7 @@ class TaskViewModel @Inject constructor(
         endDate: LocalDate? = null,
         time: LocalTime? = null,
         details: String? = null,
-        category: String? = null
+        category: String? = null,
     ) {
         _showDialog.value = false
 
