@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
@@ -41,6 +39,7 @@ import com.example.todoapp.addtasks.ui.utils.formatTime
 import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.components.DatePickerDialogComponent
+import com.example.todoapp.ui.components.DropdownMenuComponent
 import com.example.todoapp.ui.components.TextFieldComponent
 import com.example.todoapp.ui.components.TextFieldWithButtonComponent
 import com.example.todoapp.ui.components.TimePickerDialogComponent
@@ -132,26 +131,17 @@ fun Container(
                     )
                 }
 
-                DropdownMenu(
-                    expanded = isDropDownExpanded,
-                    onDismissRequest = { taskCategoryViewModel.setShowDropDown(false) }
-                ) {
-
-                    // Opción para "Sin categoría"
-                    DropdownMenuItem(
-                        text = { Text(text = "Sin categoría") },
-                        onClick = {
-                            taskCategoryViewModel.setSelectedCategory("Sin categoría")
-                            taskViewModel.updateTask(task.copy(category = null))
-                        }
-                    )
-                    categories.forEach { category ->
-                        DropdownMenuItem(text = { Text(text = category.category) }, onClick = {
-                            taskCategoryViewModel.setSelectedCategory(category.category)
-                            taskViewModel.updateTask(task.copy(category = category.category))
-                        })
+                DropdownMenuComponent(
+                    defaultText = "Sin categoría",
+                    isDropDownExpanded = isDropDownExpanded,
+                    onDismissRequest = { taskCategoryViewModel.setShowDropDown(false) },
+                    items = categories.map { it.category },
+                    onItemSelected = { item ->
+                        taskCategoryViewModel.setSelectedCategory("Sin categoría")
+                        // Si la categoría es el item que no tiene nada se actualiza a null
+                        taskViewModel.updateTask(task.copy(category = item))
                     }
-                }
+                )
             }
 
             // TextField for task title
