@@ -19,28 +19,37 @@ import javax.inject.Inject
 class HolidaysViewModel @Inject constructor(
     private val getHolidaysUseCase: GetHolidaysUseCase,
     private val getHolidayByDateCaseUse: GetHolidayByDateUseCase,
-    @ApplicationContext private val context: Context // Inyecta el contexto de la aplicación
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    private val _holidays = MutableStateFlow<List<HolidayModel>>(emptyList())
+    val holidays: StateFlow<List<HolidayModel>> get() = _holidays
 
     init {
         fetchHolidays()
     }
 
-    private val _holidays = MutableStateFlow<List<HolidayModel>>(emptyList())
-    val holidays: StateFlow<List<HolidayModel>> = _holidays
-
     // Obtener todos los días festivos y guardarlo en _holidays
     private fun fetchHolidays() {
         viewModelScope.launch {
-            if (NetworkUtils.isInternetAvailable(context)) { // Verifica si hay conexión antes de llamar a la API
-                getHolidaysUseCase()?.let { holidays ->
-                    _holidays.value = holidays.map { item ->
-                        HolidayModel(item.date, item.name)
+            try {
+                if (NetworkUtils.isInternetAvailable(context)) {
+                    val result = getHolidaysUseCase()
+                    if (result != null) {
+                        _holidays.value = result.map { item ->
+                            HolidayModel(item.date, item.name)
+                        }
+                    } else {
+                        Log.e("HolidaysViewModel", "No se encontraron días festivos")
+                        _holidays.value = emptyList()
                     }
-                } ?: Log.e("HolidaysViewModel", "No se encontraron días festivos")
-            } else {
-                Log.e("HolidaysViewModel", "Sin conexión a internet")
-                _holidays.value = emptyList() // Devuelve lista vacía si no hay conexión
+                } else {
+                    Log.e("HolidaysViewModel", "Sin conexión a internet")
+                    _holidays.value = emptyList()
+                }
+            } catch (e: Exception) {
+                Log.e("HolidaysViewModel", "Error en fetchHolidays: ${e.message}")
+                _holidays.value = emptyList()
             }
         }
     }
@@ -48,13 +57,15 @@ class HolidaysViewModel @Inject constructor(
     // Obtener festividad por fecha específica
     private fun fetchHolidayByDate(fecha: String) {
         viewModelScope.launch {
-            if (NetworkUtils.isInternetAvailable(context)) {
-                getHolidayByDateCaseUse(fecha)?.let {
-                    // Aquí puedes manejar el resultado si necesitas.
+            try {
+                if (NetworkUtils.isInternetAvailable(context)) {
+                    val result = getHolidayByDateCaseUse(fecha)
+                    // Manejo del resultado si es necesario
+                } else {
+                    Log.e("HolidaysViewModel", "Sin conexión a internet")
                 }
-            } else {
-                Log.e("HolidaysViewModel", "Sin conexión a internet")
-                // Manejo cuando no hay conexión, por ejemplo, no hacer nada o devolver un mensaje al usuario
+            } catch (e: Exception) {
+                Log.e("HolidaysViewModel", "Error en fetchHolidayByDate: ${e.message}")
             }
         }
     }
