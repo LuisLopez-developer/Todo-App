@@ -16,4 +16,9 @@
     <string name="ic_notes">Icono de notas</string>
     <string name="ic_access_time">Icono de acceso a tiempo</string>
     <string name="ic_calendar">Icono de calendario</string>
+
+    <!-- Para la estructura de notificaciones -->
+    <string name="task_notifications">Notificaciones de tareas</string>
+    <string name="task_reminder">Recordatorio de tarea</string>
+    <string name="scheduled_task">Tarea programada</string>
 </resources>
