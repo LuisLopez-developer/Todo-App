@@ -132,6 +132,7 @@ fun Container(
             modifier = Modifier.fillMaxSize()
         ) {
             CalendarComponent(
+                initialDate = selectedDate,
                 modifier = Modifier.padding(10.dp),
                 taskDates = dates,
                 onDateSelected = { date -> taskViewModel.setDate(date) } // De acuerdo al dia seleccionado mostrar las tareas de ese día
