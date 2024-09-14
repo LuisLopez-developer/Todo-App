@@ -187,6 +187,20 @@ class TaskViewModel @Inject constructor(
     private val _temporaryTime = MutableStateFlow<LocalTime?>(null)
     val temporaryTime: StateFlow<LocalTime?> = _temporaryTime
 
+    private val _temporaryDate2 = MutableStateFlow<LocalDate?>(null)
+    val temporaryDate2: StateFlow<LocalDate?> = _temporaryDate2
+
+    private val _temporaryTime2 = MutableStateFlow<LocalTime?>(null)
+    val temporaryTime2: StateFlow<LocalTime?> = _temporaryTime2
+
+    fun setTemporaryDate2(date: LocalDate?) {
+        _temporaryDate2.value = date
+    }
+
+    fun setTemporaryTime2(time: LocalTime?) {
+        _temporaryTime2.value = time
+    }
+
     fun onShowDateDialogClick() {
         // Verifica si el estado actual es Success antes de acceder a task
         val currentState = _taskFlowUiState.value

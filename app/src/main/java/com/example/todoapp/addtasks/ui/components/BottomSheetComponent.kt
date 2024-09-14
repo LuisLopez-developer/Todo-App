@@ -1,6 +1,5 @@
 package com.example.todoapp.addtasks.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -62,12 +61,12 @@ fun BottomSheetComponent(
     var isDetailVisible by remember { mutableStateOf(false) }
     var isDateVisible by remember { mutableStateOf(false) }
     var selectedTime by remember { mutableStateOf<LocalTime?>(null) }
+    var selectedDateComponent by remember { mutableStateOf(selectedDate) }
 
     val showDatePicker by taskViewModel.showDatePicker.collectAsState()
-    val showTimePicker by taskViewModel.showTimePicker.collectAsState()
+    val temporaryDate by taskViewModel.temporaryDate2.collectAsState()
+    val temporaryTime by taskViewModel.temporaryTime2.collectAsState()
 
-
-    // Función auxiliar para manejar la confirmación y el reinicio del estado
     fun cleanFields() {
         task = ""
         details = null
@@ -82,13 +81,12 @@ fun BottomSheetComponent(
                 task = task!!,
                 details = details,
                 category = selectedCategory,
-                startDate = taskViewModel.temporaryDate.value ?: selectedDate,
+                startDate = temporaryDate ?: selectedDate,
                 time = selectedTime
             )
             cleanFields()
             onConfirm()
         }
-
     }
 
     ModalBottomSheet(
@@ -100,7 +98,7 @@ fun BottomSheetComponent(
                 .imePadding()
                 .background(colorScheme.background)
                 .padding(16.dp)
-                .align(Alignment.CenterHorizontally),
+                .align(Alignment.CenterHorizontally)
         ) {
             TextField(
                 value = task ?: "",
@@ -111,8 +109,7 @@ fun BottomSheetComponent(
                     imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(onDone = { handleConfirm() }),
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             )
             if (isDetailVisible) {
                 TextField(
@@ -123,15 +120,14 @@ fun BottomSheetComponent(
             }
 
             if (isDateVisible) {
-                val formattedDate = formatDate(taskViewModel.temporaryDate.value ?: selectedDate)
+                val formattedDate = formatDate(selectedDateComponent)
                 val formattedTime = selectedTime?.let { formatTime(it) }
                 val displayText = "$formattedDate${formattedTime?.let { ", $it" } ?: ""}"
                 TextFieldComponent(
                     value = displayText,
                     onValueChange = {},
                     enabled = false,
-                    modifier = Modifier
-                        .wrapContentWidth()
+                    modifier = Modifier.wrapContentWidth()
                 )
             }
 
@@ -140,7 +136,6 @@ fun BottomSheetComponent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                // Botón de Categoría con el nuevo DropdownMenu genérico
                 Button(
                     onClick = { expanded = true },
                     modifier = Modifier.padding(4.dp)
@@ -148,7 +143,6 @@ fun BottomSheetComponent(
                     Text(text = selectedCategory ?: "Categoría")
                 }
 
-                // Menú desplegable genérico
                 DropdownMenuComponent(
                     isDropDownExpanded = expanded,
                     onDismissRequest = { expanded = false },
@@ -160,7 +154,6 @@ fun BottomSheetComponent(
                     }
                 )
 
-                // IconButtons
                 IconButton(onClick = { isDetailVisible = true }) {
                     Icon(
                         painter = painterResource(R.drawable.ic_notes),
@@ -171,7 +164,6 @@ fun BottomSheetComponent(
 
                 IconButton(onClick = {
                     taskViewModel.onShowDateDialogClick()
-                    taskViewModel.resetTemporaryDateTime()
                 }) {
                     Icon(
                         painter = painterResource(R.drawable.ic_access_time),
@@ -184,11 +176,7 @@ fun BottomSheetComponent(
 
                 Button(
                     onClick = { handleConfirm() },
-                    modifier = Modifier
-                        .widthIn(
-                            min = 100.dp,
-                            max = 200.dp
-                        )
+                    modifier = Modifier.widthIn(min = 100.dp, max = 200.dp)
                 ) {
                     Text(text = buttonText)
                 }
@@ -196,24 +184,20 @@ fun BottomSheetComponent(
         }
     }
 
-    // Mostrar DatePickerDialog
     if (showDatePicker) {
-        Log.d("DatePicker", "selectedDate : $selectedDate")
-        Log.d("DatePicker", "selectedTime : $selectedTime")
-        Log.d("DatePicker", "selectedDate temp : ${taskViewModel.temporaryDate.value ?: "nada"}")
-        Log.d("DatePicker", "selectedTime temp : ${taskViewModel.temporaryTime.value ?: "nada"}")
         DatePickerDialogComponent(
-            initialDate = selectedDate,
-            temporaryTime = selectedTime,
+            initialDate = temporaryDate ?: selectedDate,
+            temporaryTime = temporaryTime,
             onDateSelected = { date ->
-                taskViewModel.setTemporaryDate(date)
+                taskViewModel.setTemporaryDate2(date)
             },
             onTimeSelected = { time ->
-                taskViewModel.setTemporaryTime(time)
+                taskViewModel.setTemporaryTime2(time)
             },
             onDismiss = { taskViewModel.onHideDatePicker() },
             onConfirm = {
-                selectedTime = taskViewModel.temporaryTime.value
+                selectedDateComponent = taskViewModel.temporaryDate2.value ?: selectedDate
+                selectedTime = taskViewModel.temporaryTime2.value
                 isDateVisible = true
             }
         )

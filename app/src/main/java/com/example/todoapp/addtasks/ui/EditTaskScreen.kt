@@ -59,7 +59,6 @@ fun EditTaskScreen(
     // Observe the StateFlow changes for the task UI state and other states
     val taskUiState by taskViewModel.taskFlowUiState.collectAsState()
     val showDatePicker by taskViewModel.showDatePicker.collectAsState()
-    val showTimePicker by taskViewModel.showTimePicker.collectAsState()
 
     // Observar el modelo de las categorias
     val categoryUiState by taskCategoryViewModel.uiState.collectAsState()
@@ -81,7 +80,6 @@ fun EditTaskScreen(
         is TaskUiState.Success -> {
             Container(
                 showDatePicker,
-                showTimePicker,
                 taskViewModel,
                 taskCategoryViewModel,
                 (taskUiState as TaskUiState.Success).task,
@@ -98,7 +96,6 @@ fun EditTaskScreen(
 @Composable
 fun Container(
     showDatePicker: Boolean,
-    showTimePicker: Boolean,
     taskViewModel: TaskViewModel,
     taskCategoryViewModel: TaskCategoryViewModel,
     task: TaskModel,
