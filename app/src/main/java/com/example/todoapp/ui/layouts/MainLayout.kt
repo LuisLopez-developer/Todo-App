@@ -19,6 +19,7 @@ import com.example.todoapp.addtasks.ui.EditTaskScreen
 import com.example.todoapp.addtasks.ui.TaskListScreen
 import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.TasksScreen
+import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
@@ -37,6 +38,7 @@ import com.example.todoapp.ui.utils.extractCleanRoute
 fun MainLayout() {
     val taskViewModel: TaskViewModel = viewModel()
     val taskCategoryViewModel: TaskCategoryViewModel = viewModel()
+    val taskListViewModel: TaskListViewModel = viewModel()
     val holidaysModel: HolidaysViewModel = viewModel()
     val navigationController = rememberNavController()
 
@@ -107,8 +109,7 @@ fun MainLayout() {
             }
             composable<TaskListRoute> {
                 TaskListScreen(
-                    taskViewModel = taskViewModel,
-                    onTaskClick = { task -> },
+                    taskListViewModel = taskListViewModel,
                     taskCategoryViewModel = taskCategoryViewModel,
                     navigationController = navigationController,
                     holidaysViewModel = holidaysModel

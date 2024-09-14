@@ -25,13 +25,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 
 @Composable
 fun TaskListScreen(
-    taskViewModel: TaskViewModel,
-    onTaskClick: (TaskModel) -> Unit,
+    taskListViewModel: TaskListViewModel,
     taskCategoryViewModel: TaskCategoryViewModel,
     navigationController: NavHostController,
     holidaysViewModel: HolidaysViewModel,
@@ -41,18 +41,18 @@ fun TaskListScreen(
     val uiStateByDate by produceState<TasksUiState>(
         initialValue = TasksUiState.Loading,
         key1 = lifecycle,
-        key2 = taskViewModel
+        key2 = taskListViewModel
     ) {
         lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
-            taskViewModel.tasksByDateState.collect { value = it }
+            taskListViewModel.tasksByCategoryState.collect { value = it }
         }
     }
 
-    val taskDates by taskViewModel.taskDatesFlow.collectAsState(emptyList())
+    //val taskDates by taskViewModel.taskDatesFlow.collectAsState(emptyList())
     val holidays by holidaysViewModel.holidays.collectAsState(emptyList())
 
-    val taskByCategoryState by taskViewModel.tasksByCategoryState.collectAsState()
-    val selectedCategory by taskViewModel.selectedCategory.collectAsState()
+    val taskByCategoryState by taskListViewModel.tasksByCategoryState.collectAsState()
+    val selectedCategory by taskListViewModel.selectedCategory.collectAsState()
     val categories by taskCategoryViewModel.categories.collectAsState(emptyList())
 
     Column {
@@ -60,7 +60,7 @@ fun TaskListScreen(
         CategorySelector(
             selectedCategory = selectedCategory,
             onCategorySelected = { category ->
-                taskViewModel.setCategory(category)
+                taskListViewModel.setCategory(category)
             },
             categories = categories
         )
@@ -75,7 +75,7 @@ fun TaskListScreen(
                 val tasks = (taskByCategoryState as TasksUiState.Success).tasks
                 LazyColumn {
                     items(tasks) { task ->
-                        TaskItem(task = task, onClick = { onTaskClick(task) })
+                        TaskItem(task = task, onClick = { })
                     }
                 }
             }
@@ -103,7 +103,7 @@ fun TaskItem(task: TaskModel, onClick: () -> Unit) {
 fun CategorySelector(
     selectedCategory: String?,
     onCategorySelected: (String) -> Unit,
-    categories: List<String>
+    categories: List<String>,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
