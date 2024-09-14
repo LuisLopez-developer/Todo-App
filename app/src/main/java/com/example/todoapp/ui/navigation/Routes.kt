@@ -12,4 +12,7 @@ object TaskCategoryRoute
 object Pantalla2Route
 
 @Serializable
+object TaskListRoute
+
+@Serializable
 data class EditTaskRoute(val id: Int)

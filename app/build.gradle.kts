@@ -77,6 +77,7 @@ dependencies {
     // Retrofit dependencies
     implementation (libs.converter.gson)
     implementation (libs.retrofit)
+    implementation(libs.play.services.tflite.support)
 
     // Test dependencies
     testImplementation(libs.junit)

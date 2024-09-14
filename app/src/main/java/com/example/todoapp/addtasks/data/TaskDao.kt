@@ -27,4 +27,7 @@ interface TaskDao {
 
     @Query("SELECT * FROM TaskEntity WHERE startDate = :date ORDER BY id DESC")
     fun getTasksByDate(date: String): Flow<List<TaskEntity>>
+
+    @Query("SELECT * FROM TaskEntity WHERE category = :category ORDER BY id DESC")
+    fun getTasksByCategory(category: String): Flow<List<TaskEntity>>
 }
