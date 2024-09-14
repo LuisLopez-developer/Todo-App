@@ -1,6 +1,5 @@
 package com.example.todoapp.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,27 +16,42 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.todoapp.R
-import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.utils.formatTime
 import org.threeten.bp.LocalDate
+import org.threeten.bp.LocalTime
 
 @Composable
 fun DatePickerDialogComponent(
-    taskViewModel: TaskViewModel,
+    initialDate: LocalDate,
+    temporaryTime: LocalTime?,  // Agrega un parámetro para el tiempo temporal
+    onDateSelected: (LocalDate) -> Unit,
+    onTimeSelected: (LocalTime?) -> Unit,  // Agrega un parámetro para la selección de tiempo
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    selectedDate: LocalDate,
 ) {
-    val temporaryTime by taskViewModel.temporaryTime.collectAsState(null)
-    Log.d("DatePickerDialogComponent", "temporaryTime: $temporaryTime")
+    // Estado para manejar la visibilidad del TimePickerDialog
+    val showTimePickerDialog = remember { mutableStateOf(false) }
+
+    // Mostrar el diálogo del TimePicker si el estado es verdadero
+    if (showTimePickerDialog.value) {
+        TimePickerDialogComponent(
+            initialTime = temporaryTime,
+            onTimeSelected = { time ->
+                onTimeSelected(time)
+                showTimePickerDialog.value = false
+            },
+            onDismiss = { showTimePickerDialog.value = false }
+        )
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = shapes.extraLarge,
@@ -48,14 +62,14 @@ fun DatePickerDialogComponent(
             Column(modifier = Modifier.background(colorScheme.surface)) {
                 CalendarComponent(
                     modifier = Modifier.padding(20.dp),
-                    initialDate = selectedDate,
-                    onDateSelected = { date ->
-                        taskViewModel.setTemporaryDate(date)
-                    }
+                    initialDate = initialDate,
+                    onDateSelected = { date -> onDateSelected(date) }
                 )
                 HorizontalDivider(thickness = 2.dp)
                 TextButton(
-                    onClick = { taskViewModel.onShowTimePicker() },
+                    onClick = {
+                        showTimePickerDialog.value = true
+                    },  // Muestra el diálogo de selección de hora
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -70,11 +84,11 @@ fun DatePickerDialogComponent(
                         )
 
                         if (temporaryTime != null) {
-                            val formattedTime = formatTime(temporaryTime!!)
+                            val formattedTime = formatTime(temporaryTime)
                             TextFieldWithButtonComponent(
                                 text = formattedTime,
                                 onIconClick = {
-                                    taskViewModel.setTemporaryTime(null)
+                                    onTimeSelected(null)
                                 }
                             )
                         } else {

@@ -29,8 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -41,7 +39,6 @@ import com.example.todoapp.addtasks.ui.utils.formatTime
 import com.example.todoapp.ui.components.DatePickerDialogComponent
 import com.example.todoapp.ui.components.DropdownMenuComponent
 import com.example.todoapp.ui.components.TextFieldComponent
-import com.example.todoapp.ui.components.TimePickerDialogComponent
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalTime
 
@@ -57,8 +54,6 @@ fun BottomSheetComponent(
     taskViewModel: TaskViewModel,
     selectedDate: LocalDate = LocalDate.now(),
 ) {
-    val focusRequester = remember { FocusRequester() }
-
     var expanded by remember { mutableStateOf(false) }
     var task by remember { mutableStateOf(initialText) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
@@ -117,7 +112,6 @@ fun BottomSheetComponent(
                 keyboardActions = KeyboardActions(onDone = { handleConfirm() }),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .focusRequester(focusRequester)
             )
             if (isDetailVisible) {
                 TextField(
@@ -201,22 +195,20 @@ fun BottomSheetComponent(
     // Mostrar DatePickerDialog
     if (showDatePicker) {
         DatePickerDialogComponent(
-            selectedDate = selectedDate,
-            taskViewModel = taskViewModel,
+            initialDate = taskViewModel.temporaryDate.collectAsState().value ?: selectedDate,
+            temporaryTime = taskViewModel.temporaryTime.collectAsState().value,
+            onDateSelected = { date ->
+                taskViewModel.setTemporaryDate(date)
+            },
+            onTimeSelected = { time ->
+                taskViewModel.setTemporaryTime(time)
+            },
             onDismiss = { taskViewModel.onHideDatePicker() },
             onConfirm = {
-                taskViewModel.temporaryDate.value
                 selectedTime = taskViewModel.temporaryTime.value
                 isDateVisible = true
             }
         )
     }
 
-    // Mostrar TimePickerDialog
-    if (showTimePicker) {
-        TimePickerDialogComponent(
-            taskViewModel = taskViewModel,
-            onDismiss = { taskViewModel.onHideTimePicker() },
-        )
-    }
 }

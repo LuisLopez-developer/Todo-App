@@ -39,7 +39,6 @@ class TaskViewModel @Inject constructor(
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
 ) : ViewModel() {
-
     // Flujo que mantiene todas las fechas de tareas
     private val _taskDatesFlow = MutableStateFlow<List<LocalDate>>(emptyList())
     val taskDatesFlow: StateFlow<List<LocalDate>> = _taskDatesFlow
@@ -180,16 +179,21 @@ class TaskViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val task = getTaskByIdUseCase.execute(taskId)
-                _taskFlowUiState.value = if (task != null) {
-                    TaskUiState.Success(task)
+                if (task != null) {
+                    // Actualiza las fechas temporales con la fecha y hora de la tarea
+                    _temporaryDate.value = task.startDate
+                    _temporaryTime.value = task.time
+
+                    _taskFlowUiState.value = TaskUiState.Success(task)
                 } else {
-                    TaskUiState.Empty
+                    _taskFlowUiState.value = TaskUiState.Empty
                 }
             } catch (e: Exception) {
                 _taskFlowUiState.value = TaskUiState.Error(e)
             }
         }
     }
+
 
     private val _temporaryDate = MutableStateFlow<LocalDate?>(null)
     val temporaryDate: StateFlow<LocalDate?> = _temporaryDate
@@ -234,5 +238,4 @@ class TaskViewModel @Inject constructor(
             }
         }
     }
-
 }

@@ -1,6 +1,5 @@
 package com.example.todoapp.addtasks.ui
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +47,6 @@ import com.example.todoapp.addtasks.ui.utils.formatTime
 import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.components.DatePickerDialogComponent
-import com.example.todoapp.ui.components.TimePickerDialogComponent
 import com.example.todoapp.ui.theme.Typography
 import org.threeten.bp.LocalDate
 
@@ -70,7 +68,6 @@ fun EditTaskScreen(
     LaunchedEffect(id) {
         taskViewModel.getTaskById(id)
     }
-
 
     when (taskUiState) {
         is TaskUiState.Loading -> {
@@ -116,9 +113,11 @@ fun Container(
     }
     val isDropDownExpanded by taskCategoryViewModel.showDropDown.observeAsState(false)
 
-    Log.i("task", task.toString())
-
-    Box(modifier = Modifier.fillMaxSize().background(color = colorScheme.surface)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = colorScheme.surface)
+    ) {
         Column {
             Card(
                 modifier = Modifier
@@ -155,7 +154,6 @@ fun Container(
                                                 taskCategoryViewModel.setShowDropDown(true)
                                             }
                                     ) {
-
                                         Icon(
                                             painter = painterResource(id = drawable.ic_outline_label_offer),
                                             contentDescription = stringResource(string.ic_label_offer),
@@ -181,7 +179,6 @@ fun Container(
                                     text = { Text(text = stringResource(string.uncategorized)) },
                                     onClick = {
                                         taskCategoryViewModel.setSelectedCategory("Sin categoría")
-                                        // Si la categoría es el item que no tiene nada se actualiza a null
                                         taskViewModel.updateTask(task.copy(category = null))
                                     }
                                 )
@@ -200,7 +197,6 @@ fun Container(
                                     }
                             }
                         }
-
 
                         TextField(
                             value = taskText,
@@ -260,7 +256,6 @@ fun Container(
                                 }
                             }
                         )
-
                     }
                 }
             }
@@ -313,34 +308,30 @@ fun Container(
                         }
                     )
                 }
-
             }
-
         }
     }
-    // Mostrar DateTimePickerDialog si `showDatePicker` es verdadero
+
+    // Mostrar DatePickerDialog si `showDatePicker` es verdadero
     if (showDatePicker) {
         DatePickerDialogComponent(
-            selectedDate = task.startDate,
-            taskViewModel = taskViewModel,
+            initialDate = taskViewModel.temporaryDate.collectAsState().value ?: task.startDate,
+            temporaryTime = taskViewModel.temporaryTime.collectAsState().value,  // Agregado para el tiempo temporal
+            onDateSelected = { date ->
+                taskViewModel.setTemporaryDate(date)
+            },
+            onTimeSelected = { time ->
+                taskViewModel.setTemporaryTime(time)
+            },
             onDismiss = { taskViewModel.onHideDatePicker() },
             onConfirm = {
                 val updatedTask = task.copy(
-                    startDate = taskViewModel.temporaryDate.value
-                        ?: LocalDate.now(),
+                    startDate = taskViewModel.temporaryDate.value ?: LocalDate.now(),
                     time = taskViewModel.temporaryTime.value
                 )
                 taskViewModel.updateTask(updatedTask)
                 taskViewModel.resetTemporaryDateTime()
             }
-        )
-    }
-
-    // Mostrar TimePickerDialog si `showTimePicker` es verdadero
-    if (showTimePicker) {
-        TimePickerDialogComponent(
-            taskViewModel = taskViewModel,
-            onDismiss = { taskViewModel.onHideTimePicker() }
         )
     }
 }
