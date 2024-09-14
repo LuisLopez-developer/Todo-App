@@ -34,6 +34,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.todoapp.R
 import com.example.todoapp.addtasks.ui.TaskViewModel
+import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.utils.formatDate
 import com.example.todoapp.addtasks.ui.utils.formatTime
 import com.example.todoapp.ui.components.DatePickerDialogComponent
@@ -77,13 +78,16 @@ fun BottomSheetComponent(
 
     fun handleConfirm() {
         if (!task.isNullOrEmpty()) {
-            taskViewModel.onTaskCreated(
+
+            val taskModel = TaskModel(
                 task = task!!,
                 details = details,
                 category = selectedCategory,
                 startDate = temporaryDate ?: selectedDate,
                 time = selectedTime
             )
+
+            taskViewModel.onTaskCreated(taskModel)
             cleanFields()
             onConfirm()
         }

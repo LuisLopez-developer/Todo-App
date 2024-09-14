@@ -39,7 +39,7 @@ class TaskViewModel @Inject constructor(
     private val getTaskUseCase: GetTaskUseCase,
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
-    private val getTaskByCategoryUseCase: GetTaskByCategoryUseCase
+    private val getTaskByCategoryUseCase: GetTaskByCategoryUseCase,
 ) : ViewModel() {
 
     private val _selectedCategory = MutableStateFlow<String?>(null)
@@ -129,27 +129,11 @@ class TaskViewModel @Inject constructor(
         _showDialog.value = false
     }
 
-    fun onTaskCreated(
-        task: String,
-        startDate: LocalDate = LocalDate.now(),
-        endDate: LocalDate? = null,
-        time: LocalTime? = null,
-        details: String? = null,
-        category: String? = null,
-    ) {
+    fun onTaskCreated(task: TaskModel) {
         _showDialog.value = false
 
         viewModelScope.launch {
-            addTaskUseCase(
-                TaskModel(
-                    task = task,
-                    startDate = startDate,
-                    endDate = endDate,
-                    time = time,
-                    details = details,
-                    category = category
-                )
-            )
+            addTaskUseCase(task)
         }
     }
 
