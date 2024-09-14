@@ -196,7 +196,7 @@ fun BottomSheetComponent(
     if (showDatePicker) {
         DatePickerDialogComponent(
             initialDate = selectedDate,
-            temporaryTime = taskViewModel.temporaryTime.collectAsState().value,
+            temporaryTime = selectedTime,
             onDateSelected = { date ->
                 taskViewModel.setTemporaryDate(date)
             },
