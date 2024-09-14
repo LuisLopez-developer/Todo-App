@@ -1,5 +1,6 @@
 package com.example.todoapp.addtasks.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -168,7 +169,10 @@ fun BottomSheetComponent(
                     )
                 }
 
-                IconButton(onClick = { taskViewModel.onShowDateDialogClick() }) {
+                IconButton(onClick = {
+                    taskViewModel.onShowDateDialogClick()
+                    taskViewModel.resetTemporaryDateTime()
+                }) {
                     Icon(
                         painter = painterResource(R.drawable.ic_access_time),
                         contentDescription = "Select Date",
@@ -194,6 +198,10 @@ fun BottomSheetComponent(
 
     // Mostrar DatePickerDialog
     if (showDatePicker) {
+        Log.d("DatePicker", "selectedDate : $selectedDate")
+        Log.d("DatePicker", "selectedTime : $selectedTime")
+        Log.d("DatePicker", "selectedDate temp : ${taskViewModel.temporaryDate.value ?: "nada"}")
+        Log.d("DatePicker", "selectedTime temp : ${taskViewModel.temporaryTime.value ?: "nada"}")
         DatePickerDialogComponent(
             initialDate = selectedDate,
             temporaryTime = selectedTime,
@@ -210,5 +218,4 @@ fun BottomSheetComponent(
             }
         )
     }
-
 }
