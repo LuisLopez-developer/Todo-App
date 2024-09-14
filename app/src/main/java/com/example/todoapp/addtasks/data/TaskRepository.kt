@@ -13,7 +13,7 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
 
     val tasks: Flow<List<TaskModel>> = taskDao.getTasks().map { items ->
         items.map {
-            TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.category)
+            TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.categoryId)
         }
     }
 
@@ -32,16 +32,16 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
     suspend fun getTaskById(taskId: Int): TaskModel? {
         val taskEntity = taskDao.getTaskById(taskId)
         return taskEntity?.let {
-            TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.category)
+            TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.categoryId)
         }
     }
 
     // Nuevo método para obtener tareas por categoría
-    fun getTasksByCategory(category: String): Flow<List<TaskModel>> {
-        return taskDao.getTasksByCategory(category).map { items ->
-            Log.d("TaskRepository", "Tasks for category $category: $items")
+    fun getTasksByCategory(categoryId: Int): Flow<List<TaskModel>> {
+        return taskDao.getTasksByCategory(categoryId).map { items ->
+            Log.d("TaskRepository", "Tasks for category $categoryId: $items")
             items.map {
-                TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.category)
+                TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.categoryId)
             }
         }
     }
@@ -58,7 +58,7 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
                     it.endDate,
                     it.time,
                     it.details,
-                    it.category
+                    it.categoryId
                 )
             }
         }
@@ -74,6 +74,6 @@ fun TaskModel.toData(): TaskEntity {
         this.endDate,
         this.time,
         this.details,
-        this.category
+        this.categoryId
     )
 }

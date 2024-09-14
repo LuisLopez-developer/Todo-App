@@ -11,5 +11,5 @@ data class TaskModel(
     val endDate: LocalDate? = null,
     val time: LocalTime? = null,
     val details: String? = null,
-    val category: String? = null
+    val categoryId: Int? = null
 )

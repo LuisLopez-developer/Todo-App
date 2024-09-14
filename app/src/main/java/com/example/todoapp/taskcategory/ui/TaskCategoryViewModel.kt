@@ -43,8 +43,7 @@ class TaskCategoryViewModel @Inject constructor(
     }
 
     // Propiedad para las categorías
-    val categories: StateFlow<List<String>> = getCategoryUseCase()
-        .map { categories -> categories.map { it.category } }
+    val categories: StateFlow<List<TaskCategoryModel>> = getCategoryUseCase()
         .catch { emit(emptyList()) }
         .stateIn(
             scope = viewModelScope,

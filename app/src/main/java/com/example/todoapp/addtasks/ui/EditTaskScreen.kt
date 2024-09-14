@@ -137,7 +137,7 @@ fun Container(
                     ) {
                         Box {
                             BasicTextField(
-                                value = task.category ?: stringResource(string.uncategorized),
+                                value = categories.find { it.id == task.categoryId }?.category ?: stringResource(string.uncategorized),
                                 onValueChange = {},
                                 textStyle = typography.bodyMedium.copy(color = colorScheme.onSurface),
                                 readOnly = true,
@@ -176,18 +176,17 @@ fun Container(
                                     text = { Text(text = stringResource(string.uncategorized)) },
                                     onClick = {
                                         taskCategoryViewModel.setSelectedCategory("Sin categoría")
-                                        taskViewModel.updateTask(task.copy(category = null))
+                                        taskViewModel.updateTask(task.copy(categoryId = null))
                                     }
                                 )
 
                                 // Listar los elementos disponibles
                                 categories
-                                    .map { it.category }
                                     .forEach { item ->
                                         DropdownMenuItem(
-                                            text = { Text(text = item) },
+                                            text = { Text(text = item.category) },
                                             onClick = {
-                                                taskViewModel.updateTask(task.copy(category = item))
+                                                taskViewModel.updateTask(task.copy(categoryId = item.id))
                                                 taskCategoryViewModel.setShowDropDown(false)
                                             }
                                         )

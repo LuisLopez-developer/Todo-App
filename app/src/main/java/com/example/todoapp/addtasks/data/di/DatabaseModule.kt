@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.todoapp.addtasks.data.TodoDataBase
 import com.example.todoapp.addtasks.data.TaskDao
+import com.example.todoapp.taskcategory.data.CategoryDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,6 +19,11 @@ class DatabaseModule {
     @Provides
     fun provideTaskDao(todoDataBase: TodoDataBase): TaskDao {
         return todoDataBase.taskDao()
+    }
+
+    @Provides
+    fun provideCategoryDao(todoDataBase: TodoDataBase): CategoryDao {
+        return todoDataBase.categoryDao()
     }
 
     @Provides

@@ -49,6 +49,7 @@ import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.holidays.ui.model.HolidayModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
+import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 import com.example.todoapp.ui.components.CalendarComponent
 import com.example.todoapp.ui.navigation.EditTaskRoute
 import org.threeten.bp.LocalDate
@@ -85,7 +86,7 @@ fun TasksScreen(
     val categoryUiState by taskCategoryViewModel.uiState.collectAsState()
 
     val categories = when (categoryUiState) {
-        is TaskCategoryUiState.Success -> (categoryUiState as TaskCategoryUiState.Success).categories.map { it.category }
+        is TaskCategoryUiState.Success -> (categoryUiState as TaskCategoryUiState.Success).categories
         else -> emptyList()
     }
 
@@ -123,7 +124,7 @@ fun Container(
     holidays: List<HolidayModel>, // Recibe la lista de días festivos
     navigationController: NavHostController,
     selectedDate: LocalDate,
-    categories: List<String>,
+    categories: List<TaskCategoryModel>,
 ) {
     Box(
         modifier = Modifier.fillMaxSize()

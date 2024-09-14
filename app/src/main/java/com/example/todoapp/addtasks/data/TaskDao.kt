@@ -28,6 +28,7 @@ interface TaskDao {
     @Query("SELECT * FROM TaskEntity WHERE startDate = :date ORDER BY id DESC")
     fun getTasksByDate(date: String): Flow<List<TaskEntity>>
 
-    @Query("SELECT * FROM TaskEntity WHERE category = :category ORDER BY id DESC")
-    fun getTasksByCategory(category: String): Flow<List<TaskEntity>>
+    // Aquí cambiamos category por categoryId, que es el id de la entidad CategoryEntity
+    @Query("SELECT * FROM TaskEntity WHERE categoryId = :categoryId ORDER BY id DESC")
+    fun getTasksByCategory(categoryId: Int): Flow<List<TaskEntity>>
 }

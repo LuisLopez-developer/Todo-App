@@ -38,6 +38,7 @@ import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.utils.formatDate
 import com.example.todoapp.addtasks.ui.utils.formatTime
+import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 import com.example.todoapp.ui.components.DatePickerDialogComponent
 import com.example.todoapp.ui.components.DropdownMenuComponent
 import com.example.todoapp.ui.components.TextFieldComponent
@@ -52,13 +53,13 @@ fun BottomSheetComponent(
     placeholder: String = "",
     buttonText: String = "Confirm",
     initialText: String? = null,
-    categories: List<String>,
+    categories: List<TaskCategoryModel>,
     taskViewModel: TaskViewModel,
     selectedDate: LocalDate = LocalDate.now(),
 ) {
     var expanded by remember { mutableStateOf(false) }
     var task by remember { mutableStateOf(initialText) }
-    var selectedCategory by remember { mutableStateOf<String?>(null) }
+    var selectedCategory by remember { mutableStateOf<Int?>(null) }
     var details by remember { mutableStateOf<String?>(null) }
     var isDetailVisible by remember { mutableStateOf(false) }
     var isDateVisible by remember { mutableStateOf(false) }
@@ -86,7 +87,7 @@ fun BottomSheetComponent(
             val taskModel = TaskModel(
                 task = task!!,
                 details = details,
-                category = selectedCategory,
+                categoryId = selectedCategory,
                 startDate = temporaryDate ?: selectedDate,
                 time = selectedTime
             )
@@ -148,16 +149,16 @@ fun BottomSheetComponent(
                     onClick = { expanded = true },
                     modifier = Modifier.padding(4.dp)
                 ) {
-                    Text(text = selectedCategory ?: "Categoría")
+                    Text(text = categories.find { it.id == selectedCategory }?.category ?: "Categoría")
                 }
 
                 DropdownMenuComponent(
                     isDropDownExpanded = expanded,
                     onDismissRequest = { expanded = false },
-                    items = categories,
+                    items = categories.map { it.category },
                     defaultText = "Sin categoría",
                     onItemSelected = { category ->
-                        selectedCategory = category
+                        selectedCategory = categories.find { it.category == category }?.id
                         expanded = false
                     }
                 )
