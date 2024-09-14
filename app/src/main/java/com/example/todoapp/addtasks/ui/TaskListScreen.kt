@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,6 +28,7 @@ import androidx.navigation.NavHostController
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
+import com.example.todoapp.holidays.ui.model.HolidayModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 
 @Composable
@@ -51,51 +53,52 @@ fun TaskListScreen(
     //val taskDates by taskViewModel.taskDatesFlow.collectAsState(emptyList())
     val holidays by holidaysViewModel.holidays.collectAsState(emptyList())
 
-    val taskByCategoryState by taskListViewModel.tasksByCategoryState.collectAsState()
     val selectedCategory by taskListViewModel.selectedCategory.collectAsState()
     val categories by taskCategoryViewModel.categories.collectAsState(emptyList())
 
-    Column {
-        // Selector de categoría
-        CategorySelector(
-            selectedCategory = selectedCategory,
-            onCategorySelected = { category ->
-                taskListViewModel.setCategory(category)
-            },
-            categories = categories
-        )
+    when (uiStateByDate) {
+        is TasksUiState.Loading -> {
+            CircularProgressIndicator()
+        }
 
-        // Gestión del estado de las tareas por categoría
-        when (taskByCategoryState) {
-            is TasksUiState.Loading -> {
-                CircularProgressIndicator()
-            }
+        is TasksUiState.Success -> {
+            Container(
+                tasks = (uiStateByDate as TasksUiState.Success).tasks,
+                holidays = holidays,
+                selectedCategory = selectedCategory,
+                categories = categories,
+                taskListViewModel = taskListViewModel
+            )
+        }
 
-            is TasksUiState.Success -> {
-                val tasks = (taskByCategoryState as TasksUiState.Success).tasks
-                LazyColumn {
-                    items(tasks) { task ->
-                        TaskItem(task = task, onClick = { })
-                    }
-                }
-            }
-
-            is TasksUiState.Error -> {
-                Text(text = "Error: ")
-            }
+        is TasksUiState.Error -> {
+            Text(text = "Error: ")
         }
     }
+
 }
 
-
 @Composable
-fun TaskItem(task: TaskModel, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .padding(16.dp)
-    ) {
-        Text(text = task.task) // Muestra el texto de la tarea
+fun Container(
+    tasks: List<TaskModel>,
+    holidays: List<HolidayModel>,
+    selectedCategory: String?,
+    categories: List<String>,
+    taskListViewModel: TaskListViewModel,
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column {
+            CategorySelector(
+                selectedCategory = selectedCategory,
+                onCategorySelected = { category ->
+                    taskListViewModel.setCategory(category)
+                },
+                categories = categories
+            )
+            List(
+                tasks = tasks
+            )
+        }
     }
 }
 
@@ -145,3 +148,22 @@ fun CategorySelector(
 }
 
 
+@Composable
+fun List(tasks: List<TaskModel>) {
+    LazyColumn {
+        items(tasks) { task ->
+            TaskItem(task = task, onClick = { })
+        }
+    }
+}
+
+@Composable
+fun TaskItem(task: TaskModel, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(16.dp)
+    ) {
+        Text(text = task.task) // Muestra el texto de la tarea
+    }
+}
