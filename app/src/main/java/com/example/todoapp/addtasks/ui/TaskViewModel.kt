@@ -1,5 +1,6 @@
 package com.example.todoapp.addtasks.ui
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,6 +18,7 @@ import com.example.todoapp.addtasks.ui.TasksUiState.Error
 import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.services.alarm.setAlarm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -129,11 +131,15 @@ class TaskViewModel @Inject constructor(
         _showDialog.value = false
     }
 
-    fun onTaskCreated(task: TaskModel) {
+    fun onTaskCreated(task: TaskModel, context: Context) {
         _showDialog.value = false
 
         viewModelScope.launch {
             addTaskUseCase(task)
+        }
+
+        task.time?.let { time ->
+            setAlarm(context, task.id, task.startDate, time, task.task)
         }
     }
 

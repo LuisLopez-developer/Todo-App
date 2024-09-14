@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -68,6 +69,9 @@ fun BottomSheetComponent(
     val temporaryDate by taskViewModel.temporaryDate2.collectAsState()
     val temporaryTime by taskViewModel.temporaryTime2.collectAsState()
 
+    // Obtener el contexto en el composable usando `LocalContext`
+    val context = LocalContext.current
+
     fun cleanFields() {
         task = ""
         details = null
@@ -87,7 +91,7 @@ fun BottomSheetComponent(
                 time = selectedTime
             )
 
-            taskViewModel.onTaskCreated(taskModel)
+            taskViewModel.onTaskCreated(taskModel, context)
             cleanFields()
             onConfirm()
         }
