@@ -18,6 +18,7 @@ navigationCompose = "2.8.0"
 roomRuntime = "2.6.1"
 runtimeLivedata = "1.7.0"
 threetenabp = "1.4.7"
+playServicesTfliteSupport = "16.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -47,6 +48,7 @@ hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "converterGson" }
 threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
+play-services-tflite-support = { group = "com.google.android.gms", name = "play-services-tflite-support", version.ref = "playServicesTfliteSupport" }
 
 
 [plugins]

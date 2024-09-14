@@ -12,10 +12,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
+import com.example.todoapp.R
 import com.example.todoapp.ui.navigation.CalendarRoute
 import com.example.todoapp.ui.navigation.Pantalla2Route
 import com.example.todoapp.ui.navigation.TaskCategoryRoute
+import com.example.todoapp.ui.navigation.TaskListRoute
 
 
 @Composable
@@ -65,6 +68,21 @@ fun BottomNavigationBar(navigationController: NavController) {
                     imageVector = Icons.Default.AddCircle, contentDescription = "Pantalla 3"
                 )
             }
+
+            IconButton(onClick = {
+                navigationController.navigate(TaskListRoute) {
+                    popUpTo(navigationController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }) {
+                Icon(
+                    imageVector = Icons.Default.AddCircle, contentDescription = "Task List"
+                )
+            }
+
         }
     }
 }

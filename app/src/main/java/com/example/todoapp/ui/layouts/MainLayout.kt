@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.todoapp.Screen2
 import com.example.todoapp.addtasks.ui.EditTaskScreen
+import com.example.todoapp.addtasks.ui.TaskListScreen
 import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.TasksScreen
 import com.example.todoapp.holidays.ui.HolidaysViewModel
@@ -26,6 +27,7 @@ import com.example.todoapp.ui.navigation.CalendarRoute
 import com.example.todoapp.ui.navigation.EditTaskRoute
 import com.example.todoapp.ui.navigation.Pantalla2Route
 import com.example.todoapp.ui.navigation.TaskCategoryRoute
+import com.example.todoapp.ui.navigation.TaskListRoute
 import com.example.todoapp.ui.partials.BottomNavigationBar
 import com.example.todoapp.ui.partials.TopAppBar
 import com.example.todoapp.ui.partials.TopAppBarSecondary
@@ -98,10 +100,19 @@ fun MainLayout() {
             }
             composable<EditTaskRoute> {
                 val args = it.toRoute<EditTaskRoute>()
-                EditTaskScreen(taskViewModel,taskCategoryViewModel, args.id)
+                EditTaskScreen(taskViewModel, taskCategoryViewModel, args.id)
             }
             composable<Pantalla2Route> {
                 Screen2()
+            }
+            composable<TaskListRoute> {
+                TaskListScreen(
+                    taskViewModel = taskViewModel,
+                    onTaskClick = { task -> },
+                    taskCategoryViewModel = taskCategoryViewModel,
+                    navigationController = navigationController,
+                    holidaysViewModel = holidaysModel
+                )
             }
         }
     }

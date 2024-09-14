@@ -3,6 +3,7 @@ package com.example.todoapp.taskcategory.ui
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.todoapp.addtasks.domain.GetTaskByCategoryUseCase
 import com.example.todoapp.taskcategory.domain.AddCategoryUseCase
 import com.example.todoapp.taskcategory.domain.DeleteCategoryUseCase
 import com.example.todoapp.taskcategory.domain.GetCategoryUseCase
@@ -23,7 +24,8 @@ class TaskCategoryViewModel @Inject constructor(
     getCategoryUseCase: GetCategoryUseCase,
     private val addCategoryUseCase: AddCategoryUseCase,
     private val deleteCategoryUseCase: DeleteCategoryUseCase,
-    private val updateCategoryUseCase: UpdateCategoryUseCase
+    private val updateCategoryUseCase: UpdateCategoryUseCase,
+    private val getTaskByCategoryUseCase: GetTaskByCategoryUseCase
 ) : ViewModel() {
 
     private val _showDropDown = MutableLiveData(false)
@@ -40,8 +42,18 @@ class TaskCategoryViewModel @Inject constructor(
         _showDropDown.value = !_showDropDown.value!!
     }
 
+    // Propiedad para las categorías
+    val categories: StateFlow<List<String>> = getCategoryUseCase()
+        .map { categories -> categories.map { it.category } }
+        .catch { emit(emptyList()) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     val uiState: StateFlow<TaskCategoryUiState> = getCategoryUseCase()
-        .map { categories -> Success(categories)}
+        .map { categories -> Success(categories) }
         .catch { exception -> TaskCategoryUiState.Error(exception) }
         .stateIn(
             scope = viewModelScope,
@@ -56,16 +68,14 @@ class TaskCategoryViewModel @Inject constructor(
     }
 
     fun onTaskCategoryUpdate(category: TaskCategoryModel) {
-
         viewModelScope.launch {
             updateCategoryUseCase(category)
-            // Después de actualizar, podrías querer refrescar el estado aquí si es necesario
         }
     }
 
     fun onTaskCategoryRemove(category: TaskCategoryModel) {
         viewModelScope.launch {
-            deleteCategoryUseCase(category) // Llamada al caso de uso de eliminación
+            deleteCategoryUseCase(category)
         }
     }
 }

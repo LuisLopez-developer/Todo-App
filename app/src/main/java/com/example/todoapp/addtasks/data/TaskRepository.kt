@@ -1,5 +1,6 @@
 package com.example.todoapp.addtasks.data
 
+import android.util.Log
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -32,6 +33,16 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
         val taskEntity = taskDao.getTaskById(taskId)
         return taskEntity?.let {
             TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.category)
+        }
+    }
+
+    // Nuevo método para obtener tareas por categoría
+    fun getTasksByCategory(category: String): Flow<List<TaskModel>> {
+        return taskDao.getTasksByCategory(category).map { items ->
+            Log.d("TaskRepository", "Tasks for category $category: $items")
+            items.map {
+                TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.category)
+            }
         }
     }
 
