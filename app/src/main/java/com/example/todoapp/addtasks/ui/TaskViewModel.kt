@@ -98,19 +98,6 @@ class TaskViewModel @Inject constructor(
     private val _showTimePicker = MutableStateFlow(false)
     val showTimePicker: StateFlow<Boolean> = _showTimePicker
 
-
-    fun onShowTimePicker() {
-        _showTimePicker.value = true
-    }
-
-    fun onHideTimePicker() {
-        _showTimePicker.value = false
-    }
-
-    fun onShowDatePicker() {
-        _showDatePicker.value = true
-    }
-
     fun onHideDatePicker() {
         _showDatePicker.value = false
     }
@@ -194,7 +181,6 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-
     private val _temporaryDate = MutableStateFlow<LocalDate?>(null)
     val temporaryDate: StateFlow<LocalDate?> = _temporaryDate
 
@@ -224,18 +210,4 @@ class TaskViewModel @Inject constructor(
         _temporaryTime.value = null
     }
 
-    fun resetTaskDateTime(taskId: Int) {
-        viewModelScope.launch {
-            // Obtén la tarea actual
-            val currentTask = getTaskByIdUseCase.execute(taskId)
-            if (currentTask != null) {
-                // Crea una nueva instancia de la tarea con startDate y time como null
-                val updatedTask = currentTask.copy(startDate = LocalDate.now(), time = null)
-                // Actualiza la tarea en la base de datos
-                updateTaskUseCase(updatedTask)
-                // Actualiza el estado de la UI
-                _taskFlowUiState.value = TaskUiState.Success(updatedTask)
-            }
-        }
-    }
 }
