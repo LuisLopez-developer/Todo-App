@@ -9,7 +9,6 @@ import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.addtasks.domain.AddTaskUseCase
 import com.example.todoapp.addtasks.domain.DeleteTaskUseCase
-import com.example.todoapp.addtasks.domain.GetTaskByCategoryUseCase
 import com.example.todoapp.addtasks.domain.GetTaskByIdUseCase
 import com.example.todoapp.addtasks.domain.GetTaskUseCase
 import com.example.todoapp.addtasks.domain.GetTasksByDateUseCase
@@ -41,28 +40,7 @@ class TaskViewModel @Inject constructor(
     private val getTaskUseCase: GetTaskUseCase,
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
-    private val getTaskByCategoryUseCase: GetTaskByCategoryUseCase,
 ) : ViewModel() {
-
-    private val _selectedCategory = MutableStateFlow<String?>(null)
-    val selectedCategory: StateFlow<String?> = _selectedCategory
-
-    fun setCategory(category: String?) {
-        _selectedCategory.value = category
-    }
-
-    // Estado para recuperar todas las tareas de una categoría específica
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val tasksByCategoryState: StateFlow<TasksUiState> = _selectedCategory
-        .flatMapLatest { category ->
-            if (category != null) {
-                getTaskByCategoryUseCase(category).map(::Success)
-            } else {
-                getTaskUseCase().map(::Success)
-            }
-        }
-        .catch { Error(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
 
     // Flujo que mantiene todas las fechas de tareas
     private val _taskDatesFlow = MutableStateFlow<List<LocalDate>>(emptyList())
@@ -119,9 +97,6 @@ class TaskViewModel @Inject constructor(
 
     private val _showDatePicker = MutableStateFlow(false)
     val showDatePicker: StateFlow<Boolean> = _showDatePicker
-
-    private val _showTimePicker = MutableStateFlow(false)
-    val showTimePicker: StateFlow<Boolean> = _showTimePicker
 
     fun onHideDatePicker() {
         _showDatePicker.value = false
