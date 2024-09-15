@@ -5,25 +5,32 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -53,6 +60,7 @@ fun TaskCategoryScreen(
 
     // Estado para manejar qué menú desplegable está expandido
     val expandedMenuCategoryId = remember { mutableStateOf<Int?>(null) }
+    val showCreateDialog by taskCategoryViewModel.showCreateDialog.observeAsState(false)
 
     when (uiState) {
         is TaskCategoryUiState.Error -> {
@@ -81,52 +89,26 @@ fun TaskCategoryScreen(
                 onDeleteCategory = { category ->
                     categoryToDelete.value = category
                     showDeleteConfirmation.value = true
-                }
+                },
+                categoryToDelete = categoryToDelete.value, // Añadir la categoría que se desea eliminar
+                showDeleteConfirmation = showDeleteConfirmation.value, // Añadir estado de confirmación de eliminación
+                onDismissEditDialog = {
+                    showEditDialog.value = false
+                }, // Añadir acción para cerrar el diálogo de edición
+                onConfirmEditDialog = { newText ->
+                    editCategoryText.value = newText
+                }, // Acción para confirmar la edición
+                onDismissDeleteDialog = {
+                    showDeleteConfirmation.value = false
+                }, // Añadir acción para cerrar el diálogo de eliminación
+                onConfirmDelete = {
+                    categoryToDelete.value?.let { taskCategoryViewModel.onTaskCategoryRemove(it) }
+                    categoryToDelete.value = null
+                },
+                showCreateDialog = showCreateDialog
             )
         }
-    }
 
-    if (showEditDialog.value) {
-        EditCategoryDialog(
-            categoryText = editCategoryText.value,
-            onCategoryTextChange = { newText -> editCategoryText.value = newText },
-            onConfirm = {
-                if (selectedCategories.size == 1) {
-                    val selectedCategory =
-                        selectedCategories.first().copy(category = editCategoryText.value)
-                    taskCategoryViewModel.onTaskCategoryUpdate(selectedCategory)
-                    selectedCategories.clear() // Limpia la selección después de actualizar
-                }
-                showEditDialog.value = false // Cierra el diálogo
-            },
-            onDismiss = {
-                showEditDialog.value = false // Cierra el diálogo
-            }
-        )
-    }
-
-    if (showDeleteConfirmation.value) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirmation.value = false },
-            title = { Text("Confirmar Eliminación") },
-            text = { Text("¿Estás seguro de que deseas eliminar esta categoría? Esto también eliminará las tareas asociadas.") },
-            confirmButton = {
-                Button(onClick = {
-                    categoryToDelete.value?.let { category ->
-                        taskCategoryViewModel.onTaskCategoryRemove(category)
-                        categoryToDelete.value = null
-                    }
-                    showDeleteConfirmation.value = false
-                }) {
-                    Text("Delete")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showDeleteConfirmation.value = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 }
 
@@ -140,16 +122,83 @@ fun Container(
     expandedMenuCategoryId: Int?,
     onMenuExpandChange: (Int?) -> Unit,
     onEditCategory: (TaskCategoryModel) -> Unit,
-    onDeleteCategory: (TaskCategoryModel) -> Unit
+    onDeleteCategory: (TaskCategoryModel) -> Unit,
+    categoryToDelete: TaskCategoryModel?,  // Agregado para manejar la categoría a eliminar
+    showDeleteConfirmation: Boolean,      // Agregado para manejar la confirmación de eliminación
+    onDismissEditDialog: () -> Unit,      // Agregado para cerrar el diálogo de edición
+    onConfirmEditDialog: (String) -> Unit, // Agregado para confirmar la edición
+    onDismissDeleteDialog: () -> Unit,    // Agregado para cerrar el diálogo de eliminación
+    onConfirmDelete: () -> Unit,           // Agregado para confirmar la eliminación
+    showCreateDialog: Boolean
 ) {
-    CategoryList(
-        categories = categories,
-        selectedCategories = selectedCategories,
-        expandedMenuCategoryId = expandedMenuCategoryId,
-        onMenuExpandChange = onMenuExpandChange,
-        onEditCategory = onEditCategory,
-        onDeleteCategory = onDeleteCategory
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        CategoryList(
+            categories = categories,
+            selectedCategories = selectedCategories,
+            expandedMenuCategoryId = expandedMenuCategoryId,
+            onMenuExpandChange = onMenuExpandChange,
+            onEditCategory = onEditCategory,
+            onDeleteCategory = onDeleteCategory
+        )
+
+        // Botón flotante
+
+        FloatingActionButton(
+            onClick = {
+                taskCategoryViewModel.setShowCreateDialog(true)
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd) // Posiciona el botón en la parte inferior derecha
+                .padding(16.dp) // Añade un margen desde el borde de la pantalla
+        ) {
+            Icon(Icons.Filled.Add, contentDescription = "Botón para agregar tareas")
+        }
+
+
+        // Diálogo de edición
+        if (showEditDialog) {
+            EditCategoryDialog(
+                categoryText = editCategoryText,
+                onCategoryTextChange = { newText -> onConfirmEditDialog(newText) },
+                onConfirm = {
+                    if (selectedCategories.size == 1) {
+                        val selectedCategory =
+                            selectedCategories.first().copy(category = editCategoryText)
+                        taskCategoryViewModel.onTaskCategoryUpdate(selectedCategory)
+                        selectedCategories.clear() // Limpia la selección después de actualizar
+                    }
+                    onDismissEditDialog() // Cierra el diálogo
+                },
+                onDismiss = { onDismissEditDialog() }
+            )
+        }
+
+        // Diálogo de confirmación de eliminación
+        if (showDeleteConfirmation) {
+            AlertDialog(
+                onDismissRequest = { onDismissDeleteDialog() },
+                title = { Text("Confirmar Eliminación") },
+                text = { Text("¿Estás seguro de que deseas eliminar esta categoría? Esto también eliminará las tareas asociadas.") },
+                confirmButton = {
+                    Button(onClick = {
+                        onConfirmDelete()
+                        onDismissDeleteDialog()
+                    }) {
+                        Text("Eliminar")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { onDismissDeleteDialog() }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
+        if (showCreateDialog) {
+            CreateCategoryDialog(taskCategoryViewModel)
+        }
+    }
 }
 
 @Composable
@@ -159,7 +208,7 @@ fun CategoryList(
     expandedMenuCategoryId: Int?,
     onMenuExpandChange: (Int?) -> Unit,
     onEditCategory: (TaskCategoryModel) -> Unit,
-    onDeleteCategory: (TaskCategoryModel) -> Unit
+    onDeleteCategory: (TaskCategoryModel) -> Unit,
 ) {
     LazyColumn(contentPadding = PaddingValues(horizontal = 15.dp, vertical = 10.dp)) {
         items(categories) { category ->
@@ -250,3 +299,36 @@ fun EditCategoryDialog(
     )
 }
 
+@Composable
+fun CreateCategoryDialog(
+    taskCategoryViewModel: TaskCategoryViewModel,
+) {
+    var text by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = { taskCategoryViewModel.setShowCreateDialog(false) },
+        title = { Text("Edit Category") },
+        text = {
+            TextField(
+                value = text,
+                onValueChange = {
+                    text = it
+                },
+                label = { Text("Category Name") }
+            )
+        },
+        confirmButton = {
+            Button(onClick = {
+                taskCategoryViewModel.onTaskCategoryCreated(text)
+                taskCategoryViewModel.setShowCreateDialog(false)
+            }) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { taskCategoryViewModel.setShowCreateDialog(false) }) {
+                Text("Cancel")
+            }
+        }
+    )
+}

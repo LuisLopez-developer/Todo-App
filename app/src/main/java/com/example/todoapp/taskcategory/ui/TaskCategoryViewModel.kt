@@ -37,6 +37,13 @@ class TaskCategoryViewModel @Inject constructor(
         _showDropDown.value = show
     }
 
+    private val _showCreateDialog = MutableLiveData(false)
+    val showCreateDialog: MutableLiveData<Boolean> = _showCreateDialog
+
+    fun setShowCreateDialog(show: Boolean) {
+        _showCreateDialog.value = show
+    }
+
     fun setSelectedCategory(category: String) {
         _selectedCategory.value = category
         _showDropDown.value = !_showDropDown.value!!
