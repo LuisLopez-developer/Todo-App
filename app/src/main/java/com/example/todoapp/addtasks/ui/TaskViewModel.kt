@@ -17,6 +17,7 @@ import com.example.todoapp.addtasks.ui.TasksUiState.Error
 import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.services.alarm.cancelAlarm
 import com.example.todoapp.services.alarm.setAlarm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -111,10 +112,18 @@ class TaskViewModel @Inject constructor(
 
         viewModelScope.launch {
             addTaskUseCase(task)
-        }
 
-        task.time?.let { time ->
-            setAlarm(context, task.id, task.startDate, time, task.task)
+            // Verificar si la fecha y hora están en el futuro antes de programar la alarma
+            task.time?.let { time ->
+                val currentDate = LocalDate.now()
+                val currentTime = LocalTime.now()
+
+                if (task.startDate.isAfter(currentDate) ||
+                    (task.startDate.isEqual(currentDate) && time.isAfter(currentTime))
+                ) {
+                    setAlarm(context, task.id, task.startDate, time, task.task)
+                }
+            }
         }
     }
 
@@ -124,15 +133,45 @@ class TaskViewModel @Inject constructor(
 
     fun onCheckBox(taskModel: TaskModel) {
         viewModelScope.launch {
-            updateTaskUseCase(taskModel.copy(selected = !taskModel.selected))
+            updateTaskUseCase(taskModel.copy(selected = taskModel.selected))
         }
     }
 
-    fun updateTask(updatedTask: TaskModel) {
-        // Implementa la lógica para actualizar la tarea en la base de datos o repositorio
+    fun updateTask(updatedTask: TaskModel, context: Context) {
         viewModelScope.launch {
             try {
-                updateTaskUseCase(updatedTask) // Suponiendo que uses un repositorio para manejar las tareas
+                // Obtener la tarea original antes de actualizarla
+                val originalTask = getTaskByIdUseCase.execute(updatedTask.id)
+
+                // Si la tarea original tenía una alarma programada, cancelarla
+                if (originalTask?.time != null) {
+                    cancelAlarm(context, originalTask.id)
+                }
+
+                // Actualizar la tarea en el repositorio
+                updateTaskUseCase(updatedTask)
+
+                // Verificar si la nueva tarea tiene una hora y fecha en el futuro antes de programar la alarma
+                if (updatedTask.time != null) {
+                    val currentDate = LocalDate.now()
+                    val currentTime = LocalTime.now()
+
+                    if (updatedTask.startDate.isAfter(currentDate) ||
+                        (updatedTask.startDate.isEqual(currentDate) && updatedTask.time.isAfter(
+                            currentTime
+                        ))
+                    ) {
+                        setAlarm(
+                            context,
+                            updatedTask.id,
+                            updatedTask.startDate,
+                            updatedTask.time,
+                            updatedTask.task
+                        )
+                    }
+                }
+
+                // Actualizar el estado de la UI con la tarea actualizada
                 _taskFlowUiState.value = TaskUiState.Success(updatedTask)
             } catch (e: Exception) {
                 _taskFlowUiState.value =
@@ -141,7 +180,6 @@ class TaskViewModel @Inject constructor(
             }
         }
     }
-
 
     fun onItemRemove(taskModel: TaskModel) {
         viewModelScope.launch {
