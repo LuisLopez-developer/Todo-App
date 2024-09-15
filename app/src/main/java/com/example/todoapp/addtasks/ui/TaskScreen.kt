@@ -1,5 +1,7 @@
 package com.example.todoapp.addtasks.ui
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -40,6 +43,7 @@ import com.example.todoapp.addtasks.ui.components.TaskItemComponent
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.holidays.ui.model.HolidayModel
+import com.example.todoapp.services.notification.RequestNotificationPermission
 import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
@@ -47,12 +51,14 @@ import com.example.todoapp.ui.components.CalendarComponent
 import com.example.todoapp.ui.navigation.EditTaskRoute
 import org.threeten.bp.LocalDate
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun TasksScreen(
     taskViewModel: TaskViewModel,
     taskCategoryViewModel: TaskCategoryViewModel,
     navigationController: NavHostController,
     holidaysViewModel: HolidaysViewModel,
+    permissionService: RequestNotificationPermission,
 ) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
 
@@ -72,15 +78,16 @@ fun TasksScreen(
     val holidays by holidaysViewModel.holidays.collectAsState(emptyList())
 
     val selectedDate: LocalDate by taskViewModel.selectedDate.observeAsState(LocalDate.now())
-
     val combinedDates = taskDates.union(holidays.map { it.date }).toList()
-
-    // Observar el modelo de las categorias
     val categoryUiState by taskCategoryViewModel.uiState.collectAsState()
-
     val categories = when (categoryUiState) {
         is TaskCategoryUiState.Success -> (categoryUiState as TaskCategoryUiState.Success).categories
         else -> emptyList()
+    }
+
+    // Solicita permiso después de que la pantalla haya cargado
+    LaunchedEffect(Unit) {
+        permissionService.requestNotificationPermission()
     }
 
     // Maneja el estado general de tareas
@@ -98,8 +105,8 @@ fun TasksScreen(
                 showDialog = taskViewModel.showDialog.collectAsState().value,
                 taskViewModel = taskViewModel,
                 tasks = (uiStateByDate as TasksUiState.Success).tasks,
-                dates = combinedDates, // Pasa todas las fechas de tareas
-                holidays = holidays,   // Pasa todos los días festivos
+                dates = combinedDates,
+                holidays = holidays,
                 navigationController = navigationController,
                 selectedDate = selectedDate,
                 categories = categories

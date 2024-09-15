@@ -1,5 +1,7 @@
 package com.example.todoapp.ui.layouts
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -21,6 +23,7 @@ import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.TasksScreen
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
+import com.example.todoapp.services.notification.RequestNotificationPermission
 import com.example.todoapp.taskcategory.ui.TaskCategoryScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.constants.StylesTopBar
@@ -34,8 +37,9 @@ import com.example.todoapp.ui.partials.TopAppBar
 import com.example.todoapp.ui.partials.TopAppBarSecondary
 import com.example.todoapp.ui.utils.extractCleanRoute
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun MainLayout() {
+fun MainLayout(permissionService: RequestNotificationPermission) {
     val taskViewModel: TaskViewModel = viewModel()
     val taskCategoryViewModel: TaskCategoryViewModel = viewModel()
     val taskListViewModel: TaskListViewModel = viewModel()
@@ -91,7 +95,8 @@ fun MainLayout() {
                     taskViewModel = taskViewModel,
                     taskCategoryViewModel = taskCategoryViewModel,
                     holidaysViewModel = holidaysModel,
-                    navigationController = navigationController
+                    navigationController = navigationController,
+                    permissionService = permissionService
                 )
             }
             composable<TaskCategoryRoute> {
