@@ -90,7 +90,6 @@ fun TaskCategoryScreen(
                     categoryToDelete.value = category
                     showDeleteConfirmation.value = true
                 },
-                categoryToDelete = categoryToDelete.value, // Añadir la categoría que se desea eliminar
                 showDeleteConfirmation = showDeleteConfirmation.value, // Añadir estado de confirmación de eliminación
                 onDismissEditDialog = {
                     showEditDialog.value = false
@@ -123,7 +122,6 @@ fun Container(
     onMenuExpandChange: (Int?) -> Unit,
     onEditCategory: (TaskCategoryModel) -> Unit,
     onDeleteCategory: (TaskCategoryModel) -> Unit,
-    categoryToDelete: TaskCategoryModel?,  // Agregado para manejar la categoría a eliminar
     showDeleteConfirmation: Boolean,      // Agregado para manejar la confirmación de eliminación
     onDismissEditDialog: () -> Unit,      // Agregado para cerrar el diálogo de edición
     onConfirmEditDialog: (String) -> Unit, // Agregado para confirmar la edición
@@ -134,7 +132,6 @@ fun Container(
     Box(modifier = Modifier.fillMaxSize()) {
         CategoryList(
             categories = categories,
-            selectedCategories = selectedCategories,
             expandedMenuCategoryId = expandedMenuCategoryId,
             onMenuExpandChange = onMenuExpandChange,
             onEditCategory = onEditCategory,
@@ -204,7 +201,6 @@ fun Container(
 @Composable
 fun CategoryList(
     categories: List<TaskCategoryModel>,
-    selectedCategories: SnapshotStateList<TaskCategoryModel>,
     expandedMenuCategoryId: Int?,
     onMenuExpandChange: (Int?) -> Unit,
     onEditCategory: (TaskCategoryModel) -> Unit,
