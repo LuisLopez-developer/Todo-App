@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,7 +23,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -103,9 +103,13 @@ fun Container(
                 },
                 categories = categories
             )
-            List(
-                tasks = tasks
-            )
+
+            Box(Modifier.padding(horizontal = 15.dp)) {
+                List(
+                    tasks = tasks
+                )
+            }
+
         }
     }
 }
@@ -118,49 +122,68 @@ fun CategorySelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    // Estado para almacenar la categoría seleccionada
     var selectedItem by remember { mutableStateOf(selectedCategory) }
 
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(horizontal = 15.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
 
         item {
-            Text(text = stringResource(R.string.list_all), modifier = Modifier
-                .clickable {
+            CategoryItem(
+                text = stringResource(R.string.list_all),
+                isSelected = selectedItem == null,
+                onClick = {
                     selectedItem = null
                     onCategorySelected(null)
                     expanded = false
                 }
-                .background(
-                    if (selectedItem == null) Color.Gray else Color.Transparent,
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .padding(16.dp),
-                color = if (selectedItem == null) Color.White else Color.Black)
+            )
         }
 
         items(categories) { category ->
-            Text(
+            CategoryItem(
                 text = category.category,
-                modifier = Modifier
-                    .clickable {
-                        selectedItem = category.id
-                        onCategorySelected(category)
-                        expanded = false
-                    }
-                    .background(
-                        if (selectedItem == category.id) Color.Gray else Color.Transparent,
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .padding(16.dp),
-                color = if (selectedItem == category.id) Color.White else Color.Black
+                isSelected = selectedItem == category.id,
+                onClick = {
+                    selectedItem = category.id
+                    onCategorySelected(category)
+                    expanded = false
+                }
             )
         }
     }
 }
 
+@Composable
+fun CategoryItem(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+) {
+    // Convierte la primera letra a mayúscula
+    val capitalizedText = text.replaceFirstChar { it.uppercase() }
+
+    Text(
+        text = capitalizedText,
+        modifier = Modifier
+            .clickable { onClick() }
+            .background(
+                if (isSelected) {
+                    colorScheme.tertiaryContainer
+                } else {
+                    colorScheme.tertiaryContainer.copy(0.4f)
+                },
+                shape = RoundedCornerShape(20.dp)
+            )
+            .padding(horizontal = 24.dp, vertical = 6.dp),
+        color = if (isSelected) {
+            colorScheme.onTertiaryContainer
+        } else {
+            colorScheme.inverseSurface
+        }
+    )
+}
 
 @Composable
 fun List(tasks: List<TaskModel>) {
