@@ -42,26 +42,10 @@ class TaskCategoryViewModel @Inject constructor(
         _showDropDown.value = !_showDropDown.value!!
     }
 
-    // Categorías predeterminadas
-    private val defaultCategories = listOf(
-        TaskCategoryModel(id = 1, category = "Trabajo"),
-        TaskCategoryModel(id = 2, category = "Estudio"),
-        TaskCategoryModel(id = 3, category = "Casa"),
-        TaskCategoryModel(id = 4, category = "Examen"),
-        TaskCategoryModel(id = 5, category = "Familia")
-    )
 
     // Propiedad para las categorías que carga todas las categorías, incluyendo las predeterminadas
     val categories: StateFlow<List<TaskCategoryModel>> = getCategoryUseCase()
-        .map { categories ->
-            if (categories.isEmpty()) {
-                // Si no hay categorías, agregamos las predeterminadas
-                defaultCategories.forEach { addCategoryUseCase(it) }
-                defaultCategories
-            } else {
-                categories
-            }
-        }
+        .map { it }
         .catch { emit(emptyList()) }
         .stateIn(
             scope = viewModelScope,
@@ -70,13 +54,7 @@ class TaskCategoryViewModel @Inject constructor(
         )
 
     val uiState: StateFlow<TaskCategoryUiState> = getCategoryUseCase()
-        .map { categories ->
-            if (categories.isEmpty()) {
-                Success(defaultCategories)
-            } else {
-                Success(categories)
-            }
-        }
+        .map { Success(it) }
         .catch { exception -> TaskCategoryUiState.Error(exception) }
         .stateIn(
             scope = viewModelScope,
