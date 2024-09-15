@@ -10,6 +10,9 @@
     <string name="uncategorized">Sin categoría</string>
     <string name="edit_date_and_time">Editar la fecha y hora</string>
 
+    <!-- Para la pantalla de listar tareas -->
+    <string name="list_all">Todas</string>
+
     <!-- Descripcion para iconos -->
     <string name="ic_label_offer"> Icono de etiqueta</string>
     <string name="ic_arrow_drop_down">Icono con flecha hacia abajo</string>

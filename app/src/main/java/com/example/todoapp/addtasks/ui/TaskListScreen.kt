@@ -23,11 +23,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
+import com.example.todoapp.R
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
@@ -96,7 +98,7 @@ fun Container(
             CategorySelector(
                 selectedCategory = selectedCategory,
                 onCategorySelected = { category ->
-                    taskListViewModel.setCategory(category.id)
+                    taskListViewModel.setCategory(category?.id)
                 },
                 categories = categories
             )
@@ -110,7 +112,7 @@ fun Container(
 @Composable
 fun CategorySelector(
     selectedCategory: Int?,
-    onCategorySelected: (TaskCategoryModel) -> Unit,
+    onCategorySelected: (TaskCategoryModel?) -> Unit,
     categories: List<TaskCategoryModel>,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -122,6 +124,22 @@ fun CategorySelector(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+
+        item {
+            Text(text = stringResource(R.string.list_all), modifier = Modifier
+                .clickable {
+                    selectedItem = null
+                    onCategorySelected(null)
+                    expanded = false
+                }
+                .background(
+                    if (selectedItem == null) Color.Gray else Color.Transparent,
+                    shape = RoundedCornerShape(8.dp)
+                )
+                .padding(16.dp),
+                color = if (selectedItem == null) Color.White else Color.Black)
+        }
+
         items(categories) { category ->
             Text(
                 text = category.category,
