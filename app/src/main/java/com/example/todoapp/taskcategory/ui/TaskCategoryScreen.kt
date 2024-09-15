@@ -1,16 +1,20 @@
 package com.example.todoapp.taskcategory.ui
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -19,134 +23,78 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import com.example.todoapp.R
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 
 @Composable
 fun TaskCategoryScreen(
     taskCategoryViewModel: TaskCategoryViewModel,
-    navigationController: NavHostController,
 ) {
-    var categoryText by remember { mutableStateOf("") }
-    var searchIdText by remember { mutableStateOf("") } // Estado para la entrada de búsqueda por ID
-    var searchResult by remember { mutableStateOf<TaskCategoryModel?>(null) } // Estado para el resultado de búsqueda
-
     // Estado para categorías seleccionadas utilizando SnapshotStateList
     val selectedCategories = remember { mutableStateListOf<TaskCategoryModel>() }
 
     // Estado para manejar la visibilidad del diálogo de edición
-    var showEditDialog by remember { mutableStateOf(false) }
+    val showEditDialog by remember { mutableStateOf(false) }
 
     // Estado para el texto de la categoría a editar
-    var editCategoryText by remember { mutableStateOf("") }
+    val editCategoryText by remember { mutableStateOf("") }
 
     // Observa el estado de UI desde el ViewModel
     val uiState by taskCategoryViewModel.uiState.collectAsState(TaskCategoryUiState.Loading)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        when (uiState) {
-            is TaskCategoryUiState.Error -> {
-                Text("Error:")
-            }
+    // Estado para manejar qué menú desplegable está expandido
+    val expandedMenuCategoryId = remember { mutableStateOf<Int?>(null) }
 
-            TaskCategoryUiState.Loading -> {
-                CircularProgressIndicator()
-            }
-
-            is TaskCategoryUiState.Success -> {
-                CategoryList(
-                    categories = (uiState as TaskCategoryUiState.Success).categories,
-                    selectedCategories = selectedCategories // Pasar el parámetro correcto
-                )
-            }
+    when (uiState) {
+        is TaskCategoryUiState.Error -> {
+            Text("Error:")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Campo de entrada para la búsqueda por ID
-        TextField(
-            value = searchIdText,
-            onValueChange = { searchIdText = it },
-            label = { Text("Search by ID") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Button(
-            onClick = {
-                searchResult = (uiState as? TaskCategoryUiState.Success)?.categories
-                    ?.find { it.id.toString() == searchIdText }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Search")
+        TaskCategoryUiState.Loading -> {
+            CircularProgressIndicator()
         }
 
-        // Mostrar el resultado de búsqueda
-        searchResult?.let {
-            Text(text = "Category Name: ${it.category}")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = categoryText,
-            onValueChange = { categoryText = it },
-            label = { Text("Enter Category") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                taskCategoryViewModel.onTaskCategoryCreated(categoryText)
-                categoryText = "" // Limpia el campo de texto después de crear la categoría
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Create Category")
-        }
-
-        Button(
-            onClick = {
-                selectedCategories.forEach { taskCategoryViewModel.onTaskCategoryRemove(it) }
-                selectedCategories.clear() // Limpia la selección después de eliminar
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = selectedCategories.isNotEmpty() // Solo habilitado si hay categorías seleccionadas
-        ) {
-            Text("Delete category/s")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                if (selectedCategories.size == 1) {
-                    editCategoryText =
-                        selectedCategories.first().category // Obtén el texto de la categoría seleccionada
-                    showEditDialog = true // Mostrar el diálogo de edición
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = selectedCategories.size == 1 // Solo habilitado si hay exactamente una categoría seleccionada
-        ) {
-            Text("Edit Selected Category")
+        is TaskCategoryUiState.Success -> {
+            Container(
+                categories = (uiState as TaskCategoryUiState.Success).categories,
+                selectedCategories = selectedCategories,
+                taskCategoryViewModel = taskCategoryViewModel,
+                showEditDialog = showEditDialog,
+                editCategoryText = editCategoryText,
+                expandedMenuCategoryId = expandedMenuCategoryId.value,
+                onMenuExpandChange = { id -> expandedMenuCategoryId.value = id }
+            )
         }
     }
+}
+
+@Composable
+fun Container(
+    categories: List<TaskCategoryModel>,
+    selectedCategories: SnapshotStateList<TaskCategoryModel>, // Cambiado a SnapshotStateList
+    taskCategoryViewModel: TaskCategoryViewModel,
+    showEditDialog: Boolean,
+    editCategoryText: String,
+    expandedMenuCategoryId: Int?,
+    onMenuExpandChange: (Int?) -> Unit,
+) {
+    CategoryList(
+        categories = categories,
+        selectedCategories = selectedCategories,
+        expandedMenuCategoryId = expandedMenuCategoryId,
+        onMenuExpandChange = onMenuExpandChange,
+        taskCategoryViewModel = taskCategoryViewModel
+    )
 
     if (showEditDialog) {
         EditCategoryDialog(
             categoryText = editCategoryText,
-            onCategoryTextChange = { editCategoryText = it },
+            onCategoryTextChange = { },
             onConfirm = {
                 if (selectedCategories.size == 1) {
                     val selectedCategory =
@@ -154,44 +102,75 @@ fun TaskCategoryScreen(
                     taskCategoryViewModel.onTaskCategoryUpdate(selectedCategory)
                     selectedCategories.clear() // Limpia la selección después de actualizar
                 }
-                showEditDialog = false // Cierra el diálogo
+                taskCategoryViewModel.setShowDropDown(false) // Cierra el diálogo
             },
             onDismiss = {
-                showEditDialog = false // Cierra el diálogo
+                taskCategoryViewModel.setShowDropDown(false) // Cierra el diálogo
             }
         )
     }
 }
 
-
 @Composable
 fun CategoryList(
     categories: List<TaskCategoryModel>,
-    selectedCategories: SnapshotStateList<TaskCategoryModel>, // Cambiado a SnapshotStateList
+    selectedCategories: SnapshotStateList<TaskCategoryModel>,
+    expandedMenuCategoryId: Int?,
+    onMenuExpandChange: (Int?) -> Unit,
+    taskCategoryViewModel: TaskCategoryViewModel,
 ) {
-    Column {
-        categories.forEach { category ->
-            Row(
+    LazyColumn(contentPadding = PaddingValues(horizontal = 15.dp, vertical = 10.dp)) {
+        items(categories) { category ->
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
+                    .padding(vertical = 6.dp)
             ) {
-                Checkbox(
-                    checked = selectedCategories.contains(category),
-                    onCheckedChange = { isChecked ->
-                        if (isChecked) {
-                            selectedCategories.add(category)
-                        } else {
-                            selectedCategories.remove(category)
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .padding(10.dp)
+
+                ) {
+                    Text(
+                        text = category.category.replaceFirstChar { it.uppercase() },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Box{
+                        Icon(
+                            painter = painterResource(R.drawable.ic_more_vert),
+                            contentDescription = "",
+                            Modifier.clickable {
+                                // Expandir solo el menú de la categoría seleccionada
+                                if (expandedMenuCategoryId == category.id) {
+                                    onMenuExpandChange(null) // Cerrar si ya está abierto
+                                } else {
+                                    onMenuExpandChange(category.id) // Abrir el menú
+                                }
+                            }
+                        )
+
+                        DropdownMenu(
+                            expanded = expandedMenuCategoryId == category.id, // Mostrar solo si coincide el ID
+                            onDismissRequest = { onMenuExpandChange(null) }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(R.string.dw_edit)) },
+                                onClick = {
+                                    onMenuExpandChange(null)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(R.string.dw_delete)) },
+                                onClick = {
+                                    onMenuExpandChange(null)
+                                }
+                            )
                         }
                     }
-                )
-                Text(
-                    text = category.category,
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .weight(1f)
-                )
+                }
             }
         }
     }

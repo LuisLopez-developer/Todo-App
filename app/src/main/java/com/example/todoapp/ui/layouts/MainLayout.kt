@@ -96,8 +96,7 @@ fun MainLayout() {
             }
             composable<TaskCategoryRoute> {
                 TaskCategoryScreen(
-                    taskCategoryViewModel,
-                    navigationController
+                    taskCategoryViewModel
                 )
             }
             composable<EditTaskRoute> {
