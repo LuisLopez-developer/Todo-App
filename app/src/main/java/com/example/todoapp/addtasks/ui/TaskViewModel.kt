@@ -112,10 +112,18 @@ class TaskViewModel @Inject constructor(
 
         viewModelScope.launch {
             addTaskUseCase(task)
-        }
 
-        task.time?.let { time ->
-            setAlarm(context, task.id, task.startDate, time, task.task)
+            // Verificar si la fecha y hora están en el futuro antes de programar la alarma
+            task.time?.let { time ->
+                val currentDate = LocalDate.now()
+                val currentTime = LocalTime.now()
+
+                if (task.startDate.isAfter(currentDate) ||
+                    (task.startDate.isEqual(currentDate) && time.isAfter(currentTime))
+                ) {
+                    setAlarm(context, task.id, task.startDate, time, task.task)
+                }
+            }
         }
     }
 
@@ -143,21 +151,35 @@ class TaskViewModel @Inject constructor(
                 // Actualizar la tarea en el repositorio
                 updateTaskUseCase(updatedTask)
 
-                // Si la nueva tarea tiene una hora y fecha, "reprogramar" la alarma
+                // Verificar si la nueva tarea tiene una hora y fecha en el futuro antes de programar la alarma
                 if (updatedTask.time != null) {
-                    setAlarm(context, updatedTask.id, updatedTask.startDate, updatedTask.time, updatedTask.task)
+                    val currentDate = LocalDate.now()
+                    val currentTime = LocalTime.now()
+
+                    if (updatedTask.startDate.isAfter(currentDate) ||
+                        (updatedTask.startDate.isEqual(currentDate) && updatedTask.time.isAfter(
+                            currentTime
+                        ))
+                    ) {
+                        setAlarm(
+                            context,
+                            updatedTask.id,
+                            updatedTask.startDate,
+                            updatedTask.time,
+                            updatedTask.task
+                        )
+                    }
                 }
 
                 // Actualizar el estado de la UI con la tarea actualizada
                 _taskFlowUiState.value = TaskUiState.Success(updatedTask)
             } catch (e: Exception) {
-                _taskFlowUiState.value = TaskUiState.Error(throwable = Throwable("Error al actualizar la tarea"))
+                _taskFlowUiState.value =
+                    TaskUiState.Error(throwable = Throwable("Error al actualizar la tarea"))
                 Log.e("error", e.message.toString())
             }
         }
     }
-
-
 
     fun onItemRemove(taskModel: TaskModel) {
         viewModelScope.launch {
