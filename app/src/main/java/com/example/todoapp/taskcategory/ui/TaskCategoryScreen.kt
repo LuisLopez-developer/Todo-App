@@ -39,10 +39,14 @@ fun TaskCategoryScreen(
     val selectedCategories = remember { mutableStateListOf<TaskCategoryModel>() }
 
     // Estado para manejar la visibilidad del diálogo de edición
-    val showEditDialog by remember { mutableStateOf(false) }
+    val showEditDialog = remember { mutableStateOf(false) }
 
     // Estado para el texto de la categoría a editar
-    val editCategoryText by remember { mutableStateOf("") }
+    val editCategoryText = remember { mutableStateOf("") }
+
+    // Estado para manejar la confirmación de eliminación
+    val showDeleteConfirmation = remember { mutableStateOf(false) }
+    val categoryToDelete = remember { mutableStateOf<TaskCategoryModel?>(null) }
 
     // Observa el estado de UI desde el ViewModel
     val uiState by taskCategoryViewModel.uiState.collectAsState(TaskCategoryUiState.Loading)
@@ -64,51 +68,88 @@ fun TaskCategoryScreen(
                 categories = (uiState as TaskCategoryUiState.Success).categories,
                 selectedCategories = selectedCategories,
                 taskCategoryViewModel = taskCategoryViewModel,
-                showEditDialog = showEditDialog,
-                editCategoryText = editCategoryText,
+                showEditDialog = showEditDialog.value,
+                editCategoryText = editCategoryText.value,
                 expandedMenuCategoryId = expandedMenuCategoryId.value,
-                onMenuExpandChange = { id -> expandedMenuCategoryId.value = id }
+                onMenuExpandChange = { id -> expandedMenuCategoryId.value = id },
+                onEditCategory = { category ->
+                    editCategoryText.value = category.category
+                    selectedCategories.clear()
+                    selectedCategories.add(category)
+                    showEditDialog.value = true
+                },
+                onDeleteCategory = { category ->
+                    categoryToDelete.value = category
+                    showDeleteConfirmation.value = true
+                }
             )
         }
+    }
+
+    if (showEditDialog.value) {
+        EditCategoryDialog(
+            categoryText = editCategoryText.value,
+            onCategoryTextChange = { newText -> editCategoryText.value = newText },
+            onConfirm = {
+                if (selectedCategories.size == 1) {
+                    val selectedCategory =
+                        selectedCategories.first().copy(category = editCategoryText.value)
+                    taskCategoryViewModel.onTaskCategoryUpdate(selectedCategory)
+                    selectedCategories.clear() // Limpia la selección después de actualizar
+                }
+                showEditDialog.value = false // Cierra el diálogo
+            },
+            onDismiss = {
+                showEditDialog.value = false // Cierra el diálogo
+            }
+        )
+    }
+
+    if (showDeleteConfirmation.value) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation.value = false },
+            title = { Text("Confirmar Eliminación") },
+            text = { Text("¿Estás seguro de que deseas eliminar esta categoría? Esto también eliminará las tareas asociadas.") },
+            confirmButton = {
+                Button(onClick = {
+                    categoryToDelete.value?.let { category ->
+                        taskCategoryViewModel.onTaskCategoryRemove(category)
+                        categoryToDelete.value = null
+                    }
+                    showDeleteConfirmation.value = false
+                }) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDeleteConfirmation.value = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
 @Composable
 fun Container(
     categories: List<TaskCategoryModel>,
-    selectedCategories: SnapshotStateList<TaskCategoryModel>, // Cambiado a SnapshotStateList
+    selectedCategories: SnapshotStateList<TaskCategoryModel>,
     taskCategoryViewModel: TaskCategoryViewModel,
     showEditDialog: Boolean,
     editCategoryText: String,
     expandedMenuCategoryId: Int?,
     onMenuExpandChange: (Int?) -> Unit,
+    onEditCategory: (TaskCategoryModel) -> Unit,
+    onDeleteCategory: (TaskCategoryModel) -> Unit
 ) {
     CategoryList(
         categories = categories,
         selectedCategories = selectedCategories,
         expandedMenuCategoryId = expandedMenuCategoryId,
         onMenuExpandChange = onMenuExpandChange,
-        taskCategoryViewModel = taskCategoryViewModel
+        onEditCategory = onEditCategory,
+        onDeleteCategory = onDeleteCategory
     )
-
-    if (showEditDialog) {
-        EditCategoryDialog(
-            categoryText = editCategoryText,
-            onCategoryTextChange = { },
-            onConfirm = {
-                if (selectedCategories.size == 1) {
-                    val selectedCategory =
-                        selectedCategories.first().copy(category = editCategoryText)
-                    taskCategoryViewModel.onTaskCategoryUpdate(selectedCategory)
-                    selectedCategories.clear() // Limpia la selección después de actualizar
-                }
-                taskCategoryViewModel.setShowDropDown(false) // Cierra el diálogo
-            },
-            onDismiss = {
-                taskCategoryViewModel.setShowDropDown(false) // Cierra el diálogo
-            }
-        )
-    }
 }
 
 @Composable
@@ -117,7 +158,8 @@ fun CategoryList(
     selectedCategories: SnapshotStateList<TaskCategoryModel>,
     expandedMenuCategoryId: Int?,
     onMenuExpandChange: (Int?) -> Unit,
-    taskCategoryViewModel: TaskCategoryViewModel,
+    onEditCategory: (TaskCategoryModel) -> Unit,
+    onDeleteCategory: (TaskCategoryModel) -> Unit
 ) {
     LazyColumn(contentPadding = PaddingValues(horizontal = 15.dp, vertical = 10.dp)) {
         items(categories) { category ->
@@ -138,7 +180,7 @@ fun CategoryList(
                         modifier = Modifier.weight(1f)
                     )
 
-                    Box{
+                    Box {
                         Icon(
                             painter = painterResource(R.drawable.ic_more_vert),
                             contentDescription = "",
@@ -159,12 +201,14 @@ fun CategoryList(
                             DropdownMenuItem(
                                 text = { Text(text = stringResource(R.string.dw_edit)) },
                                 onClick = {
+                                    onEditCategory(category)
                                     onMenuExpandChange(null)
                                 }
                             )
                             DropdownMenuItem(
                                 text = { Text(text = stringResource(R.string.dw_delete)) },
                                 onClick = {
+                                    onDeleteCategory(category)
                                     onMenuExpandChange(null)
                                 }
                             )
@@ -205,3 +249,4 @@ fun EditCategoryDialog(
         }
     )
 }
+
