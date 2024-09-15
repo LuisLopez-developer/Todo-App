@@ -13,6 +13,10 @@
     <!-- Para la pantalla de listar tareas -->
     <string name="list_all">Todas</string>
 
+    <!-- Para la pantalla de categorias -->
+    <string name="dw_delete">Eliminar</string>
+    <string name="dw_edit">Editar</string>
+
     <!-- Descripcion para iconos -->
     <string name="ic_label_offer"> Icono de etiqueta</string>
     <string name="ic_arrow_drop_down">Icono con flecha hacia abajo</string>
