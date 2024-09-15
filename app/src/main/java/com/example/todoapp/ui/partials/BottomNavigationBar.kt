@@ -1,88 +1,85 @@
 package com.example.todoapp.ui.partials
 
-import androidx.compose.foundation.layout.Arrangement.SpaceAround
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
-import com.example.todoapp.R
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.todoapp.R.drawable
+import com.example.todoapp.R.string
 import com.example.todoapp.ui.navigation.CalendarRoute
 import com.example.todoapp.ui.navigation.Pantalla2Route
 import com.example.todoapp.ui.navigation.TaskCategoryRoute
 import com.example.todoapp.ui.navigation.TaskListRoute
-
+import kotlinx.serialization.ExperimentalSerializationApi
 
 @Composable
 fun BottomNavigationBar(navigationController: NavController) {
-    BottomAppBar {
-        Row(
-            modifier = Modifier.fillMaxWidth(), horizontalArrangement = SpaceAround
-        ) {
-            IconButton(onClick = {
-                navigationController.navigate(CalendarRoute) {
-                    popUpTo(navigationController.graph.startDestinationId) {
-                        saveState = true
-                    }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Call, contentDescription = "Pantalla 1"
-                )
-            }
-
-            IconButton(onClick = {
-                navigationController.navigate(TaskCategoryRoute) {
-                    popUpTo(navigationController.graph.startDestinationId) {
-                        saveState = true
-                    }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Check, contentDescription = "Pantalla 2"
-                )
-            }
-
-            IconButton(onClick = {
-                navigationController.navigate(Pantalla2Route) {
-                    popUpTo(navigationController.graph.startDestinationId) {
-                        saveState = true
-                    }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.AddCircle, contentDescription = "Pantalla 3"
-                )
-            }
-
-            IconButton(onClick = {
-                navigationController.navigate(TaskListRoute) {
-                    popUpTo(navigationController.graph.startDestinationId) {
-                        saveState = true
-                    }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.AddCircle, contentDescription = "Task List"
-                )
-            }
-
+    val currentDestination = navigationController.currentBackStackEntryAsState().value?.destination
+    NavigationBar {
+        bottomNavigationItems.forEach { item ->
+            NavigationBarItem(
+                selected = currentDestination?.route == item.route,
+                onClick = {
+                    navigationController.navigateTo(item.route)
+                },
+                icon = {
+                    Icon(
+                        painter = painterResource(item.icon),
+                        contentDescription = stringResource(item.contentDescription)
+                    )
+                },
+                label = { Text(text = stringResource(item.label)) }
+            )
         }
     }
 }
+
+fun NavController.navigateTo(route: String) {
+    navigate(route) {
+        popUpTo(graph.startDestinationId) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
+
+data class BottomNavigationItem(
+    val route: String,
+    val icon: Int,
+    val contentDescription: Int,
+    val label: Int,
+)
+
+@OptIn(ExperimentalSerializationApi::class)
+val bottomNavigationItems = listOf(
+    BottomNavigationItem(
+        CalendarRoute.serializer().descriptor.serialName,
+        drawable.ic_calendar,
+        string.calendar_content_description,
+        string.bb_calendar_title
+    ),
+    BottomNavigationItem(
+        TaskListRoute.serializer().descriptor.serialName,
+        drawable.ic_task,
+        string.task_list_content_description,
+        string.bb_task_list_title
+    ),
+    BottomNavigationItem(
+        TaskCategoryRoute.serializer().descriptor.serialName,
+        drawable.ic_notes,
+        string.task_category_content_description,
+        string.bb_task_category_title
+    ),
+    BottomNavigationItem(
+        Pantalla2Route.serializer().descriptor.serialName,
+        drawable.ic_label_offer,
+        string.pantalla_2_content_description,
+        string.bb_pantalla_2_title
+    )
+)
