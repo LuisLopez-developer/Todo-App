@@ -9,7 +9,7 @@ object CalendarRoute
 object TaskCategoryRoute
 
 @Serializable
-object Pantalla2Route
+object SettingsRoute
 
 @Serializable
 object TaskListRoute

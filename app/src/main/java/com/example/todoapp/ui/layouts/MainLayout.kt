@@ -16,20 +16,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.todoapp.Screen2
 import com.example.todoapp.addtasks.ui.EditTaskScreen
-import com.example.todoapp.addtasks.ui.taskList.TaskListScreen
 import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.TasksScreen
+import com.example.todoapp.addtasks.ui.taskList.TaskListScreen
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.services.notification.RequestNotificationPermission
+import com.example.todoapp.settings.SettingsScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.constants.StylesTopBar
 import com.example.todoapp.ui.navigation.CalendarRoute
 import com.example.todoapp.ui.navigation.EditTaskRoute
-import com.example.todoapp.ui.navigation.Pantalla2Route
+import com.example.todoapp.ui.navigation.SettingsRoute
 import com.example.todoapp.ui.navigation.TaskCategoryRoute
 import com.example.todoapp.ui.navigation.TaskListRoute
 import com.example.todoapp.ui.partials.BottomNavigationBar
@@ -61,6 +61,7 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
                 bottomBarState.value = false
                 styleTopBarState.value = StylesTopBar.SECONDARY_BACK_OPTIONS
             }
+
             else -> {
                 bottomBarState.value = true
                 styleTopBarState.value = StylesTopBar.MAIN
@@ -108,8 +109,8 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
                 val args = it.toRoute<EditTaskRoute>()
                 EditTaskScreen(taskViewModel, taskCategoryViewModel, args.id)
             }
-            composable<Pantalla2Route> {
-                Screen2()
+            composable<SettingsRoute> {
+                SettingsScreen()
             }
             composable<TaskListRoute> {
                 TaskListScreen(

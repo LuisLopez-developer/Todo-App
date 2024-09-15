@@ -12,7 +12,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.todoapp.R.drawable
 import com.example.todoapp.R.string
 import com.example.todoapp.ui.navigation.CalendarRoute
-import com.example.todoapp.ui.navigation.Pantalla2Route
+import com.example.todoapp.ui.navigation.SettingsRoute
 import com.example.todoapp.ui.navigation.TaskCategoryRoute
 import com.example.todoapp.ui.navigation.TaskListRoute
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -77,7 +77,7 @@ val bottomNavigationItems = listOf(
         string.bb_task_category_title
     ),
     BottomNavigationItem(
-        Pantalla2Route.serializer().descriptor.serialName,
+        SettingsRoute.serializer().descriptor.serialName,
         drawable.ic_settings,
         string.settings_content_description,
         string.bb_settings
