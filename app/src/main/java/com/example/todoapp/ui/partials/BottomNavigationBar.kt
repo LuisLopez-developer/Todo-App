@@ -78,8 +78,8 @@ val bottomNavigationItems = listOf(
     ),
     BottomNavigationItem(
         Pantalla2Route.serializer().descriptor.serialName,
-        drawable.ic_label_offer,
-        string.pantalla_2_content_description,
-        string.bb_pantalla_2_title
+        drawable.ic_settings,
+        string.settings_content_description,
+        string.bb_settings
     )
 )
