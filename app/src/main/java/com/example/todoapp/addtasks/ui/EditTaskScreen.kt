@@ -1,5 +1,6 @@
 package com.example.todoapp.addtasks.ui
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -63,6 +65,9 @@ fun EditTaskScreen(
     // Observar el modelo de las categorias
     val categoryUiState by taskCategoryViewModel.uiState.collectAsState()
 
+    // Obtener el contexto en el composable usando `LocalContext`
+    val context = LocalContext.current
+
     // Recibe y carga el task con el id correcto
     LaunchedEffect(id) {
         taskViewModel.getTaskById(id)
@@ -83,7 +88,8 @@ fun EditTaskScreen(
                 taskViewModel,
                 taskCategoryViewModel,
                 (taskUiState as TaskUiState.Success).task,
-                categoryUiState
+                categoryUiState,
+                context
             )
         }
 
@@ -100,6 +106,7 @@ fun Container(
     taskCategoryViewModel: TaskCategoryViewModel,
     task: TaskModel,
     categoryUiState: TaskCategoryUiState,
+    context: Context
 ) {
     var taskText by remember { mutableStateOf(task.task) }
     var taskDetail by remember { mutableStateOf(task.details ?: "") }
@@ -176,7 +183,7 @@ fun Container(
                                     text = { Text(text = stringResource(string.uncategorized)) },
                                     onClick = {
                                         taskCategoryViewModel.setSelectedCategory("Sin categoría")
-                                        taskViewModel.updateTask(task.copy(categoryId = null))
+                                        taskViewModel.updateTask(task.copy(categoryId = null), context)
                                     }
                                 )
 
@@ -186,7 +193,7 @@ fun Container(
                                         DropdownMenuItem(
                                             text = { Text(text = item.category) },
                                             onClick = {
-                                                taskViewModel.updateTask(task.copy(categoryId = item.id))
+                                                taskViewModel.updateTask(task.copy(categoryId = item.id), context)
                                                 taskCategoryViewModel.setShowDropDown(false)
                                             }
                                         )
@@ -199,7 +206,7 @@ fun Container(
                             textStyle = Typography.bodyLarge,
                             onValueChange = {
                                 taskText = it
-                                taskViewModel.updateTask(task.copy(task = it))
+                                taskViewModel.updateTask(task.copy(task = it), context)
                             },
                             placeholder = {
                                 Text(
@@ -224,7 +231,7 @@ fun Container(
                             value = taskDetail,
                             onValueChange = {
                                 taskDetail = it
-                                taskViewModel.updateTask(task.copy(details = it))
+                                taskViewModel.updateTask(task.copy(details = it), context)
                             },
                             textStyle = typography.bodySmall.copy(color = colorScheme.onSurface),
                             decorationBox = { innerTextField ->
@@ -325,7 +332,7 @@ fun Container(
                     startDate = taskViewModel.temporaryDate.value ?: LocalDate.now(),
                     time = taskViewModel.temporaryTime.value
                 )
-                taskViewModel.updateTask(updatedTask)
+                taskViewModel.updateTask(updatedTask, context)
                 taskViewModel.resetTemporaryDateTime()
             }
         )

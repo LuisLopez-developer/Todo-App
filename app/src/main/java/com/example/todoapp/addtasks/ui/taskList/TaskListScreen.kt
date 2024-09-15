@@ -1,4 +1,4 @@
-package com.example.todoapp.addtasks.ui
+package com.example.todoapp.addtasks.ui.taskList
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,9 +30,9 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.example.todoapp.R
+import com.example.todoapp.addtasks.ui.TasksUiState
 import com.example.todoapp.addtasks.ui.components.TaskItemComponent
 import com.example.todoapp.addtasks.ui.model.TaskModel
-import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.holidays.ui.model.HolidayModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel

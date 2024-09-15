@@ -44,3 +44,21 @@ fun setAlarm(context: Context, taskId: Int, date: LocalDate, time: LocalTime, ti
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
     }
 }
+
+fun cancelAlarm(context: Context, taskId: Int) {
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val intent = Intent(context, AlarmReceiver::class.java).apply {
+        putExtra(TASK_ID, taskId)
+    }
+
+    val pendingIntent = PendingIntent.getBroadcast(
+        context,
+        taskId,
+        intent,
+        PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+    )
+
+    pendingIntent?.let {
+        alarmManager.cancel(it)
+    }
+}

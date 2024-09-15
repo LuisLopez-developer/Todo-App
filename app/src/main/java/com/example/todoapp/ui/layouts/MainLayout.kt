@@ -16,7 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.todoapp.Screen2
 import com.example.todoapp.addtasks.ui.EditTaskScreen
-import com.example.todoapp.addtasks.ui.TaskListScreen
+import com.example.todoapp.addtasks.ui.taskList.TaskListScreen
 import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.TasksScreen
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
