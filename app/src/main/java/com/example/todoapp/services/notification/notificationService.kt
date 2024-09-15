@@ -8,12 +8,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.todoapp.MainActivity
 import com.example.todoapp.R
-import com.example.todoapp.R.string
+import com.example.todoapp.constants.NotificationStructure.TASK_ID
+import com.example.todoapp.services.alarm.StopAlarmReceiver
 
 fun sendNotification(context: Context, taskId: Int, title: String) {
     if (ActivityCompat.checkSelfPermission(
@@ -21,6 +23,7 @@ fun sendNotification(context: Context, taskId: Int, title: String) {
             Manifest.permission.POST_NOTIFICATIONS
         ) != PackageManager.PERMISSION_GRANTED
     ) {
+        Log.d("NotificationService", "No se concedió el permiso para enviar notificaciones")
         return
     }
 
@@ -39,26 +42,38 @@ fun sendNotification(context: Context, taskId: Int, title: String) {
         notificationManager.createNotificationChannel(channel)
     }
 
-    // Crear el intent para abrir la aplicación cuando se toque la notificación
-    val intent = Intent(context, MainActivity::class.java).apply {
+    // Intent para abrir la aplicación
+    val mainIntent = Intent(context, MainActivity::class.java).apply {
         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
     }
-
-    val pendingIntent = PendingIntent.getActivity(
+    val mainPendingIntent = PendingIntent.getActivity(
         context,
         0,
-        intent,
+        mainIntent,
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
-    // Crear el formato de la notificación
+    // Intent para detener el sonido de la alarma
+    val stopAlarmIntent = Intent(context, StopAlarmReceiver::class.java).apply {
+        putExtra(TASK_ID, taskId)
+    }
+    val stopAlarmPendingIntent = PendingIntent.getBroadcast(
+        context,
+        taskId,
+        stopAlarmIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+
+    // Crear la notificación con la acción de detener la alarma
     val notification = NotificationCompat.Builder(context, channelId)
         .setSmallIcon(R.drawable.ic_notifications)
-        .setContentTitle(context.getString(string.scheduled_task))
+        .setContentTitle(context.getString(R.string.scheduled_task))
         .setContentText(title)
         .setPriority(NotificationCompat.PRIORITY_HIGH)
-        .setContentIntent(pendingIntent)
+        .setContentIntent(mainPendingIntent)
         .setAutoCancel(true)
+        // Añadir el botón para detener la alarma
+        .addAction(R.drawable.ic_alarm_off, "Detener Alarma", stopAlarmPendingIntent)
         .build()
 
     notificationManager.notify(taskId, notification)

@@ -32,6 +32,7 @@
 
         <!-- Registrar el BroadcastReceiver -->
         <receiver android:name=".services.alarm.AlarmReceiver" />
+        <receiver android:name=".services.alarm.StopAlarmReceiver" />
 
     </application>
 

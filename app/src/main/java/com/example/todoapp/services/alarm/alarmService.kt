@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import com.example.todoapp.constants.NotificationStructure.TASK_ID
 import com.example.todoapp.constants.NotificationStructure.TASK_TITLE
 import org.threeten.bp.LocalDate
@@ -19,9 +20,10 @@ fun setAlarm(context: Context, taskId: Int, date: LocalDate, time: LocalTime, ti
 
     val triggerTime = calendar.timeInMillis
     val currentTime = System.currentTimeMillis()
-
+    Log.d("NotificationService", "Fecha y hora de la alarma: $triggerTime")
     if (triggerTime < currentTime) {
         // La fecha y hora están en el pasado, no programar la alarma
+        Log.d("NotificationService", "La fecha y hora de la alarma están en el pasado")
         return
     }
 
@@ -40,14 +42,17 @@ fun setAlarm(context: Context, taskId: Int, date: LocalDate, time: LocalTime, ti
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         if (alarmManager.canScheduleExactAlarms()) {
+            Log.d("NotificationService", "Programando alarma exacta")
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
         } else {
+            Log.d("NotificationService", "Solicitando permiso para programar alarma exacta")
             // Solicitar permiso si es necesario
             val intent2 = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
             intent2.data = Uri.parse("package:${context.packageName}")
             context.startActivity(intent2)
         }
     } else {
+        Log.d("NotificationService", "Programando alarma")
         // Para versiones anteriores, se supone que se concede el permiso
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
     }
