@@ -250,4 +250,9 @@ class TaskViewModel @Inject constructor(
         _temporaryTime.value = null
     }
 
+    fun resetTemporaryDateTime2() {
+        _temporaryDate2.value = null
+        _temporaryTime2.value = null
+    }
+
 }

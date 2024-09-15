@@ -95,6 +95,7 @@ fun BottomSheetComponent(
             taskViewModel.onTaskCreated(taskModel, context)
             cleanFields()
             onConfirm()
+            taskViewModel.resetTemporaryDateTime2()
         }
     }
 
