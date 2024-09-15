@@ -1,7 +1,6 @@
 package com.example.todoapp.addtasks.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,9 +12,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -26,13 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -44,6 +36,7 @@ import com.example.todoapp.R.drawable
 import com.example.todoapp.R.string
 import com.example.todoapp.R.string.ic_calendar
 import com.example.todoapp.addtasks.ui.components.BottomSheetComponent
+import com.example.todoapp.addtasks.ui.components.TaskItemComponent
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.holidays.ui.model.HolidayModel
@@ -187,7 +180,19 @@ fun TasksList(
 ) {
     LazyColumn {
         items(tasks, key = { it.id }) { task ->
-            ItemTask(taskModel = task, taskViewModel = taskViewModel, navigationController)
+            TaskItemComponent(
+                text = task.task,
+                checked = task.selected,
+                onClick = {
+                    navigationController.navigate(EditTaskRoute(id = task.id))
+                },
+                onLongPress = {
+                    taskViewModel.onItemRemove(task)
+                },
+                onCheckBoxChange = { isChecked ->
+                    taskViewModel.updateTask(task.copy(selected = isChecked))
+                }
+            )
         }
         items(holidays.filter { it.date == selectedDate }) { holiday ->
             HolidayItem(holiday = holiday)
@@ -218,70 +223,6 @@ fun HolidayItem(holiday: HolidayModel) {
             Text(
                 text = "${holiday.date}: ${holiday.name}",
                 color = colorScheme.tertiary
-            )
-        }
-    }
-}
-
-@Composable
-fun ItemTask(
-    taskModel: TaskModel,
-    taskViewModel: TaskViewModel,
-    navigationController: NavHostController,
-) {
-    var isLongPress by remember { mutableStateOf(false) }
-
-    Card(
-        Modifier
-            .fillMaxWidth()
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = {
-                        isLongPress = true
-                        taskViewModel.onItemRemove(taskModel)
-                    },
-                    onTap = {
-                        if (!isLongPress) {
-                            navigationController.navigate(
-                                EditTaskRoute(
-                                    id = taskModel.id
-                                )
-                            )
-                        }
-                    }
-                )
-            }
-            .padding(horizontal = 5.dp, vertical = 5.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .background(color = colorScheme.surfaceContainerHighest)
-                .padding(6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = taskModel.selected,
-                onCheckedChange = { taskViewModel.onCheckBox(taskModel) },
-                colors = CheckboxColors(
-                    checkedBoxColor = colorScheme.primaryContainer,
-                    uncheckedBoxColor = colorScheme.surfaceContainerHighest,
-                    disabledCheckedBoxColor = colorScheme.primary,
-                    disabledUncheckedBoxColor = colorScheme.primary,
-                    disabledIndeterminateBoxColor = colorScheme.primary,
-                    checkedBorderColor = colorScheme.primaryContainer,
-                    uncheckedBorderColor = colorScheme.outline,
-                    disabledBorderColor = colorScheme.primary,
-                    disabledUncheckedBorderColor = colorScheme.primary,
-                    disabledIndeterminateBorderColor = colorScheme.primary,
-                    checkedCheckmarkColor = colorScheme.onPrimary,
-                    uncheckedCheckmarkColor = colorScheme.primary
-                ),
-            )
-            Text(
-                text = taskModel.task,
-                Modifier.weight(1f)
             )
         }
     }

@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.example.todoapp.R
+import com.example.todoapp.addtasks.ui.components.TaskItemComponent
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
@@ -165,18 +166,19 @@ fun CategorySelector(
 fun List(tasks: List<TaskModel>) {
     LazyColumn {
         items(tasks) { task ->
-            TaskItem(task = task, onClick = { })
+            TaskItemComponent(
+                text = task.task,
+                checked = !task.selected,
+                onClick = {
+                    //navigationController.navigate(EditTaskRoute(id = task.id))
+                },
+                onLongPress = {
+                    //taskViewModel.onItemRemove(task)
+                },
+                onCheckBoxChange = { isChecked ->
+                    //taskViewModel.onCheckBox(task.copy(selected = isChecked))
+                }
+            )
         }
-    }
-}
-
-@Composable
-fun TaskItem(task: TaskModel, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .padding(16.dp)
-    ) {
-        Text(text = task.task) // Muestra el texto de la tarea
     }
 }
