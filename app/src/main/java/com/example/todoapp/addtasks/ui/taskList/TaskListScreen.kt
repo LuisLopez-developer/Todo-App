@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -104,12 +105,20 @@ fun Container(
                 categories = categories
             )
 
-            Box(Modifier.padding(horizontal = 15.dp)) {
-                List(
-                    tasks = tasks
-                )
+            Box(Modifier.fillMaxSize().padding(horizontal = 15.dp)) {
+                // Si la lista de tareas está vacía, mostrar un mensaje.
+                if (tasks.isEmpty()) {
+                    Text(
+                        text = "No hay tareas disponibles. ¡Agrega una tarea para empezar!",
+                        modifier = Modifier
+                            .align(Alignment.Center) // Centra el texto dentro del Box
+                            .padding(16.dp),
+                        color = colorScheme.primary.copy(alpha = 0.7f) // Color con transparencia
+                    )
+                } else {
+                    List(tasks = tasks)
+                }
             }
-
         }
     }
 }
