@@ -6,7 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.todoapp.addtasks.data.TaskRepository
 import com.example.todoapp.settings.data.AuthRepository
+import com.example.todoapp.settings.data.FirebaseRepository
 import com.example.todoapp.settings.data.UserDao
 import com.example.todoapp.settings.data.UserEntity
 import com.google.firebase.auth.FirebaseAuth
@@ -18,6 +20,8 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userDao: UserDao,
+    private val taskRepository: TaskRepository,
+    private val firebaseRepository: FirebaseRepository
 ) : ViewModel() {
     var user by mutableStateOf<UserEntity?>(null)
         private set
@@ -26,7 +30,8 @@ class SettingsViewModel @Inject constructor(
         authRepository.signInWithGoogle(idToken, onSuccess = {
             val firebaseUser = FirebaseAuth.getInstance().currentUser
             firebaseUser?.let {
-                val userEntity = UserEntity(uid = it.uid, name = it.displayName ?: "", email = it.email ?: "")
+                val userEntity =
+                    UserEntity(uid = it.uid, name = it.displayName ?: "", email = it.email ?: "")
                 viewModelScope.launch {
                     userDao.insertUser(userEntity)
                     user = userEntity
@@ -42,6 +47,18 @@ class SettingsViewModel @Inject constructor(
         val firebaseUser = FirebaseAuth.getInstance().currentUser
         firebaseUser?.let {
             user = UserEntity(uid = it.uid, name = it.displayName ?: "", email = it.email ?: "")
+        }
+    }
+
+    fun syncTasks() {
+        viewModelScope.launch {
+            taskRepository.syncTasksWithFirebase()
+        }
+    }
+
+    fun syncTasksFromFirebase() {
+        viewModelScope.launch {
+            firebaseRepository.syncTasksFromFirestore()
         }
     }
 }

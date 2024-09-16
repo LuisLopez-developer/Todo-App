@@ -126,4 +126,7 @@ dependencies {
 
     // Add the Firebase SDK for Google Analytics
     implementation(libs.firebase.analytics)
+
+    // Firebase Firestore
+    implementation(libs.firebase.firestore.ktx)
 }

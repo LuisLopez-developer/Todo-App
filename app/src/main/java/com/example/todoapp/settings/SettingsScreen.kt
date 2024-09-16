@@ -15,7 +15,6 @@ import com.example.todoapp.settings.ui.SettingsViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -34,27 +33,34 @@ fun SettingsScreen(
     val signInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        Log.e("SettingsScreen", "signInLauncher: $result")
         if (result.resultCode == Activity.RESULT_OK) {
             val account = GoogleSignIn.getLastSignedInAccount(context)
             handleSignInResult(account, settingsViewModel, coroutineScope)
         } else {
             Log.e("SettingsScreen", "signInLauncher: Canceled or failed")
-            // Handle the case where the sign-in was canceled or failed
         }
     }
 
     Column {
         settingsViewModel.user?.let { user ->
-            Text(text = "Hello, ${user.name}")
-            Log.e("SettingsScreen", "User signed in: $user")
+            Text(text = "Hola, ${user.name}")
+            Button(onClick = {
+                settingsViewModel.syncTasks()
+            }) {
+                Text("Sincronizar tareas con Firebase")
+            }
+            Button(onClick = {
+                settingsViewModel.syncTasksFromFirebase()
+            }) {
+                Text("Sincronizar tareas desde Firebase")
+            }
+
         } ?: run {
             Button(onClick = {
                 val signInIntent = googleSignInClient.signInIntent
-                Log.e("SettingsScreen", "Launching sign in intent")
                 signInLauncher.launch(signInIntent)
             }) {
-                Text("Sign in with Google")
+                Text("Iniciar sesión con Google")
             }
         }
     }
@@ -63,10 +69,7 @@ fun SettingsScreen(
 fun handleSignInResult(account: GoogleSignInAccount?, settingsViewModel: SettingsViewModel, coroutineScope: CoroutineScope) {
     Log.e("SettingsScreen", "handleSignInResult: $account")
     account?.idToken?.let { idToken ->
-        Log.e("SettingsScreen", "handleSignInResult: ${account.displayName}")
-        Log.e("SettingsScreen", "handleSignInResult: ${account.email}")
         coroutineScope.launch {
-            Log.e("SettingsScreen", "handleSignInResult: $idToken")
             settingsViewModel.signInWithGoogle(idToken)
         }
     }

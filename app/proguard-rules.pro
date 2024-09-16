@@ -19,3 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Keep the no-argument constructors for Firestore entities
+-keepclassmembers class com.example.todoapp.taskcategory.data.CategoryEntity {
+    public <init>();
+}
+
+-keepclassmembers class com.example.todoapp.addtasks.data.TaskEntity {
+    public <init>();
+}

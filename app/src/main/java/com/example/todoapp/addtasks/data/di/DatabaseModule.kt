@@ -1,11 +1,13 @@
 package com.example.todoapp.addtasks.data.di
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.todoapp.addtasks.data.TodoDataBase
 import com.example.todoapp.addtasks.data.TaskDao
+import com.example.todoapp.settings.data.FirebaseRepository
 import com.example.todoapp.settings.data.UserDao
 import com.example.todoapp.taskcategory.data.CategoryDao
 import com.example.todoapp.taskcategory.data.CategoryEntity
@@ -47,6 +49,12 @@ class DatabaseModule {
 
     @Provides
     @Singleton
+    fun provideFirebaseRepository(categoryDao: CategoryDao, taskDao: TaskDao): FirebaseRepository {
+        return FirebaseRepository(categoryDao, taskDao)
+    }
+
+    @Provides
+    @Singleton
     fun provideTodoDatabase(@ApplicationContext appContext: Context): TodoDataBase {
         return Room.databaseBuilder(appContext, TodoDataBase::class.java, "TaskDatabase")
             .addCallback(object : RoomDatabase.Callback() {
@@ -54,16 +62,21 @@ class DatabaseModule {
                     super.onCreate(db)
                     // Aquí lanzamos una corrutina para insertar las categorías iniciales
                     CoroutineScope(Dispatchers.IO).launch {
-                        val prepopulateCategories = listOf(
-                            CategoryEntity(category = "Trabajo"),
-                            CategoryEntity(category = "Estudio"),
-                            CategoryEntity(category = "Familia"),
-                            CategoryEntity(category = "Compras"),
-                            CategoryEntity(category = "Examen")
-                        )
-                        val categoryDao = provideCategoryDao(TodoDataBase.getInstance(appContext))
-                        prepopulateCategories.map {
-                            categoryDao.addCategory(it)
+                        try {
+                            val prepopulateCategories = listOf(
+                                CategoryEntity(category = "Trabajo"),
+                                CategoryEntity(category = "Estudio"),
+                                CategoryEntity(category = "Familia"),
+                                CategoryEntity(category = "Compras"),
+                                CategoryEntity(category = "Examen")
+                            )
+                            val categoryDao = provideCategoryDao(TodoDataBase.getInstance(appContext))
+                            prepopulateCategories.forEach {
+                                categoryDao.addCategory(it)
+                            }
+                            Log.d("DatabaseModule", "Categorías predeterminadas insertadas correctamente")
+                        } catch (e: Exception) {
+                            Log.e("DatabaseModule", "Error al insertar categorías predeterminadas", e)
                         }
                     }
                 }

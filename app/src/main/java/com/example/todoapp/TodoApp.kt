@@ -1,6 +1,7 @@
 package com.example.todoapp
 
 import android.app.Application
+import com.google.firebase.FirebaseApp
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
 
@@ -10,5 +11,7 @@ class TodoApp : Application(){
     override fun onCreate() {
         super.onCreate()
         AndroidThreeTen.init(this)
+        FirebaseApp.initializeApp(this)
+
     }
 }

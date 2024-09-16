@@ -3,6 +3,7 @@ agp = "8.6.0"
 coilCompose = "2.7.0"
 converterGson = "2.9.0"
 firebaseBom = "33.3.0"
+firebaseFirestoreKtx = "25.1.0"
 foundation = "1.7.0"
 googleApiClientAndroid = "1.32.2"
 googleApiServicesDrive = "v3-rev136-1.25.0"
@@ -37,6 +38,7 @@ converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 google-api-client-android = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClientAndroid" }
 google-api-services-drive = { module = "com.google.apis:google-api-services-drive", version.ref = "googleApiServicesDrive" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }

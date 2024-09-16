@@ -2,14 +2,21 @@ package com.example.todoapp.addtasks.data
 
 import android.util.Log
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.settings.data.FirebaseRepository
+import com.example.todoapp.taskcategory.data.CategoryDao
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
+class TaskRepository @Inject constructor(
+    private val taskDao: TaskDao,
+    private val categoryDao: CategoryDao,
+    private val firebaseRepository: FirebaseRepository
+) {
 
     val tasks: Flow<List<TaskModel>> = taskDao.getTasks().map { items ->
         items.map {
@@ -63,6 +70,19 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
             }
         }
     }
+
+    suspend fun syncTasksWithFirebase() {
+        val categories = categoryDao.getCategory().first()
+        categories.forEach { categoryEntity ->
+            firebaseRepository.saveCategoryToFirestore(categoryEntity)
+        }
+
+        val tasks = taskDao.getTasks().first()
+        tasks.forEach { taskEntity ->
+            firebaseRepository.saveTaskToFirestore(taskEntity)
+        }
+    }
+
 }
 
 fun TaskModel.toData(): TaskEntity {
