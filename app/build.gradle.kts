@@ -75,8 +75,8 @@ dependencies {
     implementation(libs.androidx.material3)
 
     // Retrofit dependencies
-    implementation (libs.converter.gson)
-    implementation (libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.retrofit)
     implementation(libs.play.services.tflite.support)
 
     // Test dependencies
@@ -113,4 +113,9 @@ dependencies {
 
     //Test
     implementation(libs.coil.compose)
+
+    //Auth02
+    implementation(libs.play.services.auth) // Para autenticación
+    implementation(libs.google.api.client.android) // Cliente de Google API
+    implementation(libs.google.api.services.drive)// Google Drive API
 }
