@@ -13,12 +13,17 @@ import androidx.compose.ui.Modifier
 import com.example.todoapp.services.notification.RequestNotificationPermission
 import com.example.todoapp.ui.layouts.MainLayout
 import com.example.todoapp.ui.theme.TodoAppTheme
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private lateinit var permissionService: RequestNotificationPermission
+    private lateinit var googleSignInClient: GoogleSignInClient
+
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,6 +32,13 @@ class MainActivity : ComponentActivity() {
         // Inicializa PermissionService
         permissionService = RequestNotificationPermission(this)
 
+        // Configura GoogleSignInClient
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+
         enableEdgeToEdge()
         setContent {
             TodoAppTheme {
@@ -34,7 +46,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainLayout(permissionService)
+                    MainLayout(permissionService, googleSignInClient)
                 }
             }
         }

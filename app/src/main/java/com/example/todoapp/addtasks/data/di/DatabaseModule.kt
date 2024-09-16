@@ -6,8 +6,10 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.todoapp.addtasks.data.TodoDataBase
 import com.example.todoapp.addtasks.data.TaskDao
+import com.example.todoapp.settings.data.UserDao
 import com.example.todoapp.taskcategory.data.CategoryDao
 import com.example.todoapp.taskcategory.data.CategoryEntity
+import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,6 +32,17 @@ class DatabaseModule {
     @Provides
     fun provideCategoryDao(todoDataBase: TodoDataBase): CategoryDao {
         return todoDataBase.categoryDao()
+    }
+
+    @Provides
+    fun provideUserDao(todoDataBase: TodoDataBase): UserDao {
+        return todoDataBase.userDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth {
+        return FirebaseAuth.getInstance()
     }
 
     @Provides

@@ -24,6 +24,7 @@ import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.services.notification.RequestNotificationPermission
 import com.example.todoapp.settings.SettingsScreen
+import com.example.todoapp.settings.ui.SettingsViewModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.constants.StylesTopBar
@@ -36,14 +37,20 @@ import com.example.todoapp.ui.partials.BottomNavigationBar
 import com.example.todoapp.ui.partials.TopAppBar
 import com.example.todoapp.ui.partials.TopAppBarSecondary
 import com.example.todoapp.ui.utils.extractCleanRoute
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun MainLayout(permissionService: RequestNotificationPermission) {
+fun MainLayout(
+    permissionService: RequestNotificationPermission,
+    googleSignInClient: GoogleSignInClient
+) {
     val taskViewModel: TaskViewModel = viewModel()
     val taskCategoryViewModel: TaskCategoryViewModel = viewModel()
     val taskListViewModel: TaskListViewModel = viewModel()
     val holidaysModel: HolidaysViewModel = viewModel()
+    val settingsViewModel: SettingsViewModel = viewModel()
+
     val navigationController = rememberNavController()
 
     val bottomBarState = rememberSaveable { mutableStateOf(true) }
@@ -110,7 +117,7 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
                 EditTaskScreen(taskViewModel, taskCategoryViewModel, args.id)
             }
             composable<SettingsRoute> {
-                SettingsScreen()
+                SettingsScreen(settingsViewModel = settingsViewModel, googleSignInClient = googleSignInClient)
             }
             composable<TaskListRoute> {
                 TaskListScreen(

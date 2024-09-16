@@ -5,6 +5,7 @@ plugins {
     id("kotlin-kapt")
     id("com.google.devtools.ksp")
     alias(libs.plugins.jetbrains.kotlin.serialization)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -114,8 +115,15 @@ dependencies {
     //Test
     implementation(libs.coil.compose)
 
-    //Auth02
-    implementation(libs.play.services.auth) // Para autenticación
-    implementation(libs.google.api.client.android) // Cliente de Google API
-    implementation(libs.google.api.services.drive)// Google Drive API
+    // Import the Firebase BoM
+    implementation(platform(libs.firebase.bom))
+
+    // Add the dependency for the Firebase Authentication library
+    implementation(libs.firebase.auth.ktx)
+
+    // Add the dependency for the Firebase Realtime Database library
+    implementation(libs.play.services.auth)
+
+    // Add the Firebase SDK for Google Analytics
+    implementation(libs.firebase.analytics)
 }

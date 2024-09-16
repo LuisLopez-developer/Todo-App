@@ -6,14 +6,17 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.todoapp.addtasks.utils.Converters
+import com.example.todoapp.settings.data.UserDao
+import com.example.todoapp.settings.data.UserEntity
 import com.example.todoapp.taskcategory.data.CategoryDao
 import com.example.todoapp.taskcategory.data.CategoryEntity
 
-@Database(entities = [TaskEntity::class, CategoryEntity::class], version = 1, exportSchema = true)
+@Database(entities = [TaskEntity::class, CategoryEntity::class, UserEntity::class], version = 2, exportSchema = true)
 @TypeConverters(Converters::class)
-abstract class TodoDataBase:RoomDatabase() {
+abstract class TodoDataBase: RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun userDao(): UserDao
 
     companion object {
         @Volatile
