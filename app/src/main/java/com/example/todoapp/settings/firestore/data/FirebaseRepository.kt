@@ -1,4 +1,4 @@
-package com.example.todoapp.settings.data
+package com.example.todoapp.settings.firestore.data
 
 import android.util.Log
 import com.example.todoapp.addtasks.data.TaskDao

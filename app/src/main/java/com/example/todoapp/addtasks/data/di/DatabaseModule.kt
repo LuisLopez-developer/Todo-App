@@ -5,13 +5,11 @@ import android.util.Log
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.todoapp.addtasks.data.TodoDataBase
 import com.example.todoapp.addtasks.data.TaskDao
-import com.example.todoapp.settings.data.FirebaseRepository
-import com.example.todoapp.settings.data.UserDao
+import com.example.todoapp.addtasks.data.TodoDataBase
+import com.example.todoapp.settings.auth.data.UserDao
 import com.example.todoapp.taskcategory.data.CategoryDao
 import com.example.todoapp.taskcategory.data.CategoryEntity
-import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -43,18 +41,6 @@ class DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseAuth(): FirebaseAuth {
-        return FirebaseAuth.getInstance()
-    }
-
-    @Provides
-    @Singleton
-    fun provideFirebaseRepository(categoryDao: CategoryDao, taskDao: TaskDao): FirebaseRepository {
-        return FirebaseRepository(categoryDao, taskDao)
-    }
-
-    @Provides
-    @Singleton
     fun provideTodoDatabase(@ApplicationContext appContext: Context): TodoDataBase {
         return Room.databaseBuilder(appContext, TodoDataBase::class.java, "TaskDatabase")
             .addCallback(object : RoomDatabase.Callback() {
@@ -70,13 +56,21 @@ class DatabaseModule {
                                 CategoryEntity(category = "Compras"),
                                 CategoryEntity(category = "Examen")
                             )
-                            val categoryDao = provideCategoryDao(TodoDataBase.getInstance(appContext))
+                            val categoryDao =
+                                provideCategoryDao(TodoDataBase.getInstance(appContext))
                             prepopulateCategories.forEach {
                                 categoryDao.addCategory(it)
                             }
-                            Log.d("DatabaseModule", "Categorías predeterminadas insertadas correctamente")
+                            Log.d(
+                                "DatabaseModule",
+                                "Categorías predeterminadas insertadas correctamente"
+                            )
                         } catch (e: Exception) {
-                            Log.e("DatabaseModule", "Error al insertar categorías predeterminadas", e)
+                            Log.e(
+                                "DatabaseModule",
+                                "Error al insertar categorías predeterminadas",
+                                e
+                            )
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-package com.example.todoapp.settings.data
+package com.example.todoapp.settings.auth.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

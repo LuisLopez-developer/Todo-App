@@ -6,8 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.todoapp.addtasks.utils.Converters
-import com.example.todoapp.settings.data.UserDao
-import com.example.todoapp.settings.data.UserEntity
+import com.example.todoapp.settings.auth.data.UserDao
+import com.example.todoapp.settings.auth.data.UserEntity
 import com.example.todoapp.taskcategory.data.CategoryDao
 import com.example.todoapp.taskcategory.data.CategoryEntity
 

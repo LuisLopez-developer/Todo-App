@@ -2,7 +2,7 @@ package com.example.todoapp.addtasks.data
 
 import android.util.Log
 import com.example.todoapp.addtasks.ui.model.TaskModel
-import com.example.todoapp.settings.data.FirebaseRepository
+import com.example.todoapp.settings.firestore.data.FirebaseRepository
 import com.example.todoapp.taskcategory.data.CategoryDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

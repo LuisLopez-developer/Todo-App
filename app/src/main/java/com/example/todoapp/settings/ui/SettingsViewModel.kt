@@ -7,10 +7,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.addtasks.data.TaskRepository
-import com.example.todoapp.settings.data.AuthRepository
-import com.example.todoapp.settings.data.FirebaseRepository
-import com.example.todoapp.settings.data.UserDao
-import com.example.todoapp.settings.data.UserEntity
+import com.example.todoapp.settings.auth.data.UserEntity
+import com.example.todoapp.settings.auth.domain.AddUserCaseUse
+import com.example.todoapp.settings.auth.domain.SignInWithGoogleUseCase
+import com.example.todoapp.settings.firestore.data.FirebaseRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -18,29 +18,34 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
-    private val userDao: UserDao,
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
+    private val addUserCaseUse: AddUserCaseUse,
     private val taskRepository: TaskRepository,
-    private val firebaseRepository: FirebaseRepository
+    private val firebaseRepository: FirebaseRepository,
 ) : ViewModel() {
     var user by mutableStateOf<UserEntity?>(null)
         private set
 
     fun signInWithGoogle(idToken: String) {
-        authRepository.signInWithGoogle(idToken, onSuccess = {
-            val firebaseUser = FirebaseAuth.getInstance().currentUser
-            firebaseUser?.let {
-                val userEntity =
-                    UserEntity(uid = it.uid, name = it.displayName ?: "", email = it.email ?: "")
-                viewModelScope.launch {
-                    userDao.insertUser(userEntity)
-                    user = userEntity
+        viewModelScope.launch {
+            signInWithGoogleUseCase(idToken, onSuccess = {
+                val firebaseUser = FirebaseAuth.getInstance().currentUser
+                firebaseUser?.let {
+                    val userEntity =
+                        UserEntity(
+                            uid = it.uid,
+                            name = it.displayName ?: "",
+                            email = it.email ?: ""
+                        )
+                    viewModelScope.launch {
+                        addUserCaseUse(userEntity)
+                        user = userEntity
+                    }
                 }
-            }
-        }, onFailure = {
-            Log.e("SettingsViewModel", "signInWithGoogle: ${it.message}")
-            // Handle failure
-        })
+            }, onFailure = {
+                Log.e("SettingsViewModel", "signInWithGoogle: ${it.message}")
+            })
+        }
     }
 
     fun checkUser() {
