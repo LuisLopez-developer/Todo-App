@@ -9,7 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.todoapp.settings.auth.data.UserEntity
 import com.example.todoapp.settings.auth.domain.AddUserCaseUse
 import com.example.todoapp.settings.auth.domain.SignInWithGoogleUseCase
-import com.example.todoapp.settings.firestore.data.FirebaseRepository
+import com.example.todoapp.settings.firestore.domain.SyncDataFromFirestoreUseCase
+import com.example.todoapp.settings.firestore.domain.SyncDataWithFirebaseUseCase
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -19,7 +20,8 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
     private val addUserCaseUse: AddUserCaseUse,
-    private val firebaseRepository: FirebaseRepository,
+    private val syncDataFromFirestoreUseCase: SyncDataFromFirestoreUseCase,
+    private val syncDataWithFirestoreUseCase: SyncDataWithFirebaseUseCase,
 ) : ViewModel() {
     var user by mutableStateOf<UserEntity?>(null)
         private set
@@ -55,13 +57,13 @@ class SettingsViewModel @Inject constructor(
 
     fun syncTasks() {
         viewModelScope.launch {
-            firebaseRepository.syncTasksWithFirebase()
+            syncDataWithFirestoreUseCase()
         }
     }
 
     fun syncTasksFromFirebase() {
         viewModelScope.launch {
-            firebaseRepository.syncTasksFromFirestore()
+            syncDataFromFirestoreUseCase()
         }
     }
 }

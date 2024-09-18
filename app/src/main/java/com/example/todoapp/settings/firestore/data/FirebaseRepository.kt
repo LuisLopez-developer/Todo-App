@@ -16,20 +16,8 @@ import javax.inject.Singleton
 @Singleton
 class FirebaseRepository @Inject constructor(
     private val categoryDao: CategoryDao,
-    private val taskDao: TaskDao
+    private val taskDao: TaskDao,
 ) {
-
-    suspend fun syncTasksWithFirebase() {
-        val categories = categoryDao.getCategory().first()
-        categories.forEach { categoryEntity ->
-            saveCategoryToFirestore(categoryEntity)
-        }
-
-        val tasks = taskDao.getTasks().first()
-        tasks.forEach { taskEntity ->
-            saveTaskToFirestore(taskEntity)
-        }
-    }
 
     private val firestore = FirebaseFirestore.getInstance()
 
@@ -71,8 +59,20 @@ class FirebaseRepository @Inject constructor(
             }
     }
 
+    suspend fun syncDataWithFirebase() {
+        val categories = categoryDao.getCategory().first()
+        categories.forEach { categoryEntity ->
+            saveCategoryToFirestore(categoryEntity)
+        }
+
+        val tasks = taskDao.getTasks().first()
+        tasks.forEach { taskEntity ->
+            saveTaskToFirestore(taskEntity)
+        }
+    }
+
     @OptIn(DelicateCoroutinesApi::class)
-    suspend fun syncTasksFromFirestore() {
+    suspend fun syncDataFromFirestore() {
         try {
             getCategoriesFromFirestore(onSuccess = { categories ->
                 GlobalScope.launch {
