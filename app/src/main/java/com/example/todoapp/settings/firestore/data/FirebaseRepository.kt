@@ -21,117 +21,113 @@ class FirebaseRepository @Inject constructor(
 
     private val firestore = FirebaseFirestore.getInstance()
 
-    private fun saveTaskToFirestore(task: TaskEntity) {
-        val taskRef = firestore.collection("tasks").document(task.id.toString())
-        taskRef.set(task.toMap())
-    }
-
-    private fun saveCategoryToFirestore(category: CategoryEntity) {
-        val categoryRef = firestore.collection("categories").document(category.id.toString())
-        categoryRef.set(category)
-    }
-
-    private fun getTasksFromFirestore(
-        onSuccess: (List<TaskEntity>) -> Unit,
-        onFailure: (Exception) -> Unit,
-    ) {
-        firestore.collection("tasks").get()
-            .addOnSuccessListener { result ->
-                val tasks = result.map { TaskEntity.fromMap(it.data) }
-                onSuccess(tasks)
-            }
-            .addOnFailureListener { exception ->
-                onFailure(exception)
+    private fun saveTaskToFirestore(taskEntity: TaskEntity) {
+        val taskRef = firestore.collection("tasks").document(taskEntity.id.toString())
+        taskRef.set(taskEntity.toMap())
+            .addOnSuccessListener { Log.d("FirebaseRepository", "Tarea guardada exitosamente") }
+            .addOnFailureListener { e ->
+                Log.e(
+                    "FirebaseRepository",
+                    "Error al guardar la tarea",
+                    e
+                )
             }
     }
 
-    private fun getCategoriesFromFirestore(
-        onSuccess: (List<CategoryEntity>) -> Unit,
-        onFailure: (Exception) -> Unit,
-    ) {
-        firestore.collection("categories").get()
-            .addOnSuccessListener { result ->
-                val categories = result.map { it.toObject(CategoryEntity::class.java) }
-                onSuccess(categories)
-            }
-            .addOnFailureListener { exception ->
-                onFailure(exception)
+    private fun saveCategoryToFirestore(categoryEntity: CategoryEntity) {
+        val categoryRef = firestore.collection("categories").document(categoryEntity.id.toString())
+        categoryRef.set(categoryEntity)
+            .addOnSuccessListener { Log.d("FirebaseRepository", "Categoría guardada exitosamente") }
+            .addOnFailureListener { e ->
+                Log.e(
+                    "FirebaseRepository",
+                    "Error al guardar la categoría",
+                    e
+                )
             }
     }
 
+    // Sincronizar datos con Firestore (guardando datos locales en Firestore)
     suspend fun syncDataWithFirebase() {
-        val categories = categoryDao.getCategory().first()
-        categories.forEach { categoryEntity ->
+        categoryDao.getCategory().first().forEach { categoryEntity ->
             saveCategoryToFirestore(categoryEntity)
         }
 
-        val tasks = taskDao.getTasks().first()
-        tasks.forEach { taskEntity ->
+        taskDao.getTasks().first().forEach { taskEntity ->
             saveTaskToFirestore(taskEntity)
         }
     }
 
+    // Sincronizar datos desde Firestore (obteniendo datos de Firestore a la base de datos local)
     @OptIn(DelicateCoroutinesApi::class)
     suspend fun syncDataFromFirestore() {
         try {
-            getCategoriesFromFirestore(onSuccess = { categories ->
-                GlobalScope.launch {
-                    categories.forEach { categoryEntity ->
-                        try {
-                            val existingCategory = categoryDao.getCategoryById(categoryEntity.id)
-                            if (existingCategory == null) {
-                                categoryDao.addCategory(categoryEntity)
-                                Log.d(
-                                    "FirebaseRepository",
-                                    "Category added: ${categoryEntity.category}"
-                                )
-                            } else {
-                                Log.d(
-                                    "FirebaseRepository",
-                                    "Category already exists: ${categoryEntity.category}"
-                                )
-                            }
-                        } catch (e: Exception) {
-                            Log.e(
-                                "FirebaseRepository",
-                                "Error adding category: ${categoryEntity.category}",
-                                e
-                            )
-                        }
+            // Obtener categorías desde Firestore y manejarlas
+            firestore.collection("categories").get()
+                .addOnSuccessListener { result ->
+                    val categories = result.map { it.toObject(CategoryEntity::class.java) }
+                    GlobalScope.launch {
+                        handleCategories(categories)
                     }
                 }
+                .addOnFailureListener { exception ->
+                    Log.e("FirebaseRepository", "Error al obtener categorías", exception)
+                }
 
-                getTasksFromFirestore(onSuccess = { tasks ->
+            // Fetch tasks from Firestore and handle them
+            firestore.collection("tasks").get()
+                .addOnSuccessListener { result ->
+                    val tasks = result.map { TaskEntity.fromMap(it.data) }
                     GlobalScope.launch {
-                        tasks.forEach { taskEntity ->
-                            try {
-                                val existingTask = taskDao.getTaskById(taskEntity.id)
-                                if (existingTask == null || existingTask.task != taskEntity.task) {
-                                    taskDao.addTask(taskEntity)
-                                    Log.d("FirebaseRepository", "Task added: ${taskEntity.task}")
-                                } else {
-                                    Log.d(
-                                        "FirebaseRepository",
-                                        "Task already exists: ${taskEntity.task}"
-                                    )
-                                }
-                            } catch (e: Exception) {
-                                Log.e(
-                                    "FirebaseRepository",
-                                    "Error adding task: ${taskEntity.task}",
-                                    e
-                                )
-                            }
-                        }
+                        handleTasks(tasks)
                     }
-                }, onFailure = {
-                    Log.e("FirebaseRepository", "Error fetching tasks from Firestore", it)
-                })
-            }, onFailure = {
-                Log.e("FirebaseRepository", "Error fetching categories from Firestore", it)
-            })
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("FirebaseRepository", "Error al obtener tareas", exception)
+                }
         } catch (e: Exception) {
-            Log.e("FirebaseRepository", "Error in syncTasksFromFirestore", e)
+            Log.e("FirebaseRepository", "Error en la sincronización de datos desde Firestore", e)
+        }
+    }
+
+    // Manejar categorías obtenidas de Firestore
+    private suspend fun handleCategories(categories: List<CategoryEntity>) {
+        categories.forEach { categoryEntity ->
+            try {
+                val existingCategory = categoryDao.getCategoryById(categoryEntity.id)
+                if (existingCategory == null) {
+                    categoryDao.addCategory(categoryEntity)
+                    Log.d("FirebaseRepository", "Categoria añadida: ${categoryEntity.category}")
+                } else {
+                    Log.d(
+                        "FirebaseRepository",
+                        "La categoría ya existe: ${categoryEntity.category}"
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(
+                    "FirebaseRepository",
+                    "Error al agregar categoría: ${categoryEntity.category}",
+                    e
+                )
+            }
+        }
+    }
+
+    // Manejar tareas obtenidas de Firestore
+    private suspend fun handleTasks(tasks: List<TaskEntity>) {
+        tasks.forEach { taskEntity ->
+            try {
+                val existingTask = taskDao.getTaskById(taskEntity.id)
+                if (existingTask == null || existingTask.task != taskEntity.task) {
+                    taskDao.addTask(taskEntity)
+                    Log.d("FirebaseRepository", "Tarea añadida: ${taskEntity.task}")
+                } else {
+                    Log.d("FirebaseRepository", "La tarea ya existe: ${taskEntity.task}")
+                }
+            } catch (e: Exception) {
+                Log.e("FirebaseRepository", "Error al agregar tarea: ${taskEntity.task}", e)
+            }
         }
     }
 }
