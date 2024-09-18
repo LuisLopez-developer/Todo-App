@@ -2,25 +2,27 @@ package com.example.todoapp.addtasks.data
 
 import android.util.Log
 import com.example.todoapp.addtasks.ui.model.TaskModel
-import com.example.todoapp.settings.firestore.data.FirebaseRepository
-import com.example.todoapp.taskcategory.data.CategoryDao
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TaskRepository @Inject constructor(
-    private val taskDao: TaskDao,
-    private val categoryDao: CategoryDao,
-    private val firebaseRepository: FirebaseRepository
-) {
+class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
 
     val tasks: Flow<List<TaskModel>> = taskDao.getTasks().map { items ->
         items.map {
-            TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.categoryId)
+            TaskModel(
+                it.id,
+                it.task,
+                it.selected,
+                it.startDate,
+                it.endDate,
+                it.time,
+                it.details,
+                it.categoryId
+            )
         }
     }
 
@@ -39,7 +41,16 @@ class TaskRepository @Inject constructor(
     suspend fun getTaskById(taskId: Int): TaskModel? {
         val taskEntity = taskDao.getTaskById(taskId)
         return taskEntity?.let {
-            TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.categoryId)
+            TaskModel(
+                it.id,
+                it.task,
+                it.selected,
+                it.startDate,
+                it.endDate,
+                it.time,
+                it.details,
+                it.categoryId
+            )
         }
     }
 
@@ -48,7 +59,16 @@ class TaskRepository @Inject constructor(
         return taskDao.getTasksByCategory(categoryId).map { items ->
             Log.d("TaskRepository", "Tasks for category $categoryId: $items")
             items.map {
-                TaskModel(it.id, it.task, it.selected, it.startDate, it.endDate, it.time, it.details, it.categoryId)
+                TaskModel(
+                    it.id,
+                    it.task,
+                    it.selected,
+                    it.startDate,
+                    it.endDate,
+                    it.time,
+                    it.details,
+                    it.categoryId
+                )
             }
         }
     }
@@ -70,19 +90,6 @@ class TaskRepository @Inject constructor(
             }
         }
     }
-
-    suspend fun syncTasksWithFirebase() {
-        val categories = categoryDao.getCategory().first()
-        categories.forEach { categoryEntity ->
-            firebaseRepository.saveCategoryToFirestore(categoryEntity)
-        }
-
-        val tasks = taskDao.getTasks().first()
-        tasks.forEach { taskEntity ->
-            firebaseRepository.saveTaskToFirestore(taskEntity)
-        }
-    }
-
 }
 
 fun TaskModel.toData(): TaskEntity {

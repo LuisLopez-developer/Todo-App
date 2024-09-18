@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.todoapp.addtasks.data.TaskRepository
 import com.example.todoapp.settings.auth.data.UserEntity
 import com.example.todoapp.settings.auth.domain.AddUserCaseUse
 import com.example.todoapp.settings.auth.domain.SignInWithGoogleUseCase
@@ -20,7 +19,6 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
     private val addUserCaseUse: AddUserCaseUse,
-    private val taskRepository: TaskRepository,
     private val firebaseRepository: FirebaseRepository,
 ) : ViewModel() {
     var user by mutableStateOf<UserEntity?>(null)
@@ -57,7 +55,7 @@ class SettingsViewModel @Inject constructor(
 
     fun syncTasks() {
         viewModelScope.launch {
-            taskRepository.syncTasksWithFirebase()
+            firebaseRepository.syncTasksWithFirebase()
         }
     }
 

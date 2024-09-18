@@ -8,6 +8,7 @@ import com.example.todoapp.taskcategory.data.CategoryEntity
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,17 +16,29 @@ import javax.inject.Singleton
 @Singleton
 class FirebaseRepository @Inject constructor(
     private val categoryDao: CategoryDao,
-    private val taskDao: TaskDao,
+    private val taskDao: TaskDao
 ) {
+
+    suspend fun syncTasksWithFirebase() {
+        val categories = categoryDao.getCategory().first()
+        categories.forEach { categoryEntity ->
+            saveCategoryToFirestore(categoryEntity)
+        }
+
+        val tasks = taskDao.getTasks().first()
+        tasks.forEach { taskEntity ->
+            saveTaskToFirestore(taskEntity)
+        }
+    }
 
     private val firestore = FirebaseFirestore.getInstance()
 
-    fun saveTaskToFirestore(task: TaskEntity) {
+    private fun saveTaskToFirestore(task: TaskEntity) {
         val taskRef = firestore.collection("tasks").document(task.id.toString())
         taskRef.set(task.toMap())
     }
 
-    fun saveCategoryToFirestore(category: CategoryEntity) {
+    private fun saveCategoryToFirestore(category: CategoryEntity) {
         val categoryRef = firestore.collection("categories").document(category.id.toString())
         categoryRef.set(category)
     }
