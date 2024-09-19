@@ -47,7 +47,4 @@
     <string name="settings_general">General</string>
     <string name="settings_notifications">Notificaciones</string>
     <string name="settings_about">Acerca de</string>
-
-    <!-- clave api web -->
-    <string name="default_web_client_id">AIzaSyA2qeOncxHY7hRjrsa_tOYpDZwMFc5owLE</string>
 </resources>
