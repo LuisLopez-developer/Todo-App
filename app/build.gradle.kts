@@ -135,9 +135,7 @@ dependencies {
     // Add the dependency for the Firebase Authentication library
     implementation(libs.firebase.auth.ktx)
 
-    // Add the dependency for the Firebase Realtime Database library
-
-
+    // Credential Manager
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)

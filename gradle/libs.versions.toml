@@ -8,8 +8,6 @@ credentialsPlayServicesAuth = "1.2.2"
 firebaseBom = "33.3.0"
 firebaseFirestoreKtx = "25.1.0"
 foundation = "1.7.0"
-googleApiClientAndroid = "1.32.2"
-googleApiServicesDrive = "v3-rev136-1.25.0"
 googleid = "1.1.1"
 hiltAndroidCompiler = "2.52"
 kotlin = "1.9.20"
@@ -23,7 +21,6 @@ activityCompose = "1.9.2"
 composeBom = "2024.09.00"
 daggerhiltandroid = "2.52"
 navigationCompose = "2.8.0"
-playServicesAuth = "21.2.0"
 roomRuntime = "2.6.1"
 runtimeLivedata = "1.7.0"
 threetenabp = "1.4.7"
@@ -46,8 +43,6 @@ firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
-google-api-client-android = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClientAndroid" }
-google-api-services-drive = { module = "com.google.apis:google-api-services-drive", version.ref = "googleApiServicesDrive" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -65,7 +60,6 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "daggerhiltandroid" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
-play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "converterGson" }
 threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
 play-services-tflite-support = { group = "com.google.android.gms", name = "play-services-tflite-support", version.ref = "playServicesTfliteSupport" }
