@@ -74,6 +74,8 @@ fun CalendarComponent(
                     selectedDate.dayOfMonth, currentMonth.lengthOfMonth()
                 )
             )
+
+        onDateSelected(selectedDate) // Al momento de deslizar el calendario, se selecciona la fecha actual
     }
 
     Column(modifier = modifier) {
