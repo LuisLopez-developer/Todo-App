@@ -200,7 +200,7 @@ fun List(tasks: List<TaskModel>) {
         items(tasks) { task ->
             TaskItemComponent(
                 text = task.task,
-                checked = !task.selected,
+                checked = task.selected,
                 onClick = {
                     //navigationController.navigate(EditTaskRoute(id = task.id))
                 },
