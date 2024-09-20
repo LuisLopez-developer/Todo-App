@@ -37,14 +37,10 @@ import com.example.todoapp.ui.partials.BottomNavigationBar
 import com.example.todoapp.ui.partials.TopAppBar
 import com.example.todoapp.ui.partials.TopAppBarSecondary
 import com.example.todoapp.ui.utils.extractCleanRoute
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun MainLayout(
-    permissionService: RequestNotificationPermission,
-    googleSignInClient: GoogleSignInClient
-) {
+fun MainLayout(permissionService: RequestNotificationPermission) {
     val taskViewModel: TaskViewModel = viewModel()
     val taskCategoryViewModel: TaskCategoryViewModel = viewModel()
     val taskListViewModel: TaskListViewModel = viewModel()
@@ -117,7 +113,9 @@ fun MainLayout(
                 EditTaskScreen(taskViewModel, taskCategoryViewModel, args.id)
             }
             composable<SettingsRoute> {
-                SettingsScreen(settingsViewModel = settingsViewModel, googleSignInClient = googleSignInClient)
+                SettingsScreen(
+                    settingsViewModel = settingsViewModel
+                )
             }
             composable<TaskListRoute> {
                 TaskListScreen(

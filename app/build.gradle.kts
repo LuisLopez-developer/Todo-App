@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -27,7 +29,15 @@ android {
             arg("room.schemaLocation", "$projectDir/schemas")
         }
 
-        val webClientId: String = project.findProperty("WEB_CLIENT_ID") as String? ?: ""
+        // Read local.properties
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { localProperties.load(it) }
+        }
+
+        // Get WEB_CLIENT_ID from local.properties
+        val webClientId: String = localProperties.getProperty("WEB_CLIENT_ID", "")
         buildConfigField("String", "WEB_CLIENT_ID", "\"$webClientId\"")
     }
 
@@ -126,7 +136,14 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
 
     // Add the dependency for the Firebase Realtime Database library
-    implementation(libs.play.services.auth)
+
+
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+
+    // para la generacion de tokens
+    implementation(libs.commons.codec)
 
     // Add the Firebase SDK for Google Analytics
     implementation(libs.firebase.analytics)
