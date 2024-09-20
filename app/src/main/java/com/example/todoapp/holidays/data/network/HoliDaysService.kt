@@ -4,7 +4,9 @@ import com.example.todoapp.core.network.RetrofitHelper
 import com.example.todoapp.holidays.data.network.response.HoliDaysResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Singleton
 
+@Singleton
 class HoliDaysService {
     private val retrofit = RetrofitHelper.getRetrofit()
 

@@ -3,9 +3,11 @@ package com.example.todoapp.holidays.data
 import com.example.todoapp.holidays.data.network.HoliDaysService
 import com.example.todoapp.holidays.ui.model.HolidayModel
 import org.threeten.bp.LocalDate
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class HoliDaysRepository {
-    private val api = HoliDaysService()
+@Singleton
+class HoliDaysRepository @Inject constructor(private val api: HoliDaysService) {
 
     // Obtener todas las festividades
     suspend fun holidays(): List<HolidayModel>? {
