@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -30,6 +31,24 @@ fun TaskItemComponent(
     onCheckBoxChange: (Boolean) -> Unit,
 ) {
     var isLongPress by remember { mutableStateOf(false) }
+
+    val alpha = if (checked) 0.5f else 1f
+    val backgroundColor = colorScheme.surfaceContainerHighest.copy(alpha = alpha)
+    val textColor = colorScheme.onSurface.copy(alpha = alpha)
+    val checkboxColors = CheckboxColors(
+        checkedBoxColor = colorScheme.primaryContainer.copy(alpha = alpha),
+        uncheckedBoxColor = colorScheme.surfaceContainerHighest.copy(alpha = alpha),
+        disabledCheckedBoxColor = colorScheme.primary.copy(alpha = alpha),
+        disabledUncheckedBoxColor = colorScheme.primary.copy(alpha = alpha),
+        disabledIndeterminateBoxColor = colorScheme.primary.copy(alpha = alpha),
+        checkedBorderColor = colorScheme.primaryContainer.copy(alpha = alpha),
+        uncheckedBorderColor = colorScheme.outline.copy(alpha = alpha),
+        disabledBorderColor = colorScheme.primary.copy(alpha = alpha),
+        disabledUncheckedBorderColor = colorScheme.primary.copy(alpha = alpha),
+        disabledIndeterminateBorderColor = colorScheme.primary.copy(alpha = alpha),
+        checkedCheckmarkColor = colorScheme.onPrimary.copy(alpha = alpha),
+        uncheckedCheckmarkColor = colorScheme.primary.copy(alpha = alpha)
+    )
 
     Card(
         modifier = Modifier
@@ -53,7 +72,7 @@ fun TaskItemComponent(
         Row(
             Modifier
                 .fillMaxWidth()
-                .background(color = colorScheme.surfaceContainerHighest)
+                .background(color = backgroundColor)
                 .padding(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -62,24 +81,13 @@ fun TaskItemComponent(
                 onCheckedChange = { isChecked ->
                     onCheckBoxChange(isChecked) // Actualiza el estado del Checkbox
                 },
-                colors = CheckboxColors(
-                    checkedBoxColor = colorScheme.primaryContainer,
-                    uncheckedBoxColor = colorScheme.surfaceContainerHighest,
-                    disabledCheckedBoxColor = colorScheme.primary,
-                    disabledUncheckedBoxColor = colorScheme.primary,
-                    disabledIndeterminateBoxColor = colorScheme.primary,
-                    checkedBorderColor = colorScheme.primaryContainer,
-                    uncheckedBorderColor = colorScheme.outline,
-                    disabledBorderColor = colorScheme.primary,
-                    disabledUncheckedBorderColor = colorScheme.primary,
-                    disabledIndeterminateBorderColor = colorScheme.primary,
-                    checkedCheckmarkColor = colorScheme.onPrimary,
-                    uncheckedCheckmarkColor = colorScheme.primary
-                )
+                colors = checkboxColors
             )
             Text(
                 text = text,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                color = textColor,
+                textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None
             )
         }
     }
