@@ -15,6 +15,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -25,7 +27,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -185,8 +190,11 @@ fun TasksList(
     taskViewModel: TaskViewModel,
     navigationController: NavHostController,
 ) {
+    var expandedId: Int? by remember { mutableStateOf(null) }
+
     LazyColumn {
-        items(tasks, key = { it.id }) { task ->
+    items(tasks, key = { it.id }) { task ->
+        Box {
             TaskItemComponent(
                 text = task.task,
                 checked = task.selected,
@@ -194,17 +202,32 @@ fun TasksList(
                     navigationController.navigate(EditTaskRoute(id = task.id))
                 },
                 onLongPress = {
-                    taskViewModel.onItemRemove(task)
+                    expandedId = task.id
                 },
                 onCheckBoxChange = { isChecked ->
                     taskViewModel.onCheckBox(task.copy(selected = isChecked))
                 }
             )
-        }
-        items(holidays.filter { it.date == selectedDate }) { holiday ->
-            HolidayItem(holiday = holiday)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+            ) {
+                DropdownMenu(
+                    expanded = expandedId == task.id,
+                    onDismissRequest = { expandedId = null }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(string.dw_delete)) },
+                        onClick = { taskViewModel.onItemRemove(task) }
+                    )
+                }
+            }
         }
     }
+    items(holidays.filter { it.date == selectedDate }) { holiday ->
+        HolidayItem(holiday = holiday)
+    }
+}
 }
 
 @Composable
