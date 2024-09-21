@@ -16,12 +16,8 @@ import com.example.todoapp.settings.firestore.domain.SyncDataWithFirebaseUseCase
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,6 +29,21 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel() {
     var user by mutableStateOf<UserEntity?>(null)
         private set
+
+    init {
+        checkUserAuthentication()
+    }
+
+    private fun checkUserAuthentication() {
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        firebaseUser?.let {
+            user = UserEntity(
+                uid = it.uid,
+                name = it.displayName ?: "",
+                email = it.email ?: ""
+            )
+        }
+    }
 
     private fun signInWithGoogle(idToken: String) {
         viewModelScope.launch {
