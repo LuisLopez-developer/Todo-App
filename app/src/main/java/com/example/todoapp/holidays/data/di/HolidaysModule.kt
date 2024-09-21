@@ -1,5 +1,7 @@
 package com.example.todoapp.holidays.data.di
 
+import com.example.todoapp.data.TodoDataBase
+import com.example.todoapp.holidays.data.local.HolidayDao
 import com.example.todoapp.holidays.data.network.HoliDaysService
 import dagger.Module
 import dagger.Provides
@@ -15,4 +17,8 @@ class HolidaysModule {
         return HoliDaysService()
     }
 
+    @Provides
+    fun provideHolidayDao(todoDataBase: TodoDataBase): HolidayDao {
+        return todoDataBase.holidayDao()
+    }
 }
