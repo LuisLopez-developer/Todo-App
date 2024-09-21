@@ -1,27 +1,39 @@
 package com.example.todoapp.holidays.data
 
+import android.content.Context
 import com.example.todoapp.holidays.data.network.HoliDaysService
 import com.example.todoapp.holidays.ui.model.HolidayModel
+import com.example.todoapp.holidays.utils.NetworkUtils
+import dagger.hilt.android.qualifiers.ApplicationContext
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class HoliDaysRepository @Inject constructor(private val api: HoliDaysService) {
+class HoliDaysRepository @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val api: HoliDaysService,
+) {
 
     // Obtener todas las festividades
     suspend fun holidays(): List<HolidayModel>? {
-        // Devolver la transformación de holiDaysResponse a HolidaysModel
-        return api.holidays()?.map { items ->
-            HolidayModel(LocalDate.parse(items.fecha), items.nombre)
+        return if (NetworkUtils.isInternetAvailable(context)) {
+            api.holidays()?.map { items ->
+                HolidayModel(LocalDate.parse(items.fecha), items.nombre)
+            }
+        } else {
+            null
         }
     }
 
     // Obtener festividad por fecha específica
     suspend fun holidayByDate(fecha: String): HolidayModel? {
-        // Devolver la transformación de holiDaysResponse a HolidaysModel
-        return api.holidayByDate(fecha).let { items ->
-            items?.let { HolidayModel(LocalDate.parse(items.fecha), it.nombre) }
+        return if (NetworkUtils.isInternetAvailable(context)) {
+            api.holidayByDate(fecha)?.let { items ->
+                HolidayModel(LocalDate.parse(items.fecha), items.nombre)
+            }
+        } else {
+            null
         }
     }
 }
