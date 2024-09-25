@@ -106,6 +106,7 @@ fun BottomSheetComponent(
         selectedCategory = null
         selectedTime = null
         isDetailVisible = false
+        taskViewModel.resetTemporaryDateTime2()
     }
 
     fun handleConfirm() {
@@ -134,7 +135,10 @@ fun BottomSheetComponent(
     )
 
     ModalBottomSheet(
-        onDismissRequest = { onDismiss() },
+        onDismissRequest = {
+            cleanFields()
+            onDismiss()
+        },
         dragHandle = null
     ) {
 
