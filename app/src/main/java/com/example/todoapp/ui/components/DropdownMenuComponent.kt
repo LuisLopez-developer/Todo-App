@@ -4,6 +4,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.window.PopupProperties
 
 @Composable
 fun DropdownMenuComponent(
@@ -12,10 +13,12 @@ fun DropdownMenuComponent(
     items: List<String>,
     defaultText: String = "Sin Información",
     onItemSelected: (String?) -> Unit,
+    properties: PopupProperties = PopupProperties(focusable = true)
 ) {
     DropdownMenu(
         expanded = isDropDownExpanded,
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
+        properties = properties
     ) {
         // Opción para el valor predeterminado
         DropdownMenuItem(

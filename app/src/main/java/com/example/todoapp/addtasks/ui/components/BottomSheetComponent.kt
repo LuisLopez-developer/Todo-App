@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -23,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,11 +30,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import com.example.todoapp.R
 import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.model.TaskModel
@@ -73,8 +77,28 @@ fun BottomSheetComponent(
     val temporaryDate by taskViewModel.temporaryDate2.collectAsState()
     val temporaryTime by taskViewModel.temporaryTime2.collectAsState()
 
+    val taskFocusRequester = remember { FocusRequester() }
+    val detailsFocusRequester = remember { FocusRequester() }
+    val invisibleFocusRequester = remember { FocusRequester() }
+
+    var isTaskFocused by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        taskFocusRequester.requestFocus()
+    }
+
     // Obtener el contexto en el composable usando `LocalContext`
     val context = LocalContext.current
+
+    fun regainFocus() {
+        if (isTaskFocused) {
+            invisibleFocusRequester.requestFocus()
+            taskFocusRequester.requestFocus()
+        } else {
+            invisibleFocusRequester.requestFocus()
+            detailsFocusRequester.requestFocus()
+        }
+    }
 
     fun cleanFields() {
         task = ""
@@ -86,7 +110,6 @@ fun BottomSheetComponent(
 
     fun handleConfirm() {
         if (!task.isNullOrEmpty()) {
-
             val taskModel = TaskModel(
                 task = task!!,
                 details = details,
@@ -112,12 +135,12 @@ fun BottomSheetComponent(
 
     ModalBottomSheet(
         onDismissRequest = { onDismiss() },
-        dragHandle = { /* No Visible */ }
+        dragHandle = null
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .imePadding()
                 .padding(10.dp)
                 .align(Alignment.CenterHorizontally)
         ) {
@@ -133,6 +156,8 @@ fun BottomSheetComponent(
                 keyboardActions = KeyboardActions(onDone = { handleConfirm() }),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .focusRequester(taskFocusRequester)
+                    .onFocusChanged { isTaskFocused = it.isFocused }
             )
             if (isDetailVisible) {
                 TextField(
@@ -140,9 +165,22 @@ fun BottomSheetComponent(
                     textStyle = Typography.bodyMedium,
                     onValueChange = { details = it },
                     placeholder = { Text(text = "Detalles", style = Typography.bodyMedium) },
-                    colors = textFieldColors
+                    colors = textFieldColors,
+                    modifier = Modifier.focusRequester(detailsFocusRequester)
                 )
             }
+
+            // TextField invisible para que se pueda recuperar el foco y mostrar el teclado despues de
+            // interactuar con el DatePickerDialog
+            TextField(
+                value = "",
+                onValueChange = {},
+                modifier = Modifier
+                    .size(1.dp)
+                    .padding(0.dp)
+                    .focusRequester(invisibleFocusRequester),
+                singleLine = true
+            )
 
             if (isDateVisible) {
                 val formattedDate = formatDate(selectedDateComponent)
@@ -164,7 +202,9 @@ fun BottomSheetComponent(
                 horizontalArrangement = Arrangement.Start
             ) {
                 Button(
-                    onClick = { expanded = true },
+                    onClick = {
+                        expanded = true
+                    },
                     modifier = Modifier.padding(4.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colorScheme.primaryContainer
@@ -177,6 +217,7 @@ fun BottomSheetComponent(
                 }
 
                 DropdownMenuComponent(
+                    properties = PopupProperties(focusable = false),
                     isDropDownExpanded = expanded,
                     onDismissRequest = { expanded = false },
                     items = categories.map { it.category },
@@ -231,11 +272,17 @@ fun BottomSheetComponent(
             onTimeSelected = { time ->
                 taskViewModel.setTemporaryTime2(time)
             },
-            onDismiss = { taskViewModel.onHideDatePicker() },
+            onDismiss = {
+                taskViewModel.onHideDatePicker()
+
+                regainFocus()
+            },
             onConfirm = {
                 selectedDateComponent = taskViewModel.temporaryDate2.value ?: selectedDate
                 selectedTime = taskViewModel.temporaryTime2.value
                 isDateVisible = true
+
+                regainFocus()
             }
         )
     }
