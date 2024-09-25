@@ -200,7 +200,6 @@ fun BottomSheetComponent(
                 )
             }
 
-            Spacer(modifier = Modifier.size(8.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
