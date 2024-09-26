@@ -76,7 +76,6 @@ fun BottomSheetComponent(
     val showDatePicker by taskViewModel.showDatePicker.collectAsState()
     val temporaryDate by taskViewModel.temporaryDate.collectAsState(null)
 
-
     val taskFocusRequester = remember { FocusRequester() }
     val detailsFocusRequester = remember { FocusRequester() }
     val invisibleFocusRequester = remember { FocusRequester() }
@@ -269,6 +268,7 @@ fun BottomSheetComponent(
     if (showDatePicker) {
         DatePickerDialogComponent(
             initialDate = selectedDate,
+            initialTime = selectedTime,
             onDateSelected = { date ->
                 taskViewModel.setTemporaryDate(date)
             },

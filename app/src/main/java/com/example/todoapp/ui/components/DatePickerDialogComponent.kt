@@ -91,7 +91,7 @@ fun DatePickerDialogComponent(
                             TextFieldWithButtonComponent(
                                 text = formattedTime,
                                 onIconClick = {
-                                    onTimeSelected(null)
+                                    temporaryTime = null
                                 }
                             )
                         } else {
