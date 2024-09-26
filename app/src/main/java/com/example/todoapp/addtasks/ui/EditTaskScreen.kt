@@ -1,7 +1,6 @@
 package com.example.todoapp.addtasks.ui
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -73,15 +71,6 @@ fun EditTaskScreen(
     // Recibe y carga el task con el id correcto
     LaunchedEffect(id) {
         taskViewModel.getTaskById(id)
-        Log.d("TaskViewModel", "getTaskById EditTaskScreen: ${taskViewModel.temporaryTime.value}")
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            Log.d("TaskViewModel", "onDispose EditTaskScreen: ${taskViewModel.temporaryTime.value}")
-            taskViewModel.resetTemporaryDateTime()
-            Log.d("TaskViewModel", "onDispose EditTaskScreen: ${taskViewModel.temporaryTime.value}")
-        }
     }
 
     when (taskUiState) {
@@ -117,7 +106,7 @@ fun Container(
     taskCategoryViewModel: TaskCategoryViewModel,
     task: TaskModel,
     categoryUiState: TaskCategoryUiState,
-    context: Context
+    context: Context,
 ) {
     var taskText by remember { mutableStateOf(task.task) }
     var taskDetail by remember { mutableStateOf(task.details ?: "") }
@@ -155,7 +144,8 @@ fun Container(
                     ) {
                         Box {
                             BasicTextField(
-                                value = categories.find { it.id == task.categoryId }?.category ?: stringResource(string.uncategorized),
+                                value = categories.find { it.id == task.categoryId }?.category
+                                    ?: stringResource(string.uncategorized),
                                 onValueChange = {},
                                 textStyle = typography.bodyMedium.copy(color = colorScheme.onSurface),
                                 readOnly = true,
@@ -194,7 +184,10 @@ fun Container(
                                     text = { Text(text = stringResource(string.uncategorized)) },
                                     onClick = {
                                         taskCategoryViewModel.setSelectedCategory("Sin categoría")
-                                        taskViewModel.updateTask(task.copy(categoryId = null), context)
+                                        taskViewModel.updateTask(
+                                            task.copy(categoryId = null),
+                                            context
+                                        )
                                     }
                                 )
 
@@ -204,7 +197,10 @@ fun Container(
                                         DropdownMenuItem(
                                             text = { Text(text = item.category) },
                                             onClick = {
-                                                taskViewModel.updateTask(task.copy(categoryId = item.id), context)
+                                                taskViewModel.updateTask(
+                                                    task.copy(categoryId = item.id),
+                                                    context
+                                                )
                                                 taskCategoryViewModel.setShowDropDown(false)
                                             }
                                         )
