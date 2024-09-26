@@ -188,15 +188,11 @@ class TaskViewModel @Inject constructor(
     }
 
     fun getTaskById(taskId: Int) {
-        _taskFlowUiState.value = TaskUiState.Loading
         viewModelScope.launch {
             try {
                 val task = getTaskByIdUseCase.execute(taskId)
-                if (task != null) {
-                    // Actualiza las fechas temporales con la fecha y hora de la tarea
-                    _temporaryDate.value = task.startDate
-                    _temporaryTime.value = task.time
 
+                if (task != null) {
                     _taskFlowUiState.value = TaskUiState.Success(task)
                 } else {
                     _taskFlowUiState.value = TaskUiState.Empty
@@ -212,20 +208,6 @@ class TaskViewModel @Inject constructor(
 
     private val _temporaryTime = MutableStateFlow<LocalTime?>(null)
     val temporaryTime: StateFlow<LocalTime?> = _temporaryTime
-
-    private val _temporaryDate2 = MutableStateFlow<LocalDate?>(null)
-    val temporaryDate2: StateFlow<LocalDate?> = _temporaryDate2
-
-    private val _temporaryTime2 = MutableStateFlow<LocalTime?>(null)
-    val temporaryTime2: StateFlow<LocalTime?> = _temporaryTime2
-
-    fun setTemporaryDate2(date: LocalDate?) {
-        _temporaryDate2.value = date
-    }
-
-    fun setTemporaryTime2(time: LocalTime?) {
-        _temporaryTime2.value = time
-    }
 
     fun onShowDateDialogClick() {
         // Verifica si el estado actual es Success antes de acceder a task
@@ -249,10 +231,4 @@ class TaskViewModel @Inject constructor(
         _temporaryDate.value = null
         _temporaryTime.value = null
     }
-
-    fun resetTemporaryDateTime2() {
-        _temporaryDate2.value = null
-        _temporaryTime2.value = null
-    }
-
 }

@@ -1,6 +1,7 @@
 package com.example.todoapp.addtasks.ui
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -71,6 +73,15 @@ fun EditTaskScreen(
     // Recibe y carga el task con el id correcto
     LaunchedEffect(id) {
         taskViewModel.getTaskById(id)
+        Log.d("TaskViewModel", "getTaskById EditTaskScreen: ${taskViewModel.temporaryTime.value}")
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            Log.d("TaskViewModel", "onDispose EditTaskScreen: ${taskViewModel.temporaryTime.value}")
+            taskViewModel.resetTemporaryDateTime()
+            Log.d("TaskViewModel", "onDispose EditTaskScreen: ${taskViewModel.temporaryTime.value}")
+        }
     }
 
     when (taskUiState) {
@@ -319,7 +330,7 @@ fun Container(
     if (showDatePicker) {
         DatePickerDialogComponent(
             initialDate = taskViewModel.temporaryDate.collectAsState().value ?: task.startDate,
-            temporaryTime = taskViewModel.temporaryTime.collectAsState().value,  // Agregado para el tiempo temporal
+            initialTime = taskViewModel.temporaryTime.collectAsState().value,  // Agregado para el tiempo temporal
             onDateSelected = { date ->
                 taskViewModel.setTemporaryDate(date)
             },

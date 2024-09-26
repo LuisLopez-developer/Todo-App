@@ -16,8 +16,10 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -31,7 +33,7 @@ import org.threeten.bp.LocalTime
 @Composable
 fun DatePickerDialogComponent(
     initialDate: LocalDate,
-    temporaryTime: LocalTime?,  // Agrega un parámetro para el tiempo temporal
+    initialTime: LocalTime? = null,  // Agrega un parámetro para el tiempo temporal
     onDateSelected: (LocalDate) -> Unit,
     onTimeSelected: (LocalTime?) -> Unit,  // Agrega un parámetro para la selección de tiempo
     onDismiss: () -> Unit,
@@ -39,13 +41,14 @@ fun DatePickerDialogComponent(
 ) {
     // Estado para manejar la visibilidad del TimePickerDialog
     val showTimePickerDialog = remember { mutableStateOf(false) }
+    var temporaryTime by remember { mutableStateOf(initialTime) }
 
     // Mostrar el diálogo del TimePicker si el estado es verdadero
     if (showTimePickerDialog.value) {
         TimePickerDialogComponent(
             initialTime = temporaryTime,
             onTimeSelected = { time ->
-                onTimeSelected(time)
+                temporaryTime = time
                 showTimePickerDialog.value = false
             },
             onDismiss = { showTimePickerDialog.value = false }
@@ -84,7 +87,7 @@ fun DatePickerDialogComponent(
                         )
 
                         if (temporaryTime != null) {
-                            val formattedTime = formatTime(temporaryTime)
+                            val formattedTime = formatTime(temporaryTime!!)
                             TextFieldWithButtonComponent(
                                 text = formattedTime,
                                 onIconClick = {
@@ -109,6 +112,7 @@ fun DatePickerDialogComponent(
                         Text(text = "Cancelar")
                     }
                     TextButton(onClick = {
+                        onTimeSelected(temporaryTime)
                         onConfirm()
                         onDismiss()
                     }) {

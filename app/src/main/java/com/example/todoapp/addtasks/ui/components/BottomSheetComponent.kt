@@ -74,8 +74,8 @@ fun BottomSheetComponent(
     var selectedDateComponent by remember { mutableStateOf(selectedDate) }
 
     val showDatePicker by taskViewModel.showDatePicker.collectAsState()
-    val temporaryDate by taskViewModel.temporaryDate2.collectAsState()
-    val temporaryTime by taskViewModel.temporaryTime2.collectAsState()
+    val temporaryDate by taskViewModel.temporaryDate.collectAsState(null)
+
 
     val taskFocusRequester = remember { FocusRequester() }
     val detailsFocusRequester = remember { FocusRequester() }
@@ -85,6 +85,7 @@ fun BottomSheetComponent(
 
     LaunchedEffect(Unit) {
         taskFocusRequester.requestFocus()
+        taskViewModel.resetTemporaryDateTime()
     }
 
     // Obtener el contexto en el composable usando `LocalContext`
@@ -106,7 +107,7 @@ fun BottomSheetComponent(
         selectedCategory = null
         selectedTime = null
         isDetailVisible = false
-        taskViewModel.resetTemporaryDateTime2()
+        taskViewModel.resetTemporaryDateTime()
     }
 
     fun handleConfirm() {
@@ -122,7 +123,7 @@ fun BottomSheetComponent(
             taskViewModel.onTaskCreated(taskModel, context)
             cleanFields()
             onConfirm()
-            taskViewModel.resetTemporaryDateTime2()
+            taskViewModel.resetTemporaryDateTime()
         }
     }
 
@@ -267,24 +268,21 @@ fun BottomSheetComponent(
 
     if (showDatePicker) {
         DatePickerDialogComponent(
-            initialDate = temporaryDate ?: selectedDate,
-            temporaryTime = temporaryTime,
+            initialDate = selectedDate,
             onDateSelected = { date ->
-                taskViewModel.setTemporaryDate2(date)
+                taskViewModel.setTemporaryDate(date)
             },
             onTimeSelected = { time ->
-                taskViewModel.setTemporaryTime2(time)
+                taskViewModel.setTemporaryTime(time)
             },
             onDismiss = {
                 taskViewModel.onHideDatePicker()
-
                 regainFocus()
             },
             onConfirm = {
-                selectedDateComponent = taskViewModel.temporaryDate2.value ?: selectedDate
-                selectedTime = taskViewModel.temporaryTime2.value
+                selectedDateComponent = taskViewModel.temporaryDate.value ?: selectedDate
+                selectedTime = taskViewModel.temporaryTime.value
                 isDateVisible = true
-
                 regainFocus()
             }
         )
