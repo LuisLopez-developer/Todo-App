@@ -1,5 +1,6 @@
 package com.example.todoapp.addtasks.ui
 
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -33,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -66,6 +68,9 @@ fun TasksScreen(
     permissionService: RequestNotificationPermission,
 ) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+
+    // Obtener el contexto en el composable usando `LocalContext`
+    val context = LocalContext.current
 
     // Recuperamos el estado de las tareas por fecha
     val uiStateByDate by produceState<TasksUiState>(
@@ -114,7 +119,8 @@ fun TasksScreen(
                 holidays = holidays,
                 navigationController = navigationController,
                 selectedDate = selectedDate,
-                categories = categories
+                categories = categories,
+                context = context
             )
         }
     }
@@ -130,6 +136,7 @@ fun Container(
     navigationController: NavHostController,
     selectedDate: LocalDate,
     categories: List<TaskCategoryModel>,
+    context: Context
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -155,7 +162,8 @@ fun Container(
                     holidays = holidays,
                     selectedDate = selectedDate,
                     taskViewModel = taskViewModel,
-                    navigationController = navigationController
+                    navigationController = navigationController,
+                    context = context
                 )
             }
         }
@@ -189,6 +197,7 @@ fun TasksList(
     selectedDate: LocalDate,
     taskViewModel: TaskViewModel,
     navigationController: NavHostController,
+    context: Context
 ) {
     var expandedId: Int? by remember { mutableStateOf(null) }
 
@@ -205,7 +214,7 @@ fun TasksList(
                     expandedId = task.id
                 },
                 onCheckBoxChange = { isChecked ->
-                    taskViewModel.onCheckBox(task.copy(selected = isChecked))
+                    taskViewModel.onCheckBox(task.copy(selected = isChecked), context = context)
                 }
             )
             Box(

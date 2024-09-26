@@ -131,9 +131,36 @@ class TaskViewModel @Inject constructor(
         _showDialog.value = true
     }
 
-    fun onCheckBox(taskModel: TaskModel) {
+    fun onCheckBox(taskModel: TaskModel, context: Context) {
         viewModelScope.launch {
-            updateTaskUseCase(taskModel.copy(selected = taskModel.selected))
+            try {
+                // Obtener la tarea original antes de actualizarla
+                val originalTask = getTaskByIdUseCase.execute(taskModel.id)
+
+                if (originalTask != null) {
+                    // Si la tarea original tenía una alarma programada
+                    if (originalTask.time != null) {
+                        // Verificar si la tarea original esta seleccionada (Realizada)
+                        if (originalTask.selected) {
+                            setAlarm(
+                                context,
+                                originalTask.id,
+                                originalTask.startDate,
+                                originalTask.time,
+                                originalTask.task
+                            )
+                        }else{
+                            cancelAlarm(context, originalTask.id)
+                        }
+
+                    }
+                }
+
+                updateTaskUseCase(taskModel.copy(selected = taskModel.selected))
+
+            } catch (e: Exception) {
+                Log.e("error", e.message.toString())
+            }
         }
     }
 
