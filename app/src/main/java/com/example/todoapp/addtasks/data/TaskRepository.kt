@@ -29,6 +29,10 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
         return taskEntity?.toTaskModel()
     }
 
+    fun getTaskByIdFlow(taskId: Int): Flow<TaskModel> {
+        return taskDao.getTaskByIdFlow(taskId).map { it.toTaskModel() }
+    }
+
     fun getTasksByCategory(categoryId: Int): Flow<List<TaskModel>> {
         return taskDao.getTasksByCategory(categoryId).map { items -> items.toTaskModelList() }
     }

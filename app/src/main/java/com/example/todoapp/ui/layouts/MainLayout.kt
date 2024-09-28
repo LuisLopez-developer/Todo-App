@@ -16,9 +16,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.todoapp.addtasks.ui.EditTaskScreen
 import com.example.todoapp.addtasks.ui.TaskViewModel
 import com.example.todoapp.addtasks.ui.TasksScreen
+import com.example.todoapp.addtasks.ui.editTask.EditTaskScreen
+import com.example.todoapp.addtasks.ui.editTask.TaskEditViewModel
 import com.example.todoapp.addtasks.ui.taskList.TaskListScreen
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
@@ -46,6 +47,7 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
     val taskListViewModel: TaskListViewModel = viewModel()
     val holidaysModel: HolidaysViewModel = viewModel()
     val settingsViewModel: SettingsViewModel = viewModel()
+    val taskEditViewModel: TaskEditViewModel = viewModel()
 
     val navigationController = rememberNavController()
 
@@ -110,7 +112,7 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
             }
             composable<EditTaskRoute> {
                 val args = it.toRoute<EditTaskRoute>()
-                EditTaskScreen(taskViewModel, taskCategoryViewModel, args.id)
+                EditTaskScreen(taskCategoryViewModel, taskEditViewModel, args.id)
             }
             composable<SettingsRoute> {
                 SettingsScreen(

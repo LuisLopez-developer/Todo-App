@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.addtasks.domain.AddTaskUseCase
@@ -36,12 +35,12 @@ import javax.inject.Inject
 @HiltViewModel
 class TaskViewModel @Inject constructor(
     private val addTaskUseCase: AddTaskUseCase,
-    private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
     private val getTaskUseCase: GetTaskUseCase,
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
-) : ViewModel() {
+    updateTaskUseCase: UpdateTaskUseCase
+) : BaseTaskViewModel(updateTaskUseCase) {
 
     // Flujo que mantiene todas las fechas de tareas
     private val _taskDatesFlow = MutableStateFlow<List<LocalDate>>(emptyList())
@@ -89,18 +88,8 @@ class TaskViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
 
 
-    private val _taskFlowUiState = MutableStateFlow<TaskUiState>(TaskUiState.Empty)
-    val taskFlowUiState: StateFlow<TaskUiState> = _taskFlowUiState
-
     private val _showDialog = MutableStateFlow(false)
     val showDialog: StateFlow<Boolean> = _showDialog
-
-    private val _showDatePicker = MutableStateFlow(false)
-    val showDatePicker: StateFlow<Boolean> = _showDatePicker
-
-    fun onHideDatePicker() {
-        _showDatePicker.value = false
-    }
 
     fun onDialogClose() {
         _showDialog.value = false
@@ -130,24 +119,6 @@ class TaskViewModel @Inject constructor(
         _showDialog.value = true
     }
 
-    fun onTask(taskModel: TaskModel){
-        viewModelScope.launch {
-            updateTaskUseCase(taskModel.copy(task = taskModel.task))
-        }
-    }
-
-    fun onDetails(taskModel: TaskModel){
-        viewModelScope.launch {
-            updateTaskUseCase(taskModel.copy(details = taskModel.details))
-        }
-    }
-
-    fun onCategory(taskModel: TaskModel){
-        viewModelScope.launch {
-            updateTaskUseCase(taskModel.copy(categoryId = taskModel.categoryId))
-        }
-    }
-
     fun onCheckBox(taskModel: TaskModel, context: Context) {
         viewModelScope.launch {
             try {
@@ -168,7 +139,7 @@ class TaskViewModel @Inject constructor(
                                 originalTask.time,
                                 originalTask.task
                             )
-                        }else{ // Si la tarea original no esta seleccionada (No realizada)
+                        } else { // Si la tarea original no esta seleccionada (No realizada)
                             cancelAlarm(context, originalTask.id)
                         }
 
@@ -183,100 +154,9 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun updateTask(updatedTask: TaskModel, context: Context) {
-        viewModelScope.launch {
-            try {
-                // Guardar una copia de la tarea original antes de actualizarla
-                val originalTask = getTaskByIdUseCase.execute(updatedTask.id)
-
-                // Actualizar la tarea en el repositorio
-                updateTaskUseCase(updatedTask)
-
-                // Si la tarea original tenía una alarma programada, cancelarla
-                if (originalTask != null) {
-                    if (originalTask.time != null) {
-                        cancelAlarm(context, originalTask.id)
-                    }
-                }
-
-                // Verificar si la nueva tarea tiene una hora y fecha en el futuro antes de programar la alarma
-                if (updatedTask.time != null) {
-                    val currentDate = LocalDate.now()
-                    val currentTime = LocalTime.now()
-
-                    if (updatedTask.startDate.isAfter(currentDate) ||
-                        (updatedTask.startDate.isEqual(currentDate) && updatedTask.time.isAfter(
-                            currentTime
-                        ))
-                    ) {
-                        setAlarm(
-                            context,
-                            updatedTask.id,
-                            updatedTask.startDate,
-                            updatedTask.time,
-                            updatedTask.task
-                        )
-                    }
-                }
-
-                // Actualizar el estado de la UI con la tarea actualizada
-                _taskFlowUiState.value = TaskUiState.Success(updatedTask)
-            } catch (e: Exception) {
-                _taskFlowUiState.value =
-                    TaskUiState.Error(throwable = Throwable("Error al actualizar la tarea"))
-                Log.e("error", e.message.toString())
-            }
-        }
-    }
-
     fun onItemRemove(taskModel: TaskModel) {
         viewModelScope.launch {
             deleteTaskUseCase(taskModel)
         }
-    }
-
-    fun getTaskById(taskId: Int) {
-        viewModelScope.launch {
-            try {
-                val task = getTaskByIdUseCase.execute(taskId)
-
-                if (task != null) {
-                    _taskFlowUiState.value = TaskUiState.Success(task)
-                } else {
-                    _taskFlowUiState.value = TaskUiState.Empty
-                }
-            } catch (e: Exception) {
-                _taskFlowUiState.value = TaskUiState.Error(e)
-            }
-        }
-    }
-
-    private val _temporaryDate = MutableStateFlow<LocalDate?>(null)
-    val temporaryDate: StateFlow<LocalDate?> = _temporaryDate
-
-    private val _temporaryTime = MutableStateFlow<LocalTime?>(null)
-    val temporaryTime: StateFlow<LocalTime?> = _temporaryTime
-
-    fun onShowDateDialogClick() {
-        // Verifica si el estado actual es Success antes de acceder a task
-        val currentState = _taskFlowUiState.value
-        if (currentState is TaskUiState.Success) {
-            _temporaryDate.value = currentState.task.startDate
-            _temporaryTime.value = currentState.task.time
-        }
-        _showDatePicker.value = true
-    }
-
-    fun setTemporaryDate(date: LocalDate?) {
-        _temporaryDate.value = date
-    }
-
-    fun setTemporaryTime(time: LocalTime?) {
-        _temporaryTime.value = time
-    }
-
-    fun resetTemporaryDateTime() {
-        _temporaryDate.value = null
-        _temporaryTime.value = null
     }
 }

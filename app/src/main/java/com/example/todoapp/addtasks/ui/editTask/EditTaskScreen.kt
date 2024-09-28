@@ -1,4 +1,4 @@
-package com.example.todoapp.addtasks.ui
+package com.example.todoapp.addtasks.ui.editTask
 
 import android.content.Context
 import androidx.compose.foundation.background
@@ -29,9 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -42,6 +40,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.todoapp.R.drawable
 import com.example.todoapp.R.string
 import com.example.todoapp.addtasks.ui.model.TaskModel
@@ -55,13 +56,29 @@ import org.threeten.bp.LocalDate
 
 @Composable
 fun EditTaskScreen(
-    taskViewModel: TaskViewModel,
     taskCategoryViewModel: TaskCategoryViewModel,
+    taskEditViewModel: TaskEditViewModel,
     id: Int,
 ) {
-    // Observe the StateFlow changes for the task UI state and other states
-    val taskUiState by taskViewModel.taskFlowUiState.collectAsState()
-    val showDatePicker by taskViewModel.showDatePicker.collectAsState()
+    // Establecer el ID de la tarea en el ViewModel
+    LaunchedEffect(id) {
+        taskEditViewModel.setTaskId(id)
+    }
+
+    // Observar el estado de la tarea
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+
+    val uiStateById by produceState<TaskUiState>(
+        initialValue = TaskUiState.Loading,
+        key1 = lifecycle,
+        key2 = id
+    ) {
+        lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
+            taskEditViewModel.taskByIdState.collect { value = it }
+        }
+    }
+
+    val showDatePicker by taskEditViewModel.showDatePicker.collectAsState()
 
     // Observar el modelo de las categorias
     val categoryUiState by taskCategoryViewModel.uiState.collectAsState()
@@ -69,14 +86,11 @@ fun EditTaskScreen(
     // Obtener el contexto en el composable usando `LocalContext`
     val context = LocalContext.current
 
-    // Recibe y carga el task con el id correcto
-    LaunchedEffect(id) {
-        taskViewModel.getTaskById(id)
-    }
-
-    when (taskUiState) {
+    when (uiStateById) {
         is TaskUiState.Loading -> {
-            CircularProgressIndicator()
+            Box(modifier = Modifier.fillMaxSize()) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
         }
 
         is TaskUiState.Error -> {
@@ -85,10 +99,10 @@ fun EditTaskScreen(
 
         is TaskUiState.Success -> {
             Container(
+                taskEditViewModel,
                 showDatePicker,
-                taskViewModel,
                 taskCategoryViewModel,
-                (taskUiState as TaskUiState.Success).task,
+                (uiStateById as TaskUiState.Success).task,
                 categoryUiState,
                 context
             )
@@ -102,16 +116,13 @@ fun EditTaskScreen(
 
 @Composable
 fun Container(
+    taskEditViewModel: TaskEditViewModel,
     showDatePicker: Boolean,
-    taskViewModel: TaskViewModel,
     taskCategoryViewModel: TaskCategoryViewModel,
     task: TaskModel,
     categoryUiState: TaskCategoryUiState,
     context: Context,
 ) {
-    var taskText by remember { mutableStateOf(task.task) }
-    var taskDetail by remember { mutableStateOf(task.details ?: "") }
-
     val categories = when (categoryUiState) {
         is TaskCategoryUiState.Success -> categoryUiState.categories
         else -> emptyList()
@@ -193,7 +204,7 @@ fun Container(
                                     text = { Text(text = stringResource(string.uncategorized)) },
                                     onClick = {
                                         taskCategoryViewModel.setSelectedCategory("Sin categoría")
-                                        taskViewModel.onCategory(task.copy(categoryId = null))
+                                        taskEditViewModel.updateTask(task.copy(categoryId = null))
                                     }
                                 )
 
@@ -203,7 +214,7 @@ fun Container(
                                         DropdownMenuItem(
                                             text = { Text(text = item.category) },
                                             onClick = {
-                                                taskViewModel.onCategory(task.copy(categoryId = item.id))
+                                                taskEditViewModel.updateTask(task.copy(categoryId = item.id))
                                                 taskCategoryViewModel.setShowDropDown(false)
                                             }
                                         )
@@ -212,19 +223,16 @@ fun Container(
                         }
 
                         TextField(
-                            value = taskText,
+                            value = task.task,
                             textStyle = Typography.bodyLarge.copy(colorScheme.onSurface.copy(alpha)),
                             onValueChange = {
-                                taskText = it
-                                taskViewModel.onTask(task.copy(task = it))
+                                taskEditViewModel.updateTask(task.copy(task = it))
                             },
                             placeholder = {
                                 Text(
                                     text = stringResource(string.edit_task_title),
                                     style = Typography.bodyLarge.copy(
-                                        colorScheme.onSurface.copy(
-                                            alpha
-                                        )
+                                        colorScheme.onSurface.copy(alpha)
                                     )
                                 )
                             },
@@ -242,15 +250,12 @@ fun Container(
                         )
 
                         BasicTextField(
-                            value = taskDetail,
+                            value = task.details ?: "",
                             onValueChange = {
-                                taskDetail = it
-                                taskViewModel.onDetails(task.copy(details = it))
+                                taskEditViewModel.updateTask(task.copy(details = it))
                             },
                             textStyle = Typography.bodySmall.copy(
-                                color = colorScheme.onSurface.copy(
-                                    alpha
-                                )
+                                color = colorScheme.onSurface.copy(alpha)
                             ),
                             decorationBox = { innerTextField ->
                                 Row(
@@ -266,9 +271,9 @@ fun Container(
                                             .alpha(alpha)
                                     )
                                     Box(modifier = Modifier.weight(1f)) {
-                                        if (taskDetail.isEmpty()) {
+                                        if (task.details.isNullOrEmpty()) {
                                             Text(
-                                                text = stringResource(string.edit_task_details), // Your placeholder text
+                                                text = stringResource(string.edit_task_details),
                                                 style = Typography.bodySmall.copy(
                                                     textAlign = TextAlign.Center,
                                                     color = colorScheme.onSurface.copy(alpha)
@@ -320,7 +325,7 @@ fun Container(
                                     .fillMaxWidth()
                                     .clickable(
                                         enabled = task.selected.not(),
-                                        onClick = { taskViewModel.onShowDateDialogClick() })
+                                        onClick = { taskEditViewModel.onShowDateDialogClick() })
                             ) {
                                 Icon(
                                     painter = painterResource(id = drawable.ic_outline_calendar_),
@@ -348,22 +353,22 @@ fun Container(
     // Mostrar DatePickerDialog si `showDatePicker` es verdadero y si la tarea no está seleccionada
     if (showDatePicker && task.selected.not()) {
         DatePickerDialogComponent(
-            initialDate = taskViewModel.temporaryDate.collectAsState().value ?: task.startDate,
-            initialTime = taskViewModel.temporaryTime.collectAsState().value,  // Agregado para el tiempo temporal
+            initialDate = task.startDate,
+            initialTime = task.time,
             onDateSelected = { date ->
-                taskViewModel.setTemporaryDate(date)
+                taskEditViewModel.setTemporaryDate(date)
             },
             onTimeSelected = { time ->
-                taskViewModel.setTemporaryTime(time)
+                taskEditViewModel.setTemporaryTime(time)
             },
-            onDismiss = { taskViewModel.onHideDatePicker() },
+            onDismiss = { taskEditViewModel.onHideDatePicker() },
             onConfirm = {
                 val updatedTask = task.copy(
-                    startDate = taskViewModel.temporaryDate.value ?: LocalDate.now(),
-                    time = taskViewModel.temporaryTime.value
+                    startDate = taskEditViewModel.temporaryDate.value ?: LocalDate.now(),
+                    time = taskEditViewModel.temporaryTime.value
                 )
-                taskViewModel.updateTask(updatedTask, context)
-                taskViewModel.resetTemporaryDateTime()
+                taskEditViewModel.onDateAndTime(updatedTask, context)
+                taskEditViewModel.resetTemporaryDateTime()
             }
         )
     }
