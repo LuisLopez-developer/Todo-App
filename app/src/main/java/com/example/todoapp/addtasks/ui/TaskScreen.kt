@@ -2,7 +2,6 @@ package com.example.todoapp.addtasks.ui
 
 import android.content.Context
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,7 +57,7 @@ import com.example.todoapp.ui.components.CalendarComponent
 import com.example.todoapp.ui.navigation.EditTaskRoute
 import org.threeten.bp.LocalDate
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+
 @Composable
 fun TasksScreen(
     taskViewModel: TaskViewModel,
@@ -97,7 +96,9 @@ fun TasksScreen(
 
     // Solicita permiso después de que la pantalla haya cargado
     LaunchedEffect(Unit) {
-        permissionService.requestNotificationPermission()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionService.requestNotificationPermission()
+        }
     }
 
     // Maneja el estado general de tareas
@@ -136,7 +137,7 @@ fun Container(
     navigationController: NavHostController,
     selectedDate: LocalDate,
     categories: List<TaskCategoryModel>,
-    context: Context
+    context: Context,
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -197,46 +198,46 @@ fun TasksList(
     selectedDate: LocalDate,
     taskViewModel: TaskViewModel,
     navigationController: NavHostController,
-    context: Context
+    context: Context,
 ) {
     var expandedId: Int? by remember { mutableStateOf(null) }
 
     LazyColumn {
-    items(tasks, key = { it.id }) { task ->
-        Box {
-            TaskItemComponent(
-                text = task.task,
-                checked = task.selected,
-                onClick = {
-                    navigationController.navigate(EditTaskRoute(id = task.id))
-                },
-                onLongPress = {
-                    expandedId = task.id
-                },
-                onCheckBoxChange = { isChecked ->
-                    taskViewModel.onCheckBox(task.copy(selected = isChecked), context = context)
-                }
-            )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-            ) {
-                DropdownMenu(
-                    expanded = expandedId == task.id,
-                    onDismissRequest = { expandedId = null }
+        items(tasks, key = { it.id }) { task ->
+            Box {
+                TaskItemComponent(
+                    text = task.task,
+                    checked = task.selected,
+                    onClick = {
+                        navigationController.navigate(EditTaskRoute(id = task.id))
+                    },
+                    onLongPress = {
+                        expandedId = task.id
+                    },
+                    onCheckBoxChange = { isChecked ->
+                        taskViewModel.onCheckBox(task.copy(selected = isChecked), context = context)
+                    }
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
                 ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(string.dw_delete)) },
-                        onClick = { taskViewModel.onItemRemove(task) }
-                    )
+                    DropdownMenu(
+                        expanded = expandedId == task.id,
+                        onDismissRequest = { expandedId = null }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(string.dw_delete)) },
+                            onClick = { taskViewModel.onItemRemove(task) }
+                        )
+                    }
                 }
             }
         }
+        items(holidays.filter { it.date == selectedDate }) { holiday ->
+            HolidayItem(holiday = holiday)
+        }
     }
-    items(holidays.filter { it.date == selectedDate }) { holiday ->
-        HolidayItem(holiday = holiday)
-    }
-}
 }
 
 @Composable

@@ -1,7 +1,5 @@
 package com.example.todoapp.ui.layouts
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -39,7 +37,6 @@ import com.example.todoapp.ui.partials.TopAppBar
 import com.example.todoapp.ui.partials.TopAppBarSecondary
 import com.example.todoapp.ui.utils.extractCleanRoute
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun MainLayout(permissionService: RequestNotificationPermission) {
     val taskViewModel: TaskViewModel = viewModel()
