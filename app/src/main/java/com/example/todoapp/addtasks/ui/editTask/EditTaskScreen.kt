@@ -58,7 +58,7 @@ import org.threeten.bp.LocalDate
 fun EditTaskScreen(
     taskCategoryViewModel: TaskCategoryViewModel,
     taskEditViewModel: TaskEditViewModel,
-    id: Int,
+    id: String,
 ) {
     // Establecer el ID de la tarea en el ViewModel
     LaunchedEffect(id) {

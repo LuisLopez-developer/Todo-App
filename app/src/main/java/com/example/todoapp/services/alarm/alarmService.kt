@@ -13,7 +13,7 @@ import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalTime
 import java.util.Calendar
 
-fun setAlarm(context: Context, taskId: Int, date: LocalDate, time: LocalTime, title: String) {
+fun setAlarm(context: Context, taskId: String, date: LocalDate, time: LocalTime, title: String) {
     val calendar = Calendar.getInstance().apply {
         set(date.year, date.monthValue - 1, date.dayOfMonth, time.hour, time.minute)
     }
@@ -29,13 +29,13 @@ fun setAlarm(context: Context, taskId: Int, date: LocalDate, time: LocalTime, ti
 
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     val intent = Intent(context, AlarmReceiver::class.java).apply {
-        putExtra(TASK_ID, taskId)
+        putExtra(TASK_ID, taskId.hashCode())
         putExtra(TASK_TITLE, title)
     }
 
     val pendingIntent = PendingIntent.getBroadcast(
         context,
-        taskId,
+        taskId.hashCode(),
         intent,
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
@@ -58,7 +58,7 @@ fun setAlarm(context: Context, taskId: Int, date: LocalDate, time: LocalTime, ti
     }
 }
 
-fun cancelAlarm(context: Context, taskId: Int) {
+fun cancelAlarm(context: Context, taskId: String) {
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     val intent = Intent(context, AlarmReceiver::class.java).apply {
         putExtra(TASK_ID, taskId)
@@ -66,7 +66,7 @@ fun cancelAlarm(context: Context, taskId: Int) {
 
     val pendingIntent = PendingIntent.getBroadcast(
         context,
-        taskId,
+        taskId.hashCode(),
         intent,
         PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
     )

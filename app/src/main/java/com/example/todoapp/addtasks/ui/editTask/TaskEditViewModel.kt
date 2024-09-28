@@ -33,10 +33,10 @@ class TaskEditViewModel @Inject constructor(
     updateTaskUseCase: UpdateTaskUseCase
 ) : BaseTaskViewModel(updateTaskUseCase) {
 
-    private val _taskId = MutableStateFlow<Int?>(null)
-    val taskId: StateFlow<Int?> = _taskId
+    private val _taskId = MutableStateFlow<String?>(null)
+    val taskId: StateFlow<String?> = _taskId
 
-    fun setTaskId(taskId: Int) {
+    fun setTaskId(taskId: String) {
         _taskId.value = taskId
     }
 

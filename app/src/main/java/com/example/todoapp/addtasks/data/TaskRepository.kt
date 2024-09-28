@@ -24,12 +24,12 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
         taskDao.deleteTask(taskModel.toData())
     }
 
-    suspend fun getTaskById(taskId: Int): TaskModel? {
+    suspend fun getTaskById(taskId: String): TaskModel? {
         val taskEntity = taskDao.getTaskById(taskId)
         return taskEntity?.toTaskModel()
     }
 
-    fun getTaskByIdFlow(taskId: Int): Flow<TaskModel> {
+    fun getTaskByIdFlow(taskId: String): Flow<TaskModel> {
         return taskDao.getTaskByIdFlow(taskId).map { it.toTaskModel() }
     }
 

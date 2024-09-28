@@ -200,7 +200,7 @@ fun TasksList(
     navigationController: NavHostController,
     context: Context,
 ) {
-    var expandedId: Int? by remember { mutableStateOf(null) }
+    var expandedId: String? by remember { mutableStateOf(null) }
 
     LazyColumn {
         items(tasks, key = { it.id }) { task ->

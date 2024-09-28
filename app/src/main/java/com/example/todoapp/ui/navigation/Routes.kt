@@ -15,4 +15,4 @@ object SettingsRoute
 object TaskListRoute
 
 @Serializable
-data class EditTaskRoute(val id: Int)
+data class EditTaskRoute(val id: String)

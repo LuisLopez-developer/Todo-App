@@ -8,6 +8,7 @@ import com.example.todoapp.addtasks.utils.LocalTimeSerializer
 import com.example.todoapp.taskcategory.data.CategoryEntity
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalTime
+import java.util.UUID
 
 @Entity(
     foreignKeys = [ForeignKey(
@@ -19,7 +20,7 @@ import org.threeten.bp.LocalTime
 )
 data class TaskEntity(
     @PrimaryKey
-    val id: Int,
+    val id: String = UUID.randomUUID().toString(),
     val task: String,
     var selected: Boolean = false,
     val startDate: LocalDate = LocalDate.now(),
@@ -43,7 +44,7 @@ data class TaskEntity(
     // Convertir un "Map<String, Any?>" en un "TaskEntity"
     companion object {
         fun fromMap(map: Map<String, Any?>): TaskEntity = TaskEntity(
-            id = (map["id"] as? Long)?.toInt() ?: 0,
+            id = map["id"] as String,
             task = map["task"] as String,
             selected = map["selected"] as Boolean,
             startDate = LocalDateSerializer.deserialize(map["startDate"] as? String)
