@@ -8,6 +8,7 @@ plugins {
     id("com.google.devtools.ksp")
     alias(libs.plugins.jetbrains.kotlin.serialization)
     id("com.google.gms.google-services")
+    alias(libs.plugins.crashlytics)
 }
 
 android {
@@ -148,4 +149,7 @@ dependencies {
 
     // Firebase Firestore
     implementation(libs.firebase.firestore.ktx)
+
+    // Firebase Crashlytics
+    implementation(libs.firebase.crashlytics)
 }
