@@ -79,7 +79,6 @@ class TaskViewModel @Inject constructor(
         _selectedDate.value = date
     }
 
-
     // Estado para recuperar todas las tareas de un día en especifico
     @OptIn(ExperimentalCoroutinesApi::class)
     val tasksByDateState: StateFlow<TasksUiState> = _selectedDate.asFlow()
@@ -131,6 +130,24 @@ class TaskViewModel @Inject constructor(
         _showDialog.value = true
     }
 
+    fun onTask(taskModel: TaskModel){
+        viewModelScope.launch {
+            updateTaskUseCase(taskModel.copy(task = taskModel.task))
+        }
+    }
+
+    fun onDetails(taskModel: TaskModel){
+        viewModelScope.launch {
+            updateTaskUseCase(taskModel.copy(details = taskModel.details))
+        }
+    }
+
+    fun onCategory(taskModel: TaskModel){
+        viewModelScope.launch {
+            updateTaskUseCase(taskModel.copy(categoryId = taskModel.categoryId))
+        }
+    }
+
     fun onCheckBox(taskModel: TaskModel, context: Context) {
         viewModelScope.launch {
             try {
@@ -170,15 +187,17 @@ class TaskViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Guardar una copia de la tarea original antes de actualizarla
-                val originalTask = updatedTask
-
-                // Si la tarea original tenía una alarma programada, cancelarla
-                if (originalTask.time != null) {
-                    cancelAlarm(context, originalTask.id)
-                }
+                val originalTask = getTaskByIdUseCase.execute(updatedTask.id)
 
                 // Actualizar la tarea en el repositorio
                 updateTaskUseCase(updatedTask)
+
+                // Si la tarea original tenía una alarma programada, cancelarla
+                if (originalTask != null) {
+                    if (originalTask.time != null) {
+                        cancelAlarm(context, originalTask.id)
+                    }
+                }
 
                 // Verificar si la nueva tarea tiene una hora y fecha en el futuro antes de programar la alarma
                 if (updatedTask.time != null) {

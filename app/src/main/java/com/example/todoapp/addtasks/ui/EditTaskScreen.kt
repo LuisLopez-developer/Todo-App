@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -117,10 +118,11 @@ fun Container(
     }
     val isDropDownExpanded by taskCategoryViewModel.showDropDown.observeAsState(false)
 
+    val alpha = if (task.selected) 0.4f else 1f
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = colorScheme.surface)
     ) {
         Column {
             Card(
@@ -147,7 +149,11 @@ fun Container(
                                 value = categories.find { it.id == task.categoryId }?.category
                                     ?: stringResource(string.uncategorized),
                                 onValueChange = {},
-                                textStyle = typography.bodyMedium.copy(color = colorScheme.onSurface),
+                                textStyle = typography.bodyMedium.copy(
+                                    color = colorScheme.onSurface.copy(
+                                        alpha
+                                    )
+                                ),
                                 readOnly = true,
                                 decorationBox = { innerTextField ->
                                     Row(
@@ -162,14 +168,17 @@ fun Container(
                                         Icon(
                                             painter = painterResource(id = drawable.ic_outline_label_offer),
                                             contentDescription = stringResource(string.ic_label_offer),
-                                            modifier = Modifier.padding(end = 6.dp)
+                                            modifier = Modifier
+                                                .padding(end = 6.dp)
+                                                .alpha(alpha)
                                         )
                                         Box(
                                             modifier = Modifier.weight(1f)
                                         ) { innerTextField() }
                                         Icon(
                                             painter = painterResource(id = drawable.ic_outline_arrow_down),
-                                            contentDescription = stringResource(string.ic_arrow_drop_down)
+                                            contentDescription = stringResource(string.ic_arrow_drop_down),
+                                            modifier = Modifier.alpha(alpha)
                                         )
                                     }
                                 }
@@ -184,10 +193,7 @@ fun Container(
                                     text = { Text(text = stringResource(string.uncategorized)) },
                                     onClick = {
                                         taskCategoryViewModel.setSelectedCategory("Sin categoría")
-                                        taskViewModel.updateTask(
-                                            task.copy(categoryId = null),
-                                            context
-                                        )
+                                        taskViewModel.onCategory(task.copy(categoryId = null))
                                     }
                                 )
 
@@ -197,10 +203,7 @@ fun Container(
                                         DropdownMenuItem(
                                             text = { Text(text = item.category) },
                                             onClick = {
-                                                taskViewModel.updateTask(
-                                                    task.copy(categoryId = item.id),
-                                                    context
-                                                )
+                                                taskViewModel.onCategory(task.copy(categoryId = item.id))
                                                 taskCategoryViewModel.setShowDropDown(false)
                                             }
                                         )
@@ -210,15 +213,19 @@ fun Container(
 
                         TextField(
                             value = taskText,
-                            textStyle = Typography.bodyLarge,
+                            textStyle = Typography.bodyLarge.copy(colorScheme.onSurface.copy(alpha)),
                             onValueChange = {
                                 taskText = it
-                                taskViewModel.updateTask(task.copy(task = it), context)
+                                taskViewModel.onTask(task.copy(task = it))
                             },
                             placeholder = {
                                 Text(
                                     text = stringResource(string.edit_task_title),
-                                    style = Typography.bodyLarge
+                                    style = Typography.bodyLarge.copy(
+                                        colorScheme.onSurface.copy(
+                                            alpha
+                                        )
+                                    )
                                 )
                             },
                             colors = TextFieldDefaults.colors(
@@ -238,9 +245,13 @@ fun Container(
                             value = taskDetail,
                             onValueChange = {
                                 taskDetail = it
-                                taskViewModel.updateTask(task.copy(details = it), context)
+                                taskViewModel.onDetails(task.copy(details = it))
                             },
-                            textStyle = typography.bodySmall.copy(color = colorScheme.onSurface),
+                            textStyle = Typography.bodySmall.copy(
+                                color = colorScheme.onSurface.copy(
+                                    alpha
+                                )
+                            ),
                             decorationBox = { innerTextField ->
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -250,14 +261,17 @@ fun Container(
                                     Icon(
                                         painter = painterResource(id = drawable.ic_notes),
                                         contentDescription = stringResource(string.ic_notes),
-                                        modifier = Modifier.padding(end = 6.dp)
+                                        modifier = Modifier
+                                            .padding(end = 6.dp)
+                                            .alpha(alpha)
                                     )
                                     Box(modifier = Modifier.weight(1f)) {
                                         if (taskDetail.isEmpty()) {
                                             Text(
                                                 text = stringResource(string.edit_task_details), // Your placeholder text
-                                                style = typography.bodySmall.copy(
-                                                    textAlign = TextAlign.Center
+                                                style = Typography.bodySmall.copy(
+                                                    textAlign = TextAlign.Center,
+                                                    color = colorScheme.onSurface.copy(alpha)
                                                 )
                                             )
                                         }
@@ -292,7 +306,11 @@ fun Container(
                     BasicTextField(
                         value = displayText,
                         onValueChange = {},
-                        textStyle = typography.bodyMedium.copy(color = colorScheme.onSurface),
+                        textStyle = typography.bodyMedium.copy(
+                            color = colorScheme.onSurface.copy(
+                                alpha
+                            )
+                        ),
                         readOnly = true,
                         decorationBox = { innerTextField ->
                             Row(
@@ -300,19 +318,24 @@ fun Container(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { taskViewModel.onShowDateDialogClick() }
+                                    .clickable(
+                                        enabled = task.selected.not(),
+                                        onClick = { taskViewModel.onShowDateDialogClick() })
                             ) {
                                 Icon(
                                     painter = painterResource(id = drawable.ic_outline_calendar_),
-                                    contentDescription = stringResource(string.ic_label_offer),
-                                    modifier = Modifier.padding(end = 6.dp)
+                                    contentDescription = stringResource(string.ic_calendar),
+                                    modifier = Modifier
+                                        .padding(end = 6.dp)
+                                        .alpha(alpha)
                                 )
                                 Box(
                                     modifier = Modifier.weight(1f)
                                 ) { innerTextField() }
                                 Icon(
                                     painter = painterResource(id = drawable.ic_outline_arrow_down),
-                                    contentDescription = stringResource(string.ic_arrow_drop_down)
+                                    contentDescription = stringResource(string.ic_arrow_drop_down),
+                                    modifier = Modifier.alpha(alpha)
                                 )
                             }
                         }
@@ -322,8 +345,8 @@ fun Container(
         }
     }
 
-    // Mostrar DatePickerDialog si `showDatePicker` es verdadero
-    if (showDatePicker) {
+    // Mostrar DatePickerDialog si `showDatePicker` es verdadero y si la tarea no está seleccionada
+    if (showDatePicker && task.selected.not()) {
         DatePickerDialogComponent(
             initialDate = taskViewModel.temporaryDate.collectAsState().value ?: task.startDate,
             initialTime = taskViewModel.temporaryTime.collectAsState().value,  // Agregado para el tiempo temporal
