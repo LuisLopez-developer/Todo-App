@@ -138,10 +138,12 @@ class TaskViewModel @Inject constructor(
                 val originalTask = getTaskByIdUseCase.execute(taskModel.id)
 
                 if (originalTask != null) {
-                    // Si la tarea original tenía una alarma programada
+                    // Si la tarea original tiene una alarma programada
                     if (originalTask.time != null) {
                         // Verificar si la tarea original esta seleccionada (Realizada)
-                        if (originalTask.selected) {
+                        // debido a que si esta seleccionada significa que al llamar a esta función
+                        // se esta deseleccionando la tarea y viceversa
+                        if (originalTask.selected) { // Si la tarea original esta seleccionada (Realizada)
                             setAlarm(
                                 context,
                                 originalTask.id,
@@ -149,7 +151,7 @@ class TaskViewModel @Inject constructor(
                                 originalTask.time,
                                 originalTask.task
                             )
-                        }else{
+                        }else{ // Si la tarea original no esta seleccionada (No realizada)
                             cancelAlarm(context, originalTask.id)
                         }
 
@@ -167,11 +169,11 @@ class TaskViewModel @Inject constructor(
     fun updateTask(updatedTask: TaskModel, context: Context) {
         viewModelScope.launch {
             try {
-                // Obtener la tarea original antes de actualizarla
-                val originalTask = getTaskByIdUseCase.execute(updatedTask.id)
+                // Guardar una copia de la tarea original antes de actualizarla
+                val originalTask = updatedTask
 
                 // Si la tarea original tenía una alarma programada, cancelarla
-                if (originalTask?.time != null) {
+                if (originalTask.time != null) {
                     cancelAlarm(context, originalTask.id)
                 }
 
