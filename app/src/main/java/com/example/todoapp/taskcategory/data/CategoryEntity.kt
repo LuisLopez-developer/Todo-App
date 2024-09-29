@@ -9,7 +9,8 @@ data class CategoryEntity(
     @PrimaryKey
     val id: String = UUID.randomUUID().toString(),
     val category: String = "",
+    val userId: String? = null
 ) {
     // No-argument constructor for Firestore
-    constructor() : this("", "")
+    constructor() : this("", "", "")
 }

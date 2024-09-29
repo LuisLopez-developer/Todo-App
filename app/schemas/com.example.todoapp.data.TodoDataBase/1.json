@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "9b1ea0324a0559a827cfd89acf5c1475",
+    "identityHash": "8f6787698b088676167183237b70bbbe",
     "entities": [
       {
         "tableName": "TaskEntity",
@@ -80,7 +80,7 @@
       },
       {
         "tableName": "CategoryEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `category` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `category` TEXT NOT NULL, `userId` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -93,6 +93,12 @@
             "columnName": "category",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -172,7 +178,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9b1ea0324a0559a827cfd89acf5c1475')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8f6787698b088676167183237b70bbbe')"
     ]
   }
 }

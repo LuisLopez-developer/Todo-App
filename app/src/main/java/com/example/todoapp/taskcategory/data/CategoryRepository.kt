@@ -31,5 +31,5 @@ class CategoryRepository @Inject constructor(private val categoryDao: CategoryDa
 }
 
 fun TaskCategoryModel.toData(): CategoryEntity {
-    return CategoryEntity(this.id, this.category)
+    return CategoryEntity(this.id, this.category, this.userId)
 }
