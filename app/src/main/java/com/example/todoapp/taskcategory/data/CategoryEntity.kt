@@ -2,13 +2,14 @@ package com.example.todoapp.taskcategory.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.UUID
 
 @Entity
 data class CategoryEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    val category: String = ""
+    @PrimaryKey
+    val id: String = UUID.randomUUID().toString(),
+    val category: String = "",
 ) {
     // No-argument constructor for Firestore
-    constructor() : this(0, "")
+    constructor() : this("", "")
 }

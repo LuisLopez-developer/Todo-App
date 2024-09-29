@@ -8,7 +8,7 @@ import javax.inject.Inject
 class GetTaskByCategoryUseCase @Inject constructor(
     private val taskRepository: TaskRepository
 ) {
-    operator fun invoke(category: Int): Flow<List<TaskModel>> {
+    operator fun invoke(category: String): Flow<List<TaskModel>> {
         return taskRepository.getTasksByCategory(category)
     }
 }

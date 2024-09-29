@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "851a0bbef142c744408621e59ccad439",
+    "identityHash": "9b1ea0324a0559a827cfd89acf5c1475",
     "entities": [
       {
         "tableName": "TaskEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `task` TEXT NOT NULL, `selected` INTEGER NOT NULL, `startDate` TEXT NOT NULL, `endDate` TEXT, `time` TEXT, `details` TEXT, `categoryId` INTEGER, PRIMARY KEY(`id`), FOREIGN KEY(`categoryId`) REFERENCES `CategoryEntity`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `task` TEXT NOT NULL, `selected` INTEGER NOT NULL, `startDate` TEXT NOT NULL, `endDate` TEXT, `time` TEXT, `details` TEXT, `categoryId` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`categoryId`) REFERENCES `CategoryEntity`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -53,7 +53,7 @@
           {
             "fieldPath": "categoryId",
             "columnName": "categoryId",
-            "affinity": "INTEGER",
+            "affinity": "TEXT",
             "notNull": false
           }
         ],
@@ -80,12 +80,12 @@
       },
       {
         "tableName": "CategoryEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `category` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `category` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
-            "affinity": "INTEGER",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -96,7 +96,7 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": true,
+          "autoGenerate": false,
           "columnNames": [
             "id"
           ]
@@ -172,7 +172,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '851a0bbef142c744408621e59ccad439')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9b1ea0324a0559a827cfd89acf5c1475')"
     ]
   }
 }

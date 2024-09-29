@@ -66,7 +66,7 @@ fun BottomSheetComponent(
 ) {
     var expanded by remember { mutableStateOf(false) }
     var task by remember { mutableStateOf(initialText) }
-    var selectedCategory by remember { mutableStateOf<Int?>(null) }
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
     var details by remember { mutableStateOf<String?>(null) }
     var isDetailVisible by remember { mutableStateOf(false) }
     var isDateVisible by remember { mutableStateOf(false) }
@@ -214,7 +214,7 @@ fun BottomSheetComponent(
                     )
                 ) {
                     Text(
-                        text = categories.find { it.id == selectedCategory }?.category
+                        text = categories.find { it.id === selectedCategory }?.category
                             ?: "Sin Categoría"
                     )
                 }

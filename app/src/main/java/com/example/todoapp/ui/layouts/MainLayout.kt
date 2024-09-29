@@ -120,8 +120,7 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
                 TaskListScreen(
                     taskListViewModel = taskListViewModel,
                     taskCategoryViewModel = taskCategoryViewModel,
-                    navigationController = navigationController,
-                    holidaysViewModel = holidaysModel
+                    navigationController = navigationController
                 )
             }
         }

@@ -35,7 +35,6 @@ import com.example.todoapp.addtasks.ui.TasksUiState
 import com.example.todoapp.addtasks.ui.components.TaskItemComponent
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
-import com.example.todoapp.holidays.ui.model.HolidayModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 
@@ -44,7 +43,6 @@ fun TaskListScreen(
     taskListViewModel: TaskListViewModel,
     taskCategoryViewModel: TaskCategoryViewModel,
     navigationController: NavHostController,
-    holidaysViewModel: HolidaysViewModel,
 ) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
 
@@ -58,9 +56,6 @@ fun TaskListScreen(
         }
     }
 
-    //val taskDates by taskViewModel.taskDatesFlow.collectAsState(emptyList())
-    val holidays by holidaysViewModel.holidays.collectAsState(emptyList())
-
     val selectedCategory by taskListViewModel.selectedCategory.collectAsState()
     val categories by taskCategoryViewModel.categories.collectAsState(emptyList())
 
@@ -72,7 +67,6 @@ fun TaskListScreen(
         is TasksUiState.Success -> {
             Container(
                 tasks = (uiStateByDate as TasksUiState.Success).tasks,
-                holidays = holidays,
                 selectedCategory = selectedCategory,
                 categories = categories,
                 taskListViewModel = taskListViewModel
@@ -89,8 +83,7 @@ fun TaskListScreen(
 @Composable
 fun Container(
     tasks: List<TaskModel>,
-    holidays: List<HolidayModel>,
-    selectedCategory: Int?,
+    selectedCategory: String?,
     categories: List<TaskCategoryModel>,
     taskListViewModel: TaskListViewModel,
 ) {
@@ -105,7 +98,10 @@ fun Container(
                 categories = categories
             )
 
-            Box(Modifier.fillMaxSize().padding(horizontal = 15.dp)) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 15.dp)) {
                 // Si la lista de tareas está vacía, mostrar un mensaje.
                 if (tasks.isEmpty()) {
                     Text(
@@ -125,7 +121,7 @@ fun Container(
 
 @Composable
 fun CategorySelector(
-    selectedCategory: Int?,
+    selectedCategory: String?,
     onCategorySelected: (TaskCategoryModel?) -> Unit,
     categories: List<TaskCategoryModel>,
 ) {

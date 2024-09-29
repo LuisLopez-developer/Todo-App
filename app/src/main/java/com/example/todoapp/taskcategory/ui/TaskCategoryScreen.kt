@@ -59,7 +59,7 @@ fun TaskCategoryScreen(
     val uiState by taskCategoryViewModel.uiState.collectAsState(TaskCategoryUiState.Loading)
 
     // Estado para manejar qué menú desplegable está expandido
-    val expandedMenuCategoryId = remember { mutableStateOf<Int?>(null) }
+    val expandedMenuCategoryId = remember { mutableStateOf<String?>(null) }
     val showCreateDialog by taskCategoryViewModel.showCreateDialog.observeAsState(false)
 
     when (uiState) {
@@ -118,8 +118,8 @@ fun Container(
     taskCategoryViewModel: TaskCategoryViewModel,
     showEditDialog: Boolean,
     editCategoryText: String,
-    expandedMenuCategoryId: Int?,
-    onMenuExpandChange: (Int?) -> Unit,
+    expandedMenuCategoryId: String?,
+    onMenuExpandChange: (String?) -> Unit,
     onEditCategory: (TaskCategoryModel) -> Unit,
     onDeleteCategory: (TaskCategoryModel) -> Unit,
     showDeleteConfirmation: Boolean,      // Agregado para manejar la confirmación de eliminación
@@ -201,8 +201,8 @@ fun Container(
 @Composable
 fun CategoryList(
     categories: List<TaskCategoryModel>,
-    expandedMenuCategoryId: Int?,
-    onMenuExpandChange: (Int?) -> Unit,
+    expandedMenuCategoryId: String?,
+    onMenuExpandChange: (String?) -> Unit,
     onEditCategory: (TaskCategoryModel) -> Unit,
     onDeleteCategory: (TaskCategoryModel) -> Unit,
 ) {

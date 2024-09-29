@@ -1,6 +1,8 @@
 package com.example.todoapp.taskcategory.ui.model
 
+import java.util.UUID
+
 data class TaskCategoryModel(
-    val id: Int = 0,
+    val id: String = UUID.randomUUID().toString(),
     val category: String
 )

@@ -27,7 +27,7 @@ data class TaskEntity(
     val endDate: LocalDate? = null,
     val time: LocalTime? = null,
     val details: String? = null,
-    val categoryId: Int? = null,
+    val categoryId: String? = null,
 ) {
     // Convertir un "TaskEntity" en un "Map<String, Any?>"
     fun toMap(): Map<String, Any?> = mapOf(
@@ -52,7 +52,7 @@ data class TaskEntity(
             endDate = LocalDateSerializer.deserialize(map["endDate"] as? String),
             time = LocalTimeSerializer.deserialize(map["time"] as? String),
             details = map["details"] as? String,
-            categoryId = (map["categoryId"] as? Long)?.toInt()
+            categoryId = map["categoryId"] as? String
         )
     }
 }

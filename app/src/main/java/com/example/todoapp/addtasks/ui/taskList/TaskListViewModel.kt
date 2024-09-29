@@ -24,10 +24,10 @@ class TaskListViewModel @Inject constructor(
     private val getTaskUseCase: GetTaskUseCase,
 ) : ViewModel() {
 
-    private val _selectedCategory = MutableStateFlow<Int?>(null)
-    val selectedCategory: StateFlow<Int?> = _selectedCategory
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+    val selectedCategory: StateFlow<String?> = _selectedCategory
 
-    fun setCategory(category: Int?) {
+    fun setCategory(category: String?) {
         _selectedCategory.value = category
     }
 

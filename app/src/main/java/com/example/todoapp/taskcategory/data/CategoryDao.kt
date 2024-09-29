@@ -13,7 +13,7 @@ interface CategoryDao {
     fun getCategory(): Flow<List<CategoryEntity>>
 
     @Query("SELECT * FROM CategoryEntity WHERE id = :categoryId LIMIT 1")
-    suspend fun getCategoryById(categoryId: Int): CategoryEntity?
+    suspend fun getCategoryById(categoryId: String): CategoryEntity?
 
     @Insert
     suspend fun addCategory(item: CategoryEntity)
