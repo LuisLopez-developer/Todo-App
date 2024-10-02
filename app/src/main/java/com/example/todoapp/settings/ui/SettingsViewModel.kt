@@ -1,22 +1,26 @@
 package com.example.todoapp.settings.ui
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialResponse
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.settings.auth.data.UserEntity
 import com.example.todoapp.settings.auth.domain.AddUserCaseUse
+import com.example.todoapp.settings.auth.domain.GetUserUseCase
 import com.example.todoapp.settings.auth.domain.SignInWithGoogleUseCase
 import com.example.todoapp.settings.firestore.domain.SyncDataFromFirestoreUseCase
 import com.example.todoapp.settings.firestore.domain.SyncDataWithFirebaseUseCase
+import com.example.todoapp.settings.ui.UserUiState.Success
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,29 +30,24 @@ class SettingsViewModel @Inject constructor(
     private val addUserCaseUse: AddUserCaseUse,
     private val syncDataFromFirestoreUseCase: SyncDataFromFirestoreUseCase,
     private val syncDataWithFirestoreUseCase: SyncDataWithFirebaseUseCase,
+    getUserUseCase: GetUserUseCase,
 ) : ViewModel() {
-    var user by mutableStateOf<UserEntity?>(null)
-        private set
 
-    init {
-        checkUserAuthentication()
-    }
-
-    private fun checkUserAuthentication() {
-        val firebaseUser = FirebaseAuth.getInstance().currentUser
-        firebaseUser?.let {
-            user = UserEntity(
-                uid = it.uid,
-                name = it.displayName ?: "",
-                email = it.email ?: ""
-            )
+    val userUiState: StateFlow<UserUiState> =
+        getUserUseCase().map{
+            if (it != null) {
+                Success(it)
+            } else {
+                UserUiState.Empty
+            }
         }
-    }
+            .catch { Throwable(it) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UserUiState.Loading)
 
     private fun signInWithGoogle(idToken: String) {
         viewModelScope.launch {
             signInWithGoogleUseCase(idToken, onSuccess = {
-                val firebaseUser =  FirebaseAuth.getInstance().currentUser
+                val firebaseUser = FirebaseAuth.getInstance().currentUser
                 firebaseUser?.let {
                     val userEntity =
                         UserEntity(
@@ -58,7 +57,6 @@ class SettingsViewModel @Inject constructor(
                         )
                     viewModelScope.launch {
                         addUserCaseUse(userEntity)
-                        user = userEntity
                     }
                 }
             }, onFailure = {
