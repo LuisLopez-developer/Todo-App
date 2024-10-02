@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.settings.auth.domain.GetUserUseCase
 import com.example.todoapp.settings.auth.domain.HandleSignInUseCase
+import com.example.todoapp.settings.auth.domain.SignOutUseCase
 import com.example.todoapp.settings.firestore.domain.SyncDataFromFirestoreUseCase
 import com.example.todoapp.settings.firestore.domain.SyncDataWithFirebaseUseCase
 import com.example.todoapp.settings.ui.UserUiState.Success
@@ -22,6 +23,7 @@ class SettingsViewModel @Inject constructor(
     private val syncDataFromFirestoreUseCase: SyncDataFromFirestoreUseCase,
     private val syncDataWithFirestoreUseCase: SyncDataWithFirebaseUseCase,
     private val handleSignInUseCase: HandleSignInUseCase,
+    private val signOutUseCase: SignOutUseCase,
     getUserUseCase: GetUserUseCase,
 ) : ViewModel() {
 
@@ -38,6 +40,10 @@ class SettingsViewModel @Inject constructor(
 
     fun handleSignIn(result: GetCredentialResponse) {
         handleSignInUseCase(result)
+    }
+
+    fun signOut() {
+        signOutUseCase()
     }
 
     fun syncTasks() {

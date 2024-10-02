@@ -81,6 +81,13 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    fun signOut() {
+        auth.signOut()
+        CoroutineScope(Dispatchers.IO).launch {
+            deleteAllUsers()
+        }
+    }
+
 }
 
 fun UserEntity.toUserModel() = UserModel(uid, name, email)

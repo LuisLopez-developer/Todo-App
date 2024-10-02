@@ -108,6 +108,11 @@ fun Container(
             }) {
                 Text("Sincronizar tareas desde Firebase")
             }
+            Button(onClick = {
+                settingsViewModel.signOut()
+            }) {
+                Text("Cerrar sesión")
+            }
         }
     }
 }
