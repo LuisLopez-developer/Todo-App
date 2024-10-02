@@ -22,7 +22,7 @@ import com.example.todoapp.addtasks.ui.taskList.TaskListScreen
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.services.notification.RequestNotificationPermission
-import com.example.todoapp.settings.SettingsScreen
+import com.example.todoapp.settings.ui.SettingsScreen
 import com.example.todoapp.settings.ui.SettingsViewModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel

@@ -47,4 +47,7 @@
     <string name="settings_general">General</string>
     <string name="settings_notifications">Notificaciones</string>
     <string name="settings_about">Acerca de</string>
+    <string name="sign_in">↘️ Elija una opción para Iniciar sesión ↙️</string>
+    <string name="sign_out">Cerrar sesión</string>
+
 </resources>
