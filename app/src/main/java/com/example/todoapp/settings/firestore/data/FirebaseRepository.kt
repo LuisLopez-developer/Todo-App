@@ -22,7 +22,7 @@ class FirebaseRepository @Inject constructor(
     private val firestore = FirebaseFirestore.getInstance()
 
     private fun saveTaskToFirestore(taskEntity: TaskEntity) {
-        val taskRef = firestore.collection("tasks").document(taskEntity.id.toString())
+        val taskRef = firestore.collection("tasks").document(taskEntity.id)
         taskRef.set(taskEntity.toMap())
             .addOnSuccessListener { Log.d("FirebaseRepository", "Tarea guardada exitosamente") }
             .addOnFailureListener { e ->
@@ -35,7 +35,7 @@ class FirebaseRepository @Inject constructor(
     }
 
     private fun saveCategoryToFirestore(categoryEntity: CategoryEntity) {
-        val categoryRef = firestore.collection("categories").document(categoryEntity.id.toString())
+        val categoryRef = firestore.collection("categories").document(categoryEntity.id)
         categoryRef.set(categoryEntity)
             .addOnSuccessListener { Log.d("FirebaseRepository", "Categoría guardada exitosamente") }
             .addOnFailureListener { e ->

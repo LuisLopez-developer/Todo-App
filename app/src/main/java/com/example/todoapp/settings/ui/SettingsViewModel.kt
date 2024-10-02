@@ -43,6 +43,7 @@ class SettingsViewModel @Inject constructor(
     fun handleSignIn(result: GetCredentialResponse) {
         handleSignInUseCase(result)
     }
+
     fun signOut() {
         signOutUseCase()
         onHideDropDownExpanded()

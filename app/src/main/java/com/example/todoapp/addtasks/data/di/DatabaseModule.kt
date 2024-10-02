@@ -50,11 +50,11 @@ class DatabaseModule {
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
                             val prepopulateCategories = listOf(
-                                CategoryEntity(category = "Trabajo"),
-                                CategoryEntity(category = "Estudio"),
-                                CategoryEntity(category = "Familia"),
-                                CategoryEntity(category = "Compras"),
-                                CategoryEntity(category = "Examen")
+                                CategoryEntity(id = "1d4e5f6a-7b8c-9d0e-1f2a-3b4c5d6e7f8a", category = "Trabajo"),
+                                CategoryEntity(id = "2d4e5f6a-7b8c-9d0e-1f2a-3b4c5d6e7f8b", category = "Estudio"),
+                                CategoryEntity(id = "3d4e5f6a-7b8c-9d0e-1f2a-3b4c5d6e7f8c", category = "Familia"),
+                                CategoryEntity(id = "4d4e5f6a-7b8c-9d0e-1f2a-3b4c5d6e7f8d", category = "Compras"),
+                                CategoryEntity(id = "5d4e5f6a-7b8c-9d0e-1f2a-3b4c5d6e7f8e", category = "Examen")
                             )
                             val categoryDao =
                                 provideCategoryDao(TodoDataBase.getInstance(appContext))
