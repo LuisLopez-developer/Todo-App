@@ -6,13 +6,8 @@ import com.example.todoapp.addtasks.data.TaskEntity
 import com.example.todoapp.taskcategory.data.CategoryDao
 import com.example.todoapp.taskcategory.data.CategoryEntity
 import com.google.api.client.http.InputStreamContent
-import com.google.api.client.http.javanet.NetHttpTransport
-import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
-import com.google.auth.http.HttpCredentialsAdapter
-import com.google.auth.oauth2.AccessToken
-import com.google.auth.oauth2.GoogleCredentials
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -24,17 +19,6 @@ class GoogleDriveRepository @Inject constructor(
     private val categoryDao: CategoryDao,
     private val taskDao: TaskDao,
 ) {
-    private fun getDriveService(accessToken: String): Drive {
-        val credentials = GoogleCredentials.create(AccessToken(accessToken, null))
-        return Drive.Builder(
-            NetHttpTransport(),
-            GsonFactory(),
-            HttpCredentialsAdapter(credentials)
-        )
-            .setApplicationName("TodoApp")
-            .build()
-    }
-
     private suspend fun saveToDrive(entity: Any, type: EntityType, accessToken: String) =
         withContext(Dispatchers.IO) {
             val (entityId, entityUpdateAt) = when (entity) {
