@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "f4e0ccd131b3820dd80a66275e0fd8c3",
+    "identityHash": "fa9a755f0c3b93ec581560da657eaae9",
     "entities": [
       {
         "tableName": "TaskEntity",
@@ -81,7 +81,26 @@
             "id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_TaskEntity_categoryId",
+            "unique": false,
+            "columnNames": [
+              "categoryId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_TaskEntity_categoryId` ON `${TABLE_NAME}` (`categoryId`)"
+          },
+          {
+            "name": "index_TaskEntity_userId",
+            "unique": false,
+            "columnNames": [
+              "userId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_TaskEntity_userId` ON `${TABLE_NAME}` (`userId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "CategoryEntity",
@@ -148,7 +167,17 @@
             "id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_CategoryEntity_userId",
+            "unique": false,
+            "columnNames": [
+              "userId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CategoryEntity_userId` ON `${TABLE_NAME}` (`userId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "UserEntity",
@@ -231,7 +260,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f4e0ccd131b3820dd80a66275e0fd8c3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fa9a755f0c3b93ec581560da657eaae9')"
     ]
   }
 }

@@ -2,6 +2,7 @@ package com.example.todoapp.addtasks.data
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.todoapp.settings.auth.data.UserEntity
 import com.example.todoapp.taskcategory.data.CategoryEntity
@@ -25,7 +26,8 @@ import java.util.UUID
             childColumns = ["userId"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index("categoryId"), Index("userId")]
 )
 data class TaskEntity(
     @PrimaryKey
