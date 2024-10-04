@@ -4,12 +4,11 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("dagger.hilt.android.plugin")
-    id("kotlin-kapt")
-    id("com.google.devtools.ksp")
     alias(libs.plugins.jetbrains.kotlin.serialization)
     id("com.google.gms.google-services")
     alias(libs.plugins.crashlytics)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -54,11 +53,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         buildConfig = true
@@ -115,7 +114,7 @@ dependencies {
 
     // Dagger Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.android.compiler)
 
     // LiveData
     implementation(libs.androidx.runtime.livedata)
@@ -158,4 +157,9 @@ dependencies {
     implementation(libs.google.api.client.android)
     implementation(libs.google.api.client.gson)
     implementation(libs.google.api.services.drive)
+}
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
