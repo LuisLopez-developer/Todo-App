@@ -17,11 +17,12 @@ import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import org.threeten.bp.OffsetDateTime
 import javax.inject.Inject
 
 class GoogleDriveRepository @Inject constructor(
     private val categoryDao: CategoryDao,
-    private val taskDao: TaskDao
+    private val taskDao: TaskDao,
 ) {
     // Configura el servicio de Google Drive utilizando el token de acceso proporcionado
     private fun getDriveService(accessToken: String): Drive {
@@ -36,59 +37,88 @@ class GoogleDriveRepository @Inject constructor(
     }
 
     // Guarda una entidad (tarea o categoría) en Google Drive
-    private suspend fun saveToDrive(entity: Any, type: EntityType, accessToken: String) = withContext(Dispatchers.IO) {
-        // Configuración de metadatos del archivo para Google Drive
-        val entityId = when (entity) {
-            is TaskEntity -> entity.id
-            is CategoryEntity -> entity.id
-            else -> throw IllegalArgumentException("Tipo de entidad no compatible")
-        }
+    private suspend fun saveToDrive(entity: Any, type: EntityType, accessToken: String) =
+        withContext(Dispatchers.IO) {
+            // Configuración de metadatos del archivo para Google Drive
+            val (entityId, entityUpdateAt) = when (entity) {
+                is TaskEntity -> entity.id to entity.updatedAt
+                is CategoryEntity -> entity.id to entity.updatedAt
+                else -> throw IllegalArgumentException("Unsupported entity type")
+            }
 
-        val driveService = getDriveService(accessToken)
+            val driveService = getDriveService(accessToken)
 
-        // Verifica si ya existe un archivo con este ID en Google Drive
-        val existingFile = searchFileInDrive(driveService, entityId, type.value)
+            // Verifica si ya existe un archivo con este ID en Google Drive
+            val existingFile = searchFileInDrive(driveService, entityId, type.value)
 
-        if (existingFile != null) {
-            // Si el archivo existe, compara su contenido con el de la entidad
-            val existingContent = downloadFileContent(driveService, existingFile.id)
-            val newContent = entity.toJson()
+            if (existingFile != null) {
+                // Si el archivo existe, compara su contenido con el de la entidad
+                val existingContent = downloadFileContent(driveService, existingFile.id)
+                val newContent = entity.toJson()
 
-            if (existingContent == newContent) {
-                Log.d("GoogleDriveRepository", "${type.name} con ID=$entityId ya existe y es idéntico. No se guardará. $newContent")
-                return@withContext // No hacer nada si el contenido es el mismo
-            } else {
-                Log.d("GoogleDriveRepository", "${type.name} con ID=$entityId existe pero es diferente. Actualizando...")
-                updateFileInDrive(driveService, existingFile.id, newContent)
-                return@withContext
+
+                if (existingContent == newContent) {
+                    Log.d(
+                        "GoogleDriveRepository",
+                        "${type.name} con ID=$entityId ya existe y es idéntico. No se guardará."
+                    )
+                    return@withContext
+                }
+
+                // Obtiene el timestamp del archivo existente en Drive
+                val existingUpdateAt =
+                    existingFile.properties?.get("updatedAt")?.let { OffsetDateTime.parse(it) }
+
+                // Compara el tiempo de actualización
+                if (existingUpdateAt != null && entityUpdateAt.isBefore(existingUpdateAt)) {
+                    Log.d(
+                        "GoogleDriveRepository",
+                        "${type.name} con ID=$entityId es más antigua que la versión en Google Drive. No se actualizará."
+                    )
+                    return@withContext
+                } else {
+                    Log.d(
+                        "GoogleDriveRepository",
+                        "${type.name} con ID=$entityId existe pero es diferente. Actualizando..."
+                    )
+                    updateFileInDrive(driveService, existingFile.id, newContent)
+                    return@withContext
+                }
+            }
+
+            // Si el archivo no existe, crea uno nuevo
+            val fileMetadata = File().apply {
+                name = entityId
+                mimeType = "application/json"
+                parents = listOf("appDataFolder") // Guardar en la carpeta de datos de la aplicación
+                properties = mapOf(
+                    "type" to type.value,
+                    "updatedAt" to entityUpdateAt.toString() // Agrega el tiempo de actualización como propiedad
+                )
+            }
+
+            val contentStream =
+                InputStreamContent("application/json", entity.toJson().toByteArray().inputStream())
+
+            try {
+                // Crea el archivo en Google Drive
+                val file = driveService.files().create(fileMetadata, contentStream)
+                    .setFields("id, name, properties")
+                    .execute()
+                Log.d(
+                    "GoogleDriveRepository",
+                    "${type.name} guardada en Google Drive: ID=${file.id}, Nombre=${file.name}"
+                )
+            } catch (e: Exception) {
+                Log.e("GoogleDriveRepository", "Error al guardar ${type.name}: ${e.message}", e)
             }
         }
-
-        // Si el archivo no existe, crea uno nuevo
-        val fileMetadata = File().apply {
-            name = entityId
-            mimeType = "application/json"
-            parents = listOf("appDataFolder") // Guardar en la carpeta de datos de la aplicación
-            properties = mapOf("type" to type.value)
-        }
-
-        val contentStream = InputStreamContent("application/json", entity.toJson().toByteArray().inputStream())
-
-        try {
-            // Crea el archivo en Google Drive
-            val file = driveService.files().create(fileMetadata, contentStream)
-                .setFields("id, name, properties")
-                .execute()
-            Log.d("GoogleDriveRepository", "${type.name} guardada en Google Drive: ID=${file.id}, Nombre=${file.name}")
-        } catch (e: Exception) {
-            Log.e("GoogleDriveRepository", "Error al guardar ${type.name}: ${e.message}", e)
-        }
-    }
 
     // Busca un archivo en Google Drive por su 'entityId' y tipo (tarea o categoría).
     private fun searchFileInDrive(driveService: Drive, entityId: String, type: String): File? {
         val mimeType = "application/json"
-        val query = "name='$entityId' and mimeType='$mimeType' and properties has { key='type' and value='$type' }"
+        val query =
+            "name='$entityId' and mimeType='$mimeType' and properties has { key='type' and value='$type' }"
 
         return try {
             val files = driveService.files().list()
@@ -118,7 +148,8 @@ class GoogleDriveRepository @Inject constructor(
 
     // Actualiza un archivo existente en Google Drive con nuevo contenido (newContent) utilizando su 'fileId'.
     private fun updateFileInDrive(driveService: Drive, fileId: String, newContent: String) {
-        val contentStream = InputStreamContent("application/json", newContent.toByteArray().inputStream())
+        val contentStream =
+            InputStreamContent("application/json", newContent.toByteArray().inputStream())
 
         try {
             val file = driveService.files().update(fileId, null, contentStream)
@@ -126,7 +157,11 @@ class GoogleDriveRepository @Inject constructor(
                 .execute()
             Log.d("GoogleDriveRepository", "Archivo actualizado en Google Drive: ID=${file.id}")
         } catch (e: Exception) {
-            Log.e("GoogleDriveRepository", "Error al actualizar archivo en Google Drive: ID=$fileId", e)
+            Log.e(
+                "GoogleDriveRepository",
+                "Error al actualizar archivo en Google Drive: ID=$fileId",
+                e
+            )
         }
     }
 
@@ -147,7 +182,8 @@ class GoogleDriveRepository @Inject constructor(
         val driveService = getDriveService(accessToken)
 
         // Recupera y maneja las categorías desde Google Drive
-        val categories = retrieveFilesFromDrive(driveService, "category", CategoryEntity::class.java)
+        val categories =
+            retrieveFilesFromDrive(driveService, "category", CategoryEntity::class.java)
         handleCategories(categories)
 
         // Recupera y maneja las tareas desde Google Drive
@@ -156,7 +192,11 @@ class GoogleDriveRepository @Inject constructor(
     }
 
     // Recupera archivos de Google Drive y los convierte a una lista del tipo especificado
-    private fun <T> retrieveFilesFromDrive(driveService: Drive, type: String, clazz: Class<T>): List<T> {
+    private fun <T> retrieveFilesFromDrive(
+        driveService: Drive,
+        type: String,
+        clazz: Class<T>,
+    ): List<T> {
         val mimeType = "application/json"
         // Construye la consulta para filtrar archivos según el tipo
         val query = if (type == "category") {
@@ -203,9 +243,38 @@ class GoogleDriveRepository @Inject constructor(
         files.forEach { file ->
             try {
                 driveService.files().delete(file.id).execute()
-                Log.d("GoogleDriveRepository", "Archivo eliminado: ID=${file.id}, Nombre=${file.name}")
+                Log.d(
+                    "GoogleDriveRepository",
+                    "Archivo eliminado: ID=${file.id}, Nombre=${file.name}"
+                )
             } catch (e: Exception) {
-                Log.e("GoogleDriveRepository", "Error al eliminar archivo: ID=${file.id}, Nombre=${file.name}", e)
+                Log.e(
+                    "GoogleDriveRepository",
+                    "Error al eliminar archivo: ID=${file.id}, Nombre=${file.name}",
+                    e
+                )
+            }
+        }
+    }
+
+    // Maneja la adición de tareas recuperadas de Google Drive a la base de datos local
+    private suspend fun handleTasks(tasks: List<TaskEntity>) {
+        tasks.forEach { taskEntity ->
+            try {
+                val existingTask = taskDao.getTaskById(taskEntity.id)
+                if (existingTask == null) {
+                    // Si la tarea no existe, se añade a la base de datos
+                    taskDao.addTask(taskEntity)
+                    Log.d("GoogleDriveRepository", "Tarea añadida: ${taskEntity.task}")
+                } else if (taskEntity.updatedAt.isAfter(existingTask.updatedAt)) {
+                    // Si la tarea en Google Drive es más reciente, actualiza la tarea local
+                    taskDao.updateTask(taskEntity)
+                    Log.d("GoogleDriveRepository", "Tarea actualizada: ${taskEntity.task}")
+                } else {
+                    Log.d("GoogleDriveRepository", "La tarea ya existe y está actualizada: ${taskEntity.task}")
+                }
+            } catch (e: Exception) {
+                Log.e("GoogleDriveRepository", "Error al manejar tarea: ${taskEntity.task}", e)
             }
         }
     }
@@ -219,33 +288,20 @@ class GoogleDriveRepository @Inject constructor(
                     return@forEach
                 }
 
-                // Si la categoría no existe, se añade a la base de datos
-                if (categoryDao.getCategoryById(categoryEntity.id) == null) {
+                val existingCategory = categoryDao.getCategoryById(categoryEntity.id)
+                if (existingCategory == null) {
+                    // Si la categoría no existe, se añade a la base de datos
                     categoryDao.addCategory(categoryEntity)
                     Log.d("GoogleDriveRepository", "Categoria añadida: ${categoryEntity.category}")
+                } else if (categoryEntity.updatedAt.isAfter(existingCategory.updatedAt)) {
+                    // Si la categoría en Google Drive es más reciente, actualiza la categoría local
+                    categoryDao.updateCategory(categoryEntity)
+                    Log.d("GoogleDriveRepository", "Categoria actualizada: ${categoryEntity.category}")
                 } else {
-                    Log.d("GoogleDriveRepository", "La categoría ya existe: ${categoryEntity.category}")
+                    Log.d("GoogleDriveRepository", "La categoría ya existe y está actualizada: ${categoryEntity.category}")
                 }
             } catch (e: Exception) {
-                Log.e("GoogleDriveRepository", "Error al agregar categoría: ${categoryEntity.category}", e)
-            }
-        }
-    }
-
-    // Maneja la adición de tareas recuperadas de Google Drive a la base de datos local
-    private suspend fun handleTasks(tasks: List<TaskEntity>) {
-        tasks.forEach { taskEntity ->
-            try {
-                val existingTask = taskDao.getTaskById(taskEntity.id)
-                // Si la tarea no existe o es diferente de la tarea, se añade a la base de datos
-                if (existingTask == null || existingTask.id != taskEntity.id) {
-                    taskDao.addTask(taskEntity)
-                    Log.d("GoogleDriveRepository", "Tarea añadida: ${taskEntity.task}")
-                } else {
-                    Log.d("GoogleDriveRepository", "La tarea ya existe: ${taskEntity.task}")
-                }
-            } catch (e: Exception) {
-                Log.e("GoogleDriveRepository", "Error al agregar tarea: ${taskEntity.task}", e)
+                Log.e("GoogleDriveRepository", "Error al manejar categoría: ${categoryEntity.category}", e)
             }
         }
     }
