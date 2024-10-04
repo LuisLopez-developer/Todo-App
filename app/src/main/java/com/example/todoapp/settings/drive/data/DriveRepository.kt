@@ -55,7 +55,7 @@ class GoogleDriveRepository @Inject constructor(
             val newContent = entity.toJson()
 
             if (existingContent == newContent) {
-                Log.d("GoogleDriveRepository", "${type.name} con ID=$entityId ya existe y es idéntico. No se guardará.")
+                Log.d("GoogleDriveRepository", "${type.name} con ID=$entityId ya existe y es idéntico. No se guardará. $newContent")
                 return@withContext // No hacer nada si el contenido es el mismo
             } else {
                 Log.d("GoogleDriveRepository", "${type.name} con ID=$entityId existe pero es diferente. Actualizando...")

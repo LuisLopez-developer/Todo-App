@@ -8,6 +8,7 @@ import com.example.todoapp.taskcategory.data.CategoryEntity
 import kotlinx.serialization.Contextual
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalTime
+import org.threeten.bp.OffsetDateTime
 import java.util.UUID
 
 @Entity(
@@ -37,4 +38,6 @@ data class TaskEntity(
     val details: String? = null,
     val categoryId: String? = null,
     val userId: String? = null,
+    @Contextual val createdAt: OffsetDateTime = OffsetDateTime.now(),
+    @Contextual val updatedAt: OffsetDateTime = OffsetDateTime.now()
 )
