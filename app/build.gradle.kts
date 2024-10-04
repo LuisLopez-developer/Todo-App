@@ -68,7 +68,9 @@ android {
     }
     packaging {
         resources {
+            excludes += "/META-INF/DEPENDENCIES"
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/INDEX.LIST"
         }
     }
     hilt {
@@ -94,6 +96,7 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.retrofit)
     implementation(libs.play.services.tflite.support)
+    implementation(libs.play.services.auth)
 
     // Test dependencies
     testImplementation(libs.junit)
@@ -147,9 +150,11 @@ dependencies {
     // Add the Firebase SDK for Google Analytics
     implementation(libs.firebase.analytics)
 
-    // Firebase Firestore
-    implementation(libs.firebase.firestore.ktx)
-
     // Firebase Crashlytics
     implementation(libs.firebase.crashlytics)
+
+    // Google Drive
+    implementation(libs.google.api.client.android)
+    implementation(libs.google.api.client.gson)
+    implementation(libs.google.api.services.drive)
 }

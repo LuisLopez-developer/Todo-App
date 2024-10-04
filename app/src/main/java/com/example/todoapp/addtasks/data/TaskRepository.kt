@@ -1,19 +1,29 @@
 package com.example.todoapp.addtasks.data
 
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.settings.auth.data.UserDao
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
+class TaskRepository @Inject constructor(
+    private val taskDao: TaskDao,
+    private val userDao: UserDao,
+) {
 
     val tasks: Flow<List<TaskModel>> = taskDao.getTasks().map { it.toTaskModelList() }
 
     suspend fun add(taskModel: TaskModel) {
-        taskDao.addTask(taskModel.toData())
+        val userId = userDao.getUser().first()?.uid
+        if (userId != null) {
+            taskDao.addTask(taskModel.toData().copy(userId = userId))
+        } else {
+            taskDao.addTask(taskModel.toData())
+        }
     }
 
     suspend fun update(taskModel: TaskModel) {

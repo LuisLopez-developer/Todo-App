@@ -6,8 +6,10 @@ converterGson = "2.9.0"
 credentials = "1.2.2"
 credentialsPlayServicesAuth = "1.2.2"
 firebaseBom = "33.3.0"
-firebaseFirestoreKtx = "25.1.0"
 foundation = "1.7.0"
+googleApiClientAndroid = "2.0.0"
+googleApiClientGson = "2.0.0"
+googleApiServicesDrive = "v3-rev20240914-2.0.0"
 googleid = "1.1.1"
 hiltAndroidCompiler = "2.52"
 kotlin = "1.9.20"
@@ -26,6 +28,7 @@ runtimeLivedata = "1.7.0"
 threetenabp = "1.4.7"
 playServicesTfliteSupport = "16.1.0"
 crashlytics = "3.0.2"
+playServicesAuth = "21.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -61,11 +64,15 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "converte
 threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
 play-services-tflite-support = { group = "com.google.android.gms", name = "play-services-tflite-support", version.ref = "playServicesTfliteSupport" }
 
+google-api-client-android = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClientAndroid" }
+google-api-client-gson = { module = "com.google.api-client:google-api-client-gson", version.ref = "googleApiClientGson" }
+google-api-services-drive = { module = "com.google.apis:google-api-services-drive", version.ref = "googleApiServicesDrive" }
+
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
-firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

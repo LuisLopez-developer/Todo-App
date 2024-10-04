@@ -6,7 +6,8 @@ import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class TodoApp : Application(){
+class TodoApp : Application() {
+
     // Inicializar la biolbioteca AndroidThreeTen, para poder usar localdate en api 24
     override fun onCreate() {
         super.onCreate()

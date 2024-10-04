@@ -6,8 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.todoapp.settings.auth.domain.GetUserUseCase
 import com.example.todoapp.settings.auth.domain.HandleSignInUseCase
 import com.example.todoapp.settings.auth.domain.SignOutUseCase
-import com.example.todoapp.settings.firestore.domain.SyncDataFromFirestoreUseCase
-import com.example.todoapp.settings.firestore.domain.SyncDataWithFirebaseUseCase
+import com.example.todoapp.settings.drive.domain.ClearAppDataFromGoogleDriveUseCase
+import com.example.todoapp.settings.drive.domain.SyncDataFromDriveUseCase
+import com.example.todoapp.settings.drive.domain.SyncDataWithDriveUseCase
 import com.example.todoapp.settings.ui.UserUiState.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,10 +22,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val syncDataFromFirestoreUseCase: SyncDataFromFirestoreUseCase,
-    private val syncDataWithFirestoreUseCase: SyncDataWithFirebaseUseCase,
     private val handleSignInUseCase: HandleSignInUseCase,
     private val signOutUseCase: SignOutUseCase,
+    private val syncDataWithDriveUseCase: SyncDataWithDriveUseCase,
+    private val syncDataFromDriveUseCase: SyncDataFromDriveUseCase,
+    private val clearAppDataFromGoogleDriveUseCase: ClearAppDataFromGoogleDriveUseCase,
     getUserUseCase: GetUserUseCase,
 ) : ViewModel() {
 
@@ -60,16 +62,23 @@ class SettingsViewModel @Inject constructor(
         _dropDownExpanded.value = false
     }
 
-    // Lo relacionado a Firestore
-    fun syncTasks() {
+    // Lo relacionado al alamcenamiento en la nube
+    fun syncTasks(accessToken: String) {
         viewModelScope.launch {
-            syncDataWithFirestoreUseCase()
+            syncDataWithDriveUseCase(accessToken)
         }
     }
 
-    fun syncTasksFromFirebase() {
+    fun syncTasksFrom(accessToken: String) {
         viewModelScope.launch {
-            syncDataFromFirestoreUseCase()
+            syncDataFromDriveUseCase(accessToken)
         }
     }
+
+    fun clearAppDataFrom(accessToken: String) {
+        viewModelScope.launch {
+            clearAppDataFromGoogleDriveUseCase(accessToken)
+        }
+    }
+
 }

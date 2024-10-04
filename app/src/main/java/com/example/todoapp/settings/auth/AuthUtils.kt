@@ -1,7 +1,10 @@
 package com.example.todoapp.settings.auth
 
+import android.app.Activity
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.IntentSender
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
@@ -15,7 +18,11 @@ import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.example.todoapp.BuildConfig
 import com.example.todoapp.settings.ui.SettingsViewModel
+import com.google.android.gms.auth.api.identity.AuthorizationRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.common.api.Scope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.api.services.drive.DriveScopes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.security.MessageDigest
@@ -63,6 +70,11 @@ fun doGoogleSignIn(
                 context = context,
             )
             settingsViewModel.handleSignIn(result)
+
+            requestDriveAuthorization(context as Activity, onResult = {
+                Log.i("SettingsScreen", "Access token: $it")
+            })
+
         } catch (e: NoCredentialException) {
             e.printStackTrace()
             startAddAccountIntentLauncher?.launch(getAddGoogleAccountIntent())
@@ -78,3 +90,39 @@ fun doGoogleSignIn(
         }
     }
 }
+
+fun requestDriveAuthorization(activity: Activity, onResult: (String) -> Unit) {
+    val requestedScopes = listOf(Scope(DriveScopes.DRIVE_APPDATA))
+    val authorizationRequest = AuthorizationRequest.Builder()
+        .setRequestedScopes(requestedScopes)
+        .build()
+
+    Identity.getAuthorizationClient(activity)
+        .authorize(authorizationRequest)
+        .addOnSuccessListener { authorizationResult ->
+            if (authorizationResult.hasResolution()) {
+                val pendingIntent: PendingIntent? = authorizationResult.pendingIntent
+                try {
+                    activity.startIntentSenderForResult(
+                        pendingIntent?.intentSender,
+                        REQUEST_AUTHORIZE,
+                        null,
+                        0,
+                        0,
+                        0,
+                        null
+                    )
+                } catch (e: IntentSender.SendIntentException) {
+                    Log.e("AuthUtils", "Couldn't start Authorization UI: ${e.localizedMessage}")
+                }
+            } else {
+                // Devuelve el resultado de la autorización
+                authorizationResult.accessToken?.let { onResult(it) }
+            }
+        }
+        .addOnFailureListener { e ->
+            Log.e("AuthUtils", "Failed to authorize", e)
+        }
+}
+
+const val REQUEST_AUTHORIZE = 1001

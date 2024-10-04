@@ -23,4 +23,7 @@ interface CategoryDao {
 
     @Delete
     suspend fun deleteCategory(item: CategoryEntity)
+
+    @Query("SELECT COUNT(*) > 0 FROM UserEntity WHERE uid = :userId")
+    suspend fun isUserIdValid(userId: String): Boolean
 }

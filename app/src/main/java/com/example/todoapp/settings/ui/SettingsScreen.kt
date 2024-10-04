@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -50,6 +51,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.todoapp.R
 import com.example.todoapp.settings.auth.doGoogleSignIn
+import com.example.todoapp.settings.auth.requestDriveAuthorization
 import com.example.todoapp.settings.auth.ui.model.UserModel
 import kotlinx.coroutines.CoroutineScope
 
@@ -67,9 +69,7 @@ fun SettingsScreen(settingsViewModel: SettingsViewModel) {
         }
 
     val userUiState by produceState<UserUiState>(
-        initialValue = UserUiState.Loading,
-        key1 = lifecycle,
-        key2 = settingsViewModel
+        initialValue = UserUiState.Loading, key1 = lifecycle, key2 = settingsViewModel
     ) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             settingsViewModel.userUiState.collect { value = it }
@@ -148,7 +148,8 @@ fun Auth(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(15.dp), elevation = CardDefaults.cardElevation(8.dp)
+            .padding(15.dp),
+        elevation = CardDefaults.cardElevation(8.dp)
     ) {
         Column(
             modifier = Modifier
@@ -162,8 +163,7 @@ fun Auth(
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
                 HorizontalDivider(
-                    thickness = 2.dp,
-                    modifier = Modifier.padding(vertical = 10.dp)
+                    thickness = 2.dp, modifier = Modifier.padding(vertical = 10.dp)
                 )
                 Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
                     IconButton(onClick = {
@@ -226,15 +226,31 @@ fun Auth(
                                 contentDescription = stringResource(R.string.sign_out)
                             )
                         }
-                        DropdownMenu(
-                            expanded = dropDownAuthMenuExpanded,
+                        DropdownMenu(expanded = dropDownAuthMenuExpanded,
                             onDismissRequest = { settingsViewModel.onHideDropDownExpanded() }) {
-                            DropdownMenuItem(
-                                onClick = { settingsViewModel.signOut() },
+                            DropdownMenuItem(onClick = { settingsViewModel.signOut() },
                                 text = { Text(stringResource(R.string.sign_out)) })
                         }
                     }
                 }
+                Button(onClick = { requestDriveAuthorization(context, onResult = {
+                    settingsViewModel.syncTasks(it)
+                }) }) {
+                    Text("Sincronizar")
+                }
+
+                Button(onClick = { requestDriveAuthorization(context, onResult = {
+                    settingsViewModel.syncTasksFrom(it)
+                }) }) {
+                    Text("Sincronizar desde Firebase")
+                }
+
+                Button(onClick = { requestDriveAuthorization(context, onResult = {
+                    settingsViewModel.clearAppDataFrom(it)
+                }) }) {
+                    Text("Borrar datos de la app")
+                }
+
             }
         }
     }

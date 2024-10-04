@@ -4,8 +4,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.example.todoapp.settings.auth.data.UserEntity
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.util.UUID
 
 @Entity(
@@ -23,7 +21,4 @@ data class CategoryEntity(
     val id: String = UUID.randomUUID().toString(),
     val category: String = "",
     val userId: String? = null,
-) {
-    // No-argument constructor for Firestore
-    constructor() : this("", "", "")
-}
+)
