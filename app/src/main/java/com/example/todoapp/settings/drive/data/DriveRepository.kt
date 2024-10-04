@@ -38,35 +38,95 @@ class GoogleDriveRepository @Inject constructor(
     // Guarda una entidad (tarea o categoría) en Google Drive
     private suspend fun saveToDrive(entity: Any, type: EntityType, accessToken: String) = withContext(Dispatchers.IO) {
         // Configuración de metadatos del archivo para Google Drive
-        val fileMetadata = File().apply {
-            name = when (entity) {
-                is TaskEntity -> entity.id
-                is CategoryEntity -> entity.id
-                else -> throw IllegalArgumentException("Tipo de entidad no compatible")
+        val entityId = when (entity) {
+            is TaskEntity -> entity.id
+            is CategoryEntity -> entity.id
+            else -> throw IllegalArgumentException("Tipo de entidad no compatible")
+        }
+
+        val driveService = getDriveService(accessToken)
+
+        // Verifica si ya existe un archivo con este ID en Google Drive
+        val existingFile = searchFileInDrive(driveService, entityId, type.value)
+
+        if (existingFile != null) {
+            // Si el archivo existe, compara su contenido con el de la entidad
+            val existingContent = downloadFileContent(driveService, existingFile.id)
+            val newContent = entity.toJson()
+
+            if (existingContent == newContent) {
+                Log.d("GoogleDriveRepository", "${type.name} con ID=$entityId ya existe y es idéntico. No se guardará.")
+                return@withContext // No hacer nada si el contenido es el mismo
+            } else {
+                Log.d("GoogleDriveRepository", "${type.name} con ID=$entityId existe pero es diferente. Actualizando...")
+                updateFileInDrive(driveService, existingFile.id, newContent)
+                return@withContext
             }
+        }
+
+        // Si el archivo no existe, crea uno nuevo
+        val fileMetadata = File().apply {
+            name = entityId
             mimeType = "application/json"
             parents = listOf("appDataFolder") // Guardar en la carpeta de datos de la aplicación
             properties = mapOf("type" to type.value)
         }
 
-        // Convierte la entidad a formato JSON
-        val content = when (entity) {
-            is TaskEntity -> entity.toJson().toByteArray()
-            is CategoryEntity -> entity.toJson().toByteArray()
-            else -> throw IllegalArgumentException("Unsupported entity type")
-        }
-
-        Log.d("GoogleDriveRepository", "Contenido: ${entity.toJson()}")
-        val contentStream = InputStreamContent("application/json", content.inputStream())
+        val contentStream = InputStreamContent("application/json", entity.toJson().toByteArray().inputStream())
 
         try {
             // Crea el archivo en Google Drive
-            val file = getDriveService(accessToken).files().create(fileMetadata, contentStream)
+            val file = driveService.files().create(fileMetadata, contentStream)
                 .setFields("id, name, properties")
                 .execute()
             Log.d("GoogleDriveRepository", "${type.name} guardada en Google Drive: ID=${file.id}, Nombre=${file.name}")
         } catch (e: Exception) {
             Log.e("GoogleDriveRepository", "Error al guardar ${type.name}: ${e.message}", e)
+        }
+    }
+
+    // Busca un archivo en Google Drive por su 'entityId' y tipo (tarea o categoría).
+    private fun searchFileInDrive(driveService: Drive, entityId: String, type: String): File? {
+        val mimeType = "application/json"
+        val query = "name='$entityId' and mimeType='$mimeType' and properties has { key='type' and value='$type' }"
+
+        return try {
+            val files = driveService.files().list()
+                .setSpaces("appDataFolder")
+                .setQ(query)
+                .setFields("files(id, name)")
+                .execute()
+                .files
+
+            if (files.isNotEmpty()) files.first() else null
+        } catch (e: Exception) {
+            Log.e("GoogleDriveRepository", "Error al buscar archivo en Google Drive: $e")
+            null
+        }
+    }
+
+    // Descarga el contenido de un archivo de Google Drive usando su 'fileId' y lo devuelve como un String.
+    private fun downloadFileContent(driveService: Drive, fileId: String): String? {
+        return try {
+            val inputStream = driveService.files().get(fileId).executeMediaAsInputStream()
+            inputStream.bufferedReader().use { it.readText() }
+        } catch (e: Exception) {
+            Log.e("GoogleDriveRepository", "Error al descargar contenido del archivo: $fileId", e)
+            null
+        }
+    }
+
+    // Actualiza un archivo existente en Google Drive con nuevo contenido (newContent) utilizando su 'fileId'.
+    private fun updateFileInDrive(driveService: Drive, fileId: String, newContent: String) {
+        val contentStream = InputStreamContent("application/json", newContent.toByteArray().inputStream())
+
+        try {
+            val file = driveService.files().update(fileId, null, contentStream)
+                .setFields("id, name")
+                .execute()
+            Log.d("GoogleDriveRepository", "Archivo actualizado en Google Drive: ID=${file.id}")
+        } catch (e: Exception) {
+            Log.e("GoogleDriveRepository", "Error al actualizar archivo en Google Drive: ID=$fileId", e)
         }
     }
 
@@ -177,8 +237,8 @@ class GoogleDriveRepository @Inject constructor(
         tasks.forEach { taskEntity ->
             try {
                 val existingTask = taskDao.getTaskById(taskEntity.id)
-                // Si la tarea no existe o es diferente de la tarea que estamos intentando agregar
-                if (existingTask == null || existingTask.task != taskEntity.task) {
+                // Si la tarea no existe o es diferente de la tarea, se añade a la base de datos
+                if (existingTask == null || existingTask.id != taskEntity.id) {
                     taskDao.addTask(taskEntity)
                     Log.d("GoogleDriveRepository", "Tarea añadida: ${taskEntity.task}")
                 } else {
@@ -199,13 +259,5 @@ class GoogleDriveRepository @Inject constructor(
 
 // Funciones de extensión para convertir entidades a JSON
 private fun Any.toJson(): String {
-    return Gson().toJson(this)
-}
-
-fun TaskEntity.toJson(): String {
-    return Gson().toJson(this)
-}
-
-fun CategoryEntity.toJson(): String {
     return Gson().toJson(this)
 }
