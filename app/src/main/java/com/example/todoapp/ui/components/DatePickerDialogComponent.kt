@@ -46,7 +46,6 @@ fun DatePickerDialogComponent(
     // Mostrar el diálogo del TimePicker si el estado es verdadero
     if (showTimePickerDialog.value) {
         TimePickerDialogComponent(
-            initialTime = temporaryTime,
             onTimeSelected = { time ->
                 temporaryTime = time
                 showTimePickerDialog.value = false
