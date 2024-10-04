@@ -2,6 +2,7 @@ package com.example.todoapp.addtasks.data
 
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.settings.auth.data.UserDao
+import com.example.todoapp.state.data.constants.DefaultStateId.ACTIVE_ID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -18,12 +19,10 @@ class TaskRepository @Inject constructor(
     val tasks: Flow<List<TaskModel>> = taskDao.getTasks().map { it.toTaskModelList() }
 
     suspend fun add(taskModel: TaskModel) {
-        val userId = userDao.getUser().first()?.uid
-        if (userId != null) {
-            taskDao.addTask(taskModel.toData().copy(userId = userId))
-        } else {
-            taskDao.addTask(taskModel.toData())
-        }
+        taskDao.addTask(
+            taskModel.toData()
+                .copy(userId = userDao.getUser().first()?.uid, stateId = ACTIVE_ID)
+        )
     }
 
     suspend fun update(taskModel: TaskModel) {
@@ -63,7 +62,8 @@ private fun TaskModel.toData(): TaskEntity {
         this.endDate,
         this.time,
         this.details,
-        this.categoryId
+        this.categoryId,
+        stateId = this.stateId
     )
 }
 
@@ -77,7 +77,8 @@ fun TaskEntity.toTaskModel(): TaskModel {
         endDate = this.endDate,
         time = this.time,
         details = this.details,
-        categoryId = this.categoryId
+        categoryId = this.categoryId,
+        stateId = this.stateId
     )
 }
 

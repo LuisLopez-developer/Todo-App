@@ -5,6 +5,8 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.todoapp.settings.auth.data.UserEntity
+import com.example.todoapp.state.data.StateEntity
+import com.example.todoapp.state.data.constants.DefaultStateId.ACTIVE_ID
 import kotlinx.serialization.Contextual
 import org.threeten.bp.OffsetDateTime
 import java.util.UUID
@@ -16,15 +18,22 @@ import java.util.UUID
             parentColumns = ["uid"],
             childColumns = ["userId"],
             onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = StateEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["stateId"],
+            onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("userId")]
+    indices = [Index("category", unique = true), Index("userId"), Index("stateId")]
 )
 data class CategoryEntity(
     @PrimaryKey
     val id: String = UUID.randomUUID().toString(),
     val category: String = "",
     val userId: String? = null,
+    val stateId: String = ACTIVE_ID,
     @Contextual val createdAt: OffsetDateTime = OffsetDateTime.now(),
-    @Contextual val updatedAt: OffsetDateTime = OffsetDateTime.now()
+    @Contextual val updatedAt: OffsetDateTime = OffsetDateTime.now(),
 )

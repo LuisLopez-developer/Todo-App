@@ -1,4 +1,4 @@
-package com.example.todoapp.addtasks.data.di
+package com.example.todoapp.data.di
 
 import android.content.Context
 import android.util.Log
@@ -8,6 +8,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.todoapp.addtasks.data.TaskDao
 import com.example.todoapp.data.TodoDataBase
 import com.example.todoapp.settings.auth.data.UserDao
+import com.example.todoapp.state.data.StateDao
+import com.example.todoapp.state.data.seedStates
 import com.example.todoapp.taskcategory.data.CategoryDao
 import com.example.todoapp.taskcategory.data.CategoryEntity
 import dagger.Module
@@ -40,14 +42,29 @@ class DatabaseModule {
     }
 
     @Provides
+    fun provideStateDao(todoDataBase: TodoDataBase): StateDao {
+        return todoDataBase.stateDao()
+    }
+
+    @Provides
     @Singleton
     fun provideTodoDatabase(@ApplicationContext appContext: Context): TodoDataBase {
         return Room.databaseBuilder(appContext, TodoDataBase::class.java, "TaskDatabase")
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
-                    // Aquí lanzamos una corrutina para insertar las categorías iniciales
+                    // Aquí lanzamos una corrutina para insertar los seeders en la base de datos
                     CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val stateDao = provideStateDao(TodoDataBase.getInstance(appContext))
+                            seedStates().forEach {
+                                stateDao.addState(it)
+                            }
+                            Log.d("DatabaseModule", "Estados predeterminados insertados correctamente")
+                        } catch (e: Exception) {
+                            Log.e("DatabaseModule", "Error al insertar estados predeterminados", e)
+                        }
+
                         try {
                             val prepopulateCategories = listOf(
                                 CategoryEntity(id = "1d4e5f6a-7b8c-9d0e-1f2a-3b4c5d6e7f8a", category = "Trabajo"),
@@ -65,6 +82,7 @@ class DatabaseModule {
                                 "DatabaseModule",
                                 "Categorías predeterminadas insertadas correctamente"
                             )
+
                         } catch (e: Exception) {
                             Log.e(
                                 "DatabaseModule",

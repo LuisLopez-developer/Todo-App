@@ -1,6 +1,5 @@
 package com.example.todoapp.taskcategory.data
 
-
 import com.example.todoapp.settings.auth.data.UserDao
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 import kotlinx.coroutines.flow.Flow
@@ -17,19 +16,14 @@ class CategoryRepository @Inject constructor(
 
     val categories: Flow<List<TaskCategoryModel>> = categoryDao.getCategory().map { items ->
         items.map {
-            TaskCategoryModel(it.id, it.category)
+            TaskCategoryModel(it.id, it.category, stateId = it.stateId)
         }
     }
 
     suspend fun add(taskCategoryModel: TaskCategoryModel) {
-        // Obtenemos el id del usuario actual
-        val userId = userDao.getUser().map { it?.uid }.first()
-        // Si el id del usuario no es nulo, lo asignamos a la categoría
-        if (userId != null) {
-            categoryDao.addCategory(taskCategoryModel.toData().copy(userId = userId))
-        } else {
-            categoryDao.addCategory(taskCategoryModel.toData())
-        }
+        categoryDao.addCategory(
+            taskCategoryModel.toData().copy(userId = userDao.getUser().map { it?.uid }.first())
+        )
     }
 
     suspend fun update(taskCategoryModel: TaskCategoryModel) {
@@ -43,5 +37,5 @@ class CategoryRepository @Inject constructor(
 }
 
 fun TaskCategoryModel.toData(): CategoryEntity {
-    return CategoryEntity(this.id, this.category, this.userId)
+    return CategoryEntity(this.id, this.category, this.userId, this.stateId)
 }

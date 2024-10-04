@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "fa9a755f0c3b93ec581560da657eaae9",
+    "identityHash": "8a127bf267e50fd62cd1a0c211b8c6a2",
     "entities": [
       {
         "tableName": "TaskEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `task` TEXT NOT NULL, `selected` INTEGER NOT NULL, `startDate` TEXT NOT NULL, `endDate` TEXT, `time` TEXT, `details` TEXT, `categoryId` TEXT, `userId` TEXT, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`categoryId`) REFERENCES `CategoryEntity`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`userId`) REFERENCES `UserEntity`(`uid`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `task` TEXT NOT NULL, `selected` INTEGER NOT NULL, `startDate` TEXT NOT NULL, `endDate` TEXT, `time` TEXT, `details` TEXT, `categoryId` TEXT, `userId` TEXT, `stateId` TEXT NOT NULL, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`categoryId`) REFERENCES `CategoryEntity`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`userId`) REFERENCES `UserEntity`(`uid`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`stateId`) REFERENCES `StateEntity`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -63,6 +63,12 @@
             "notNull": false
           },
           {
+            "fieldPath": "stateId",
+            "columnName": "stateId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "createdAt",
             "columnName": "createdAt",
             "affinity": "TEXT",
@@ -99,6 +105,15 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_TaskEntity_userId` ON `${TABLE_NAME}` (`userId`)"
+          },
+          {
+            "name": "index_TaskEntity_stateId",
+            "unique": false,
+            "columnNames": [
+              "stateId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_TaskEntity_stateId` ON `${TABLE_NAME}` (`stateId`)"
           }
         ],
         "foreignKeys": [
@@ -123,12 +138,23 @@
             "referencedColumns": [
               "uid"
             ]
+          },
+          {
+            "table": "StateEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "stateId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
           }
         ]
       },
       {
         "tableName": "CategoryEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `category` TEXT NOT NULL, `userId` TEXT, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`userId`) REFERENCES `UserEntity`(`uid`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `category` TEXT NOT NULL, `userId` TEXT, `stateId` TEXT NOT NULL, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`userId`) REFERENCES `UserEntity`(`uid`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`stateId`) REFERENCES `StateEntity`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -147,6 +173,12 @@
             "columnName": "userId",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "stateId",
+            "columnName": "stateId",
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
             "fieldPath": "createdAt",
@@ -169,6 +201,15 @@
         },
         "indices": [
           {
+            "name": "index_CategoryEntity_category",
+            "unique": true,
+            "columnNames": [
+              "category"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_CategoryEntity_category` ON `${TABLE_NAME}` (`category`)"
+          },
+          {
             "name": "index_CategoryEntity_userId",
             "unique": false,
             "columnNames": [
@@ -176,6 +217,15 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_CategoryEntity_userId` ON `${TABLE_NAME}` (`userId`)"
+          },
+          {
+            "name": "index_CategoryEntity_stateId",
+            "unique": false,
+            "columnNames": [
+              "stateId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CategoryEntity_stateId` ON `${TABLE_NAME}` (`stateId`)"
           }
         ],
         "foreignKeys": [
@@ -188,6 +238,17 @@
             ],
             "referencedColumns": [
               "uid"
+            ]
+          },
+          {
+            "table": "StateEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "stateId"
+            ],
+            "referencedColumns": [
+              "id"
             ]
           }
         ]
@@ -255,12 +316,48 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "StateEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `state` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_StateEntity_state",
+            "unique": true,
+            "columnNames": [
+              "state"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_StateEntity_state` ON `${TABLE_NAME}` (`state`)"
+          }
+        ],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fa9a755f0c3b93ec581560da657eaae9')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8a127bf267e50fd62cd1a0c211b8c6a2')"
     ]
   }
 }

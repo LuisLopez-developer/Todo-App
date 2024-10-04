@@ -12,11 +12,13 @@ import com.example.todoapp.holidays.data.local.HolidayDao
 import com.example.todoapp.holidays.data.local.HolidayEntity
 import com.example.todoapp.settings.auth.data.UserDao
 import com.example.todoapp.settings.auth.data.UserEntity
+import com.example.todoapp.state.data.StateDao
+import com.example.todoapp.state.data.StateEntity
 import com.example.todoapp.taskcategory.data.CategoryDao
 import com.example.todoapp.taskcategory.data.CategoryEntity
 
 @Database(
-    entities = [TaskEntity::class, CategoryEntity::class, UserEntity::class, HolidayEntity::class],
+    entities = [TaskEntity::class, CategoryEntity::class, UserEntity::class, HolidayEntity::class, StateEntity::class],
     version = 1,
     exportSchema = true
 )
@@ -25,6 +27,7 @@ abstract class TodoDataBase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun categoryDao(): CategoryDao
     abstract fun userDao(): UserDao
+    abstract fun stateDao(): StateDao
     abstract fun holidayDao(): HolidayDao
 
     companion object {
