@@ -16,7 +16,7 @@ class TaskRepository @Inject constructor(
     private val userDao: UserDao,
 ) {
 
-    val tasks: Flow<List<TaskModel>> = taskDao.getTasks().map { it.toTaskModelList() }
+    val tasks: Flow<List<TaskModel>> = taskDao.getActiveTasks().map { it.toTaskModelList() }
 
     suspend fun add(taskModel: TaskModel) {
         taskDao.addTask(
@@ -31,6 +31,10 @@ class TaskRepository @Inject constructor(
 
     suspend fun delete(taskModel: TaskModel) {
         taskDao.deleteTask(taskModel.toData())
+    }
+
+    suspend fun deleteTasksByCategoryLogically(categoryId: String) {
+        taskDao.deleteTasksByCategoryLogically(categoryId)
     }
 
     suspend fun getTaskById(taskId: String): TaskModel? {
@@ -48,12 +52,12 @@ class TaskRepository @Inject constructor(
 
     fun getTasksByDateFlow(date: LocalDate): Flow<List<TaskModel>> {
         val dateString = date.format(org.threeten.bp.format.DateTimeFormatter.ISO_LOCAL_DATE)
-        return taskDao.getTasksByDate(dateString).map { it.toTaskModelList() }
+        return taskDao.getActiveTasksByDate(dateString).map { it.toTaskModelList() }
     }
 }
 
 // Extensión para convertir TaskModel a TaskEntity, que es la representación de la base de datos.
-private fun TaskModel.toData(): TaskEntity {
+fun TaskModel.toData(): TaskEntity {
     return TaskEntity(
         this.id,
         this.task,

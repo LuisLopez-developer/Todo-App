@@ -3,6 +3,7 @@ package com.example.todoapp.addtasks.ui.model
 import com.example.todoapp.state.data.constants.DefaultStateId.ACTIVE_ID
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalTime
+import org.threeten.bp.OffsetDateTime
 import java.util.UUID
 
 data class TaskModel(
@@ -15,5 +16,7 @@ data class TaskModel(
     val details: String? = null,
     val categoryId: String? = null,
     val userId: String? = null,
-    val stateId: String = ACTIVE_ID
+    val stateId: String = ACTIVE_ID,
+    val createdAt: OffsetDateTime = OffsetDateTime.now(),
+    val updatedAt: OffsetDateTime = OffsetDateTime.now()
 )

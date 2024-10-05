@@ -53,11 +53,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         buildConfig = true
@@ -100,12 +100,22 @@ dependencies {
 
     // Test dependencies
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.threetenbp)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockk)
+
+    // Android Test dependencies
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.mockk)
 
     // Navigation
     implementation(libs.androidx.navigation.compose)

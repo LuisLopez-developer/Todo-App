@@ -3,6 +3,7 @@ package com.example.todoapp.settings.drive.data
 import android.util.Log
 import com.example.todoapp.addtasks.data.TaskDao
 import com.example.todoapp.addtasks.data.TaskEntity
+import com.example.todoapp.state.data.constants.DefaultStateId
 import com.example.todoapp.taskcategory.data.CategoryDao
 import com.example.todoapp.taskcategory.data.CategoryEntity
 import com.google.api.client.http.InputStreamContent
@@ -98,10 +99,60 @@ class GoogleDriveRepository @Inject constructor(
         }
     }
 
+    private fun deleteFileInDrive(driveService: Drive, fileId: String) {
+        executeDriveAction {
+            driveService.files().delete(fileId).execute()
+            logMessage("Archivo eliminado en Google Drive: ID=$fileId")
+        }
+    }
+
+    private suspend fun saveOrDeleteInDrive(entity: Any, type: EntityType, accessToken: String) =
+        withContext(Dispatchers.IO) {
+            val (entityId, entityUpdateAt, entityStateId) = when (entity) {
+                is TaskEntity -> Triple(entity.id, entity.updatedAt, entity.stateId)
+                is CategoryEntity -> Triple(entity.id, entity.updatedAt, entity.stateId)
+                else -> throw IllegalArgumentException("Unsupported entity type")
+            }
+
+            val driveService = getDriveService(accessToken)
+            val existingFile = searchFileInDrive(driveService, entityId, type.value)
+
+            if (entityStateId == DefaultStateId.DELETED_ID) {
+                if (existingFile != null) {
+                    deleteFileInDrive(driveService, existingFile.id)
+                    logMessage("${type.name} con ID=$entityId eliminada de Google Drive.")
+                }
+                return@withContext
+            }
+
+            if (existingFile != null) {
+                val existingContent = downloadFileContent(driveService, existingFile.id)
+                val newContent = entity.toJson()
+
+                if (existingContent == newContent) {
+                    logMessage("${type.name} con ID=$entityId ya existe y es idéntico. No se guardará.")
+                    return@withContext
+                }
+
+                val existingUpdateAt =
+                    existingFile.properties?.get("updatedAt")?.let { OffsetDateTime.parse(it) }
+                if (existingUpdateAt != null && entityUpdateAt.isBefore(existingUpdateAt)) {
+                    logMessage("${type.name} con ID=$entityId es más antigua que la versión en Google Drive. No se actualizará.")
+                    return@withContext
+                } else {
+                    logMessage("${type.name} con ID=$entityId existe pero es diferente. Actualizando...")
+                    updateFileInDrive(driveService, existingFile.id, newContent)
+                    return@withContext
+                }
+            }
+
+            createFileInDrive(driveService, entityId, entityUpdateAt, type, entity.toJson())
+        }
+
     // Sincroniza los datos de la aplicación con Google Drive
     suspend fun syncDataWithGoogleDrive(accessToken: String) = withContext(Dispatchers.IO) {
-        categoryDao.getCategory().first().forEach { saveToDrive(it, EntityType.CATEGORY, accessToken) }
-        taskDao.getTasks().first().forEach { saveToDrive(it, EntityType.TASK, accessToken) }
+        categoryDao.getCategory().first().forEach { saveOrDeleteInDrive(it, EntityType.CATEGORY, accessToken) }
+        taskDao.getTasks().first().forEach { saveOrDeleteInDrive(it, EntityType.TASK, accessToken) }
     }
 
     // Sincroniza los datos de Google Drive con la aplicación

@@ -7,6 +7,9 @@ import javax.inject.Inject
 
 class UpdateCategoryUseCase @Inject constructor(private val categoryRepository: CategoryRepository) {
     suspend operator fun invoke(taskCategoryModel: TaskCategoryModel) {
+        if (categoryRepository.isCategoryNameValid(taskCategoryModel.category)) {
+            return
+        }
         categoryRepository.update(taskCategoryModel)
     }
 }
