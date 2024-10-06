@@ -36,6 +36,10 @@ class AuthRepository @Inject constructor(
         userDao.addUser(user)
     }
 
+    suspend fun doesUserExists(userId: String): Boolean {
+        return userDao.doesUserExists(userId)
+    }
+
     private suspend fun reassignTasksAndCategoriesToUser(userId: String?) {
         reassignCategoriesToUser(userId)
         reassignTasksToUser(userId)

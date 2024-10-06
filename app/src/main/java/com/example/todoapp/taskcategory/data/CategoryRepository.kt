@@ -10,9 +10,11 @@ import javax.inject.Singleton
 class CategoryRepository @Inject constructor(private val categoryDao: CategoryDao) {
 
     val categories: Flow<List<TaskCategoryModel>> = categoryDao.getActiveCategory().map { items ->
-        items.map {
-            TaskCategoryModel(it.id, it.category, stateId = it.stateId)
-        }
+        items.map { it.toCategoryModel() }
+    }
+
+    suspend fun getCategoryById(categoryId: String): TaskCategoryModel? {
+        return categoryDao.getCategoryById(categoryId)?.toCategoryModel()
     }
 
     suspend fun isCategoryNameValid(categoryName: String) =
@@ -38,4 +40,8 @@ class CategoryRepository @Inject constructor(private val categoryDao: CategoryDa
 
 fun TaskCategoryModel.toData(): CategoryEntity {
     return CategoryEntity(this.id, this.category, this.userId, this.stateId)
+}
+
+fun CategoryEntity.toCategoryModel(): TaskCategoryModel {
+    return TaskCategoryModel(this.id, this.category, this.stateId)
 }

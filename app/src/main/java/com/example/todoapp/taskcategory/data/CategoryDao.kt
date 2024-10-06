@@ -34,7 +34,4 @@ interface CategoryDao {
 
     @Query("SELECT COUNT(*) > 0 FROM CategoryEntity WHERE category = :categoryName")
     suspend fun isCategoryNameValid(categoryName: String): Boolean
-
-    @Query("SELECT COUNT(*) > 0 FROM UserEntity WHERE uid = :userId")
-    suspend fun isUserIdValid(userId: String): Boolean
 }

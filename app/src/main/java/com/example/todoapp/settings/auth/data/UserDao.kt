@@ -16,4 +16,7 @@ interface UserDao {
 
     @Query("DELETE FROM UserEntity")
     suspend fun deleteAllUsers()
+
+    @Query("SELECT COUNT(*) > 0 FROM UserEntity WHERE uid = :userId")
+    suspend fun doesUserExists(userId: String): Boolean
 }
