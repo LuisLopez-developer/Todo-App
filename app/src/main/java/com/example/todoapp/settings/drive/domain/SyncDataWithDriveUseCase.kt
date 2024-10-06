@@ -1,15 +1,18 @@
 package com.example.todoapp.settings.drive.domain
 
 import android.util.Log
-import com.example.todoapp.addtasks.data.TaskEntity
+import com.example.todoapp.addtasks.data.toData
 import com.example.todoapp.addtasks.domain.GetTaskUseCase
+import com.example.todoapp.settings.drive.data.DriveEntity
 import com.example.todoapp.settings.drive.data.GoogleDriveRepository
+import com.example.todoapp.settings.drive.data.GoogleDriveRepository.EntityType
 import com.example.todoapp.settings.utils.toJson
 import com.example.todoapp.state.data.constants.DefaultStateId.DELETED_ID
-import com.example.todoapp.taskcategory.data.CategoryEntity
+import com.example.todoapp.taskcategory.data.toCategoryEntity
 import com.example.todoapp.taskcategory.domain.GetCategoryUseCase
 import com.google.api.services.drive.Drive
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.threeten.bp.OffsetDateTime
 import javax.inject.Inject
@@ -21,23 +24,35 @@ class SyncDataWithDriveUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(accessToken: String) = withContext(Dispatchers.IO) {
         val driveService = driveRepository.getDrive(accessToken)
-        getCategoryUseCase().collect { category ->
-            saveOrDeleteInDrive(category, GoogleDriveRepository.EntityType.CATEGORY, driveService)
+        getCategoryUseCase().first().forEach { category ->
+            saveOrDeleteInDrive(
+                DriveEntity.Category(category.toCategoryEntity()),
+                EntityType.CATEGORY,
+                driveService
+            )
         }
-        getTaskUseCase().collect { task ->
-            saveOrDeleteInDrive(task, GoogleDriveRepository.EntityType.TASK, driveService)
+        getTaskUseCase().first().forEach { task ->
+            saveOrDeleteInDrive(DriveEntity.Task(task.toData()), EntityType.TASK, driveService)
         }
     }
 
     private fun saveOrDeleteInDrive(
-        entity: Any,
-        type: GoogleDriveRepository.EntityType,
+        entity: DriveEntity,
+        type: EntityType,
         driveService: Drive,
     ) {
         val (entityId, entityUpdateAt, entityStateId) = when (entity) {
-            is TaskEntity -> Triple(entity.id, entity.updatedAt, entity.stateId)
-            is CategoryEntity -> Triple(entity.id, entity.updatedAt, entity.stateId)
-            else -> throw IllegalArgumentException("Unsupported entity type")
+            is DriveEntity.Task -> Triple(
+                entity.taskEntity.id,
+                entity.taskEntity.updatedAt,
+                entity.taskEntity.stateId
+            )
+
+            is DriveEntity.Category -> Triple(
+                entity.categoryEntity.id,
+                entity.categoryEntity.updatedAt,
+                entity.categoryEntity.stateId
+            )
         }
 
         val existingFile = driveRepository.searchFileInDrive(driveService, entityId, type.value)

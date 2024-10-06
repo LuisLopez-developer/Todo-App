@@ -21,7 +21,7 @@ class CategoryRepository @Inject constructor(private val categoryDao: CategoryDa
         categoryDao.isCategoryNameValid(categoryName)
 
     suspend fun add(taskCategoryModel: TaskCategoryModel) {
-        categoryDao.addCategory(taskCategoryModel.toData())
+        categoryDao.addCategory(taskCategoryModel.toCategoryEntity())
     }
 
     suspend fun deleteCategoryLogically(categoryId: String, newCategoryName: String) {
@@ -29,16 +29,16 @@ class CategoryRepository @Inject constructor(private val categoryDao: CategoryDa
     }
 
     suspend fun update(taskCategoryModel: TaskCategoryModel) {
-        categoryDao.updateCategory(taskCategoryModel.toData())
+        categoryDao.updateCategory(taskCategoryModel.toCategoryEntity())
     }
 
     suspend fun delete(taskCategoryModel: TaskCategoryModel) {
-        categoryDao.deleteCategory(taskCategoryModel.toData())
+        categoryDao.deleteCategory(taskCategoryModel.toCategoryEntity())
     }
 
 }
 
-fun TaskCategoryModel.toData(): CategoryEntity {
+fun TaskCategoryModel.toCategoryEntity(): CategoryEntity {
     return CategoryEntity(this.id, this.category, this.userId, this.stateId)
 }
 

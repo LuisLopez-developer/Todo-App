@@ -1,6 +1,8 @@
 package com.example.todoapp.settings.drive.data
 
 import android.util.Log
+import com.example.todoapp.addtasks.data.TaskEntity
+import com.example.todoapp.taskcategory.data.CategoryEntity
 import com.google.api.client.http.InputStreamContent
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
@@ -117,4 +119,9 @@ class GoogleDriveRepository @Inject constructor() {
         TASK("task"),
         CATEGORY("category")
     }
+}
+
+sealed class DriveEntity {
+    data class Task(val taskEntity: TaskEntity) : DriveEntity()
+    data class Category(val categoryEntity: CategoryEntity) : DriveEntity()
 }
