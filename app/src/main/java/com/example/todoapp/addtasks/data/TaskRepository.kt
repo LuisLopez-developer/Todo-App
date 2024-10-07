@@ -1,5 +1,7 @@
 package com.example.todoapp.addtasks.data
 
+import com.example.todoapp.addtasks.domain.model.TaskItem
+import com.example.todoapp.addtasks.domain.model.toDomain
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.settings.auth.data.UserDao
 import com.example.todoapp.state.data.constants.DefaultStateId.ACTIVE_ID
@@ -17,6 +19,10 @@ class TaskRepository @Inject constructor(
 ) {
 
     val tasks: Flow<List<TaskModel>> = taskDao.getActiveTasks().map { it.toTaskModelList() }
+
+    val allTasks: Flow<List<TaskItem>> = taskDao.getTasks().map { item ->
+        item.map { it.toDomain() }
+    }
 
     suspend fun add(taskModel: TaskModel) {
         taskDao.addTask(
@@ -67,7 +73,9 @@ fun TaskModel.toData(): TaskEntity {
         this.time,
         this.details,
         this.categoryId,
-        stateId = this.stateId
+        stateId = this.stateId,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt
     )
 }
 

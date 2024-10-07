@@ -1,5 +1,7 @@
 package com.example.todoapp.taskcategory.data
 
+import com.example.todoapp.taskcategory.domain.model.CategoryItem
+import com.example.todoapp.taskcategory.domain.model.toDomain
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -13,8 +15,12 @@ class CategoryRepository @Inject constructor(private val categoryDao: CategoryDa
         items.map { it.toCategoryModel() }
     }
 
-    suspend fun getCategoryById(categoryId: String): TaskCategoryModel? {
-        return categoryDao.getCategoryById(categoryId)?.toCategoryModel()
+    val allCategories: Flow<List<CategoryItem>> = categoryDao.getCategory().map { items ->
+        items.map { it.toDomain() }
+    }
+
+    suspend fun getCategoryById(categoryId: String): CategoryItem? {
+        return categoryDao.getCategoryById(categoryId)?.toDomain()
     }
 
     suspend fun isCategoryNameValid(categoryName: String) =

@@ -87,6 +87,13 @@ class GoogleDriveRepository @Inject constructor() {
         files.forEach { executeDriveAction { driveService.files().delete(it.id).execute() } }
     }
 
+    fun countFilesInDrive(driveService: Drive): Int {
+        return executeDriveAction {
+            driveService.files().list().setSpaces("appDataFolder").setFields("files(id)").execute()
+                .files.size
+        } ?: 0
+    }
+
     private fun logMessage(message: String) {
         Log.d("GoogleDriveRepository", message)
     }
@@ -109,7 +116,7 @@ class GoogleDriveRepository @Inject constructor() {
             driveService.files().list()
                 .setSpaces("appDataFolder")
                 .setQ(query)
-                .setFields("files(id, name)")
+                .setFields("files(id, name, properties)")
                 .execute()
                 .files
         }

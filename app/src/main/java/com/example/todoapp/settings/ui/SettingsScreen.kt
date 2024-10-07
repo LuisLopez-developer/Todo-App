@@ -251,6 +251,16 @@ fun Auth(
                     Text("Borrar datos de la app")
                 }
 
+                Button(onClick = { requestDriveAuthorization(context, onResult = {
+                    settingsViewModel.getFileSizeInDrive(it)
+                }) }) {
+                    Text("Obtener tamaño de archivos en Drive")
+                }
+
+                val countFilesInDrive by settingsViewModel.countFilesInDriveState.collectAsState()
+
+                Text("Cantidad de archivos en Drive: $countFilesInDrive")
+
             }
         }
     }

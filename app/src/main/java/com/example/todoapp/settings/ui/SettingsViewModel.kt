@@ -7,6 +7,7 @@ import com.example.todoapp.settings.auth.domain.GetUserUseCase
 import com.example.todoapp.settings.auth.domain.HandleSignInUseCase
 import com.example.todoapp.settings.auth.domain.SignOutUseCase
 import com.example.todoapp.settings.drive.domain.ClearAppDataFromGoogleDriveUseCase
+import com.example.todoapp.settings.drive.domain.CountFilesInDriveUseCase
 import com.example.todoapp.settings.drive.domain.SyncDataFromDriveUseCase
 import com.example.todoapp.settings.drive.domain.SyncDataWithDriveUseCase
 import com.example.todoapp.settings.ui.UserUiState.Success
@@ -27,6 +28,7 @@ class SettingsViewModel @Inject constructor(
     private val syncDataWithDriveUseCase: SyncDataWithDriveUseCase,
     private val syncDataFromDriveUseCase: SyncDataFromDriveUseCase,
     private val clearAppDataFromGoogleDriveUseCase: ClearAppDataFromGoogleDriveUseCase,
+    private val countFilesInDriveUseCase: CountFilesInDriveUseCase,
     getUserUseCase: GetUserUseCase,
 ) : ViewModel() {
 
@@ -63,6 +65,9 @@ class SettingsViewModel @Inject constructor(
     }
 
     // Lo relacionado al alamcenamiento en la nube
+    private val _countFilesInDrive = MutableStateFlow(0)
+    val countFilesInDriveState: StateFlow<Int> = _countFilesInDrive
+
     fun syncTasks(accessToken: String) {
         viewModelScope.launch {
             syncDataWithDriveUseCase(accessToken)
@@ -78,6 +83,12 @@ class SettingsViewModel @Inject constructor(
     fun clearAppDataFrom(accessToken: String) {
         viewModelScope.launch {
             clearAppDataFromGoogleDriveUseCase(accessToken)
+        }
+    }
+
+    fun getFileSizeInDrive(accessToken: String) {
+        viewModelScope.launch {
+            _countFilesInDrive.value = countFilesInDriveUseCase(accessToken)
         }
     }
 

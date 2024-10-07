@@ -1,15 +1,14 @@
 package com.example.todoapp.settings.drive.domain
 
-import android.util.Log
-import com.example.todoapp.addtasks.data.toData
-import com.example.todoapp.addtasks.domain.GetTaskUseCase
+import com.example.todoapp.addtasks.data.toDatabase
+import com.example.todoapp.addtasks.domain.GetAllTasksUseCase
 import com.example.todoapp.settings.drive.data.DriveEntity
 import com.example.todoapp.settings.drive.data.GoogleDriveRepository
 import com.example.todoapp.settings.drive.data.GoogleDriveRepository.EntityType
 import com.example.todoapp.settings.utils.toJson
 import com.example.todoapp.state.data.constants.DefaultStateId.DELETED_ID
-import com.example.todoapp.taskcategory.data.toCategoryEntity
-import com.example.todoapp.taskcategory.domain.GetCategoryUseCase
+import com.example.todoapp.taskcategory.data.toDatabase
+import com.example.todoapp.taskcategory.domain.GetAllCategoriesUseCase
 import com.google.api.services.drive.Drive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -19,20 +18,25 @@ import javax.inject.Inject
 
 class SyncDataWithDriveUseCase @Inject constructor(
     private val driveRepository: GoogleDriveRepository,
-    private val getTaskUseCase: GetTaskUseCase,
-    private val getCategoryUseCase: GetCategoryUseCase,
+    private val getAllTasksUseCase: GetAllTasksUseCase,
+    private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
 ) {
     suspend operator fun invoke(accessToken: String) = withContext(Dispatchers.IO) {
         val driveService = driveRepository.getDrive(accessToken)
-        getCategoryUseCase().first().forEach { category ->
+
+        getAllCategoriesUseCase().first().forEach { category ->
             saveOrDeleteInDrive(
-                DriveEntity.Category(category.toCategoryEntity()),
+                DriveEntity.Category(category.toDatabase()),
                 EntityType.CATEGORY,
                 driveService
             )
         }
-        getTaskUseCase().first().forEach { task ->
-            saveOrDeleteInDrive(DriveEntity.Task(task.toData()), EntityType.TASK, driveService)
+        getAllTasksUseCase().first().forEach { task ->
+            saveOrDeleteInDrive(
+                DriveEntity.Task(task.toDatabase()),
+                EntityType.TASK,
+                driveService
+            )
         }
     }
 
@@ -60,7 +64,6 @@ class SyncDataWithDriveUseCase @Inject constructor(
         if (entityStateId == DELETED_ID) {
             if (existingFile != null) {
                 driveRepository.deleteFileInDrive(driveService, existingFile.id)
-                logMessage("${type.name} con ID=$entityId eliminada de Google Drive.")
             }
             return
         }
@@ -70,17 +73,15 @@ class SyncDataWithDriveUseCase @Inject constructor(
             val newContent = entity.toJson()
 
             if (existingContent == newContent) {
-                logMessage("${type.name} con ID=$entityId ya existe y es idéntico. No se guardará.")
                 return
             }
 
             val existingUpdateAt =
                 existingFile.properties?.get("updatedAt")?.let { OffsetDateTime.parse(it) }
+
             if (existingUpdateAt != null && entityUpdateAt.isBefore(existingUpdateAt)) {
-                logMessage("${type.name} con ID=$entityId es más antigua que la versión en Google Drive. No se actualizará.")
                 return
             } else {
-                logMessage("${type.name} con ID=$entityId existe pero es diferente. Actualizando...")
                 driveRepository.updateFileInDrive(driveService, existingFile.id, newContent)
                 return
             }
@@ -95,7 +96,4 @@ class SyncDataWithDriveUseCase @Inject constructor(
         )
     }
 
-    private fun logMessage(message: String) {
-        Log.d("SyncDataWithDriveUseCase", message)
-    }
 }

@@ -105,6 +105,8 @@ dependencies {
     testImplementation(libs.threetenbp)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockk)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.junit)
 
     // Android Test dependencies
     androidTestImplementation(libs.androidx.junit)

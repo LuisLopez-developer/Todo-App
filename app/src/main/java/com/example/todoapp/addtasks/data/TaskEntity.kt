@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.example.todoapp.addtasks.domain.model.TaskItem
 import com.example.todoapp.settings.auth.data.UserEntity
 import com.example.todoapp.state.data.StateEntity
 import com.example.todoapp.state.data.constants.DefaultStateId.ACTIVE_ID
@@ -51,4 +52,19 @@ data class TaskEntity(
     val stateId: String = ACTIVE_ID,
     @Contextual val createdAt: OffsetDateTime = OffsetDateTime.now(),
     @Contextual val updatedAt: OffsetDateTime = OffsetDateTime.now(),
+)
+
+fun TaskItem.toDatabase() = TaskEntity(
+    id = id,
+    task = task,
+    selected = selected,
+    startDate = starDate,
+    endDate = endDate,
+    time = time,
+    details = details,
+    categoryId = categoryId,
+    userId = userId,
+    stateId = stateId,
+    createdAt = createdAt,
+    updatedAt = updatedAt
 )

@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 import com.example.todoapp.settings.auth.data.UserEntity
 import com.example.todoapp.state.data.StateEntity
 import com.example.todoapp.state.data.constants.DefaultStateId.ACTIVE_ID
+import com.example.todoapp.taskcategory.domain.model.CategoryItem
 import kotlinx.serialization.Contextual
 import org.threeten.bp.OffsetDateTime
 import java.util.UUID
@@ -37,3 +38,5 @@ data class CategoryEntity(
     @Contextual val createdAt: OffsetDateTime = OffsetDateTime.now(),
     @Contextual val updatedAt: OffsetDateTime = OffsetDateTime.now(),
 )
+
+fun CategoryItem.toDatabase() = CategoryEntity(id, category, userId, stateId, createdAt, updatedAt)
