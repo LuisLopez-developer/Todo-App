@@ -7,6 +7,8 @@ import com.example.todoapp.addtasks.domain.GetTaskUseCase
 import com.example.todoapp.addtasks.ui.TasksUiState
 import com.example.todoapp.addtasks.ui.TasksUiState.Error
 import com.example.todoapp.addtasks.ui.TasksUiState.Loading
+import com.example.todoapp.addtasks.ui.TasksUiState.Success
+import com.example.todoapp.addtasks.ui.model.toViewModelList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +40,7 @@ class TaskListViewModel @Inject constructor(
             if (category != null) {
                 getTaskByCategoryUseCase(category).map(TasksUiState::Success)
             } else {
-                getTaskUseCase().map(TasksUiState::Success)
+                getTaskUseCase().map { Success(it.toViewModelList()) }
             }
         }
         .catch { Error(it) }

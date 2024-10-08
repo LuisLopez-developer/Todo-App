@@ -40,7 +40,7 @@ class TaskViewModel @Inject constructor(
     private val getTaskUseCase: GetTaskUseCase,
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
-    updateTaskUseCase: UpdateTaskUseCase
+    updateTaskUseCase: UpdateTaskUseCase,
 ) : BaseTaskViewModel(updateTaskUseCase) {
 
     // Flujo que mantiene todas las fechas de tareas
@@ -62,13 +62,6 @@ class TaskViewModel @Inject constructor(
             }
         }
     }
-
-    // Estado para recuperar todas las tareas
-    // Por ahora no se usa
-    // NOTA: No Eliminar
-    val uiState: StateFlow<TasksUiState> = getTaskUseCase().map(::Success)
-        .catch { Error(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
 
     // Sirve para dar un valor incial a "tasksByDateState"
     private val _selectedDate = MutableLiveData(LocalDate.now())
