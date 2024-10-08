@@ -2,6 +2,7 @@ package com.example.todoapp.addtasks.data
 
 import com.example.todoapp.addtasks.domain.model.TaskItem
 import com.example.todoapp.addtasks.domain.model.toDomain
+import com.example.todoapp.addtasks.domain.model.toListDomain
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -14,9 +15,7 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
 
     val tasks: Flow<List<TaskModel>> = taskDao.getActiveTasks().map { it.toTaskModelList() }
 
-    val allTasks: Flow<List<TaskItem>> = taskDao.getTasks().map { item ->
-        item.map { it.toDomain() }
-    }
+    val allTasks: Flow<List<TaskItem>> = taskDao.getTasks().map { it.toListDomain() }
 
     suspend fun add(taskEntity: TaskEntity) {
         taskDao.addTask(taskEntity)
