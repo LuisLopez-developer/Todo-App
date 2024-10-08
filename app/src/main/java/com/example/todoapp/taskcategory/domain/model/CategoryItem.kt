@@ -17,3 +17,4 @@ fun TaskCategoryModel.toDomain() = CategoryItem(id, category, userId, stateId, c
 
 fun CategoryEntity.toDomain() = CategoryItem(id, category, userId, stateId, createdAt, updatedAt)
 
+fun List<CategoryEntity>.toDomainList(): List<CategoryItem> = this.map { it.toDomain() }

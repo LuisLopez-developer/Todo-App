@@ -8,8 +8,10 @@ import com.example.todoapp.taskcategory.domain.DeleteCategoryUseCase
 import com.example.todoapp.taskcategory.domain.GetCategoryUseCase
 import com.example.todoapp.taskcategory.domain.UpdateCategoryUseCase
 import com.example.todoapp.taskcategory.domain.model.toDomain
+import com.example.todoapp.taskcategory.ui.TaskCategoryUiState.Loading
 import com.example.todoapp.taskcategory.ui.TaskCategoryUiState.Success
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
+import com.example.todoapp.taskcategory.ui.model.toViewModelList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -51,21 +53,17 @@ class TaskCategoryViewModel @Inject constructor(
 
     // Propiedad para las categorías que carga todas las categorías, incluyendo las predeterminadas
     val categories: StateFlow<List<TaskCategoryModel>> = getCategoryUseCase()
-        .map { it }
-        .catch { emit(emptyList()) }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+        .map { it.toViewModelList() }
+        .catch { Throwable(it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val uiState: StateFlow<TaskCategoryUiState> = getCategoryUseCase()
-        .map { Success(it) }
+        .map { Success(it.toViewModelList()) }
         .catch { exception -> TaskCategoryUiState.Error(exception) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = TaskCategoryUiState.Loading
+            initialValue = Loading
         )
 
     fun onTaskCategoryCreated(category: String) {

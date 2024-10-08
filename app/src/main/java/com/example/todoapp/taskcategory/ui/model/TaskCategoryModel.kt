@@ -11,16 +11,10 @@ data class TaskCategoryModel(
     val userId: String? = null,
     val stateId: String = ACTIVE_ID,
     val createdAt: OffsetDateTime = OffsetDateTime.now(),
-    val updatedAt: OffsetDateTime = OffsetDateTime.now()
+    val updatedAt: OffsetDateTime = OffsetDateTime.now(),
 )
 
-fun TaskCategoryModel.toCategoryItem(): CategoryItem {
-    return CategoryItem(
-        this.id,
-        this.category,
-        this.userId,
-        this.stateId,
-        this.createdAt,
-        this.updatedAt
-    )
-}
+fun CategoryItem.toViewModel() =
+    TaskCategoryModel(id, category, userId, stateId, createdAt, updatedAt)
+
+fun List<CategoryItem>.toViewModelList(): List<TaskCategoryModel> = this.map { it.toViewModel() }

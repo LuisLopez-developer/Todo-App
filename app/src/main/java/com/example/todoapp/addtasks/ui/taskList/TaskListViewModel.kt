@@ -38,7 +38,7 @@ class TaskListViewModel @Inject constructor(
     val tasksByCategoryState: StateFlow<TasksUiState> = _selectedCategory
         .flatMapLatest { category ->
             if (category != null) {
-                getTaskByCategoryUseCase(category).map(TasksUiState::Success)
+                getTaskByCategoryUseCase(category).map{ Success(it.toViewModelList()) }
             } else {
                 getTaskUseCase().map { Success(it.toViewModelList()) }
             }

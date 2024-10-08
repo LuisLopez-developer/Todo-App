@@ -32,7 +32,10 @@ fun TaskItem.toViewModel() = TaskModel(
     time = time,
     details = details,
     categoryId = categoryId,
-    userId
+    userId,
+    stateId = stateId,
+    createdAt = createdAt,
+    updatedAt = updatedAt
 )
 
 fun List<TaskItem>.toViewModelList(): List<TaskModel> = this.map { it.toViewModel() }

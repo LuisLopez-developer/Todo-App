@@ -2,7 +2,7 @@ package com.example.todoapp.taskcategory.data
 
 import com.example.todoapp.taskcategory.domain.model.CategoryItem
 import com.example.todoapp.taskcategory.domain.model.toDomain
-import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
+import com.example.todoapp.taskcategory.domain.model.toDomainList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -11,12 +11,11 @@ import javax.inject.Singleton
 @Singleton
 class CategoryRepository @Inject constructor(private val categoryDao: CategoryDao) {
 
-    val categories: Flow<List<TaskCategoryModel>> = categoryDao.getActiveCategory().map { items ->
-        items.map { it.toCategoryModel() }
-    }
+    val categories: Flow<List<CategoryItem>> =
+        categoryDao.getActiveCategory().map { it.toDomainList() }
 
-    val allCategories: Flow<List<CategoryItem>> = categoryDao.getCategory().map { items ->
-        items.map { it.toDomain() }
+    val allCategories: Flow<List<CategoryItem>> = categoryDao.getCategory().map {
+        it.toDomainList()
     }
 
     suspend fun getCategoryById(categoryId: String): CategoryItem? {
@@ -38,16 +37,7 @@ class CategoryRepository @Inject constructor(private val categoryDao: CategoryDa
         categoryDao.updateCategory(categoryEntity)
     }
 
-    suspend fun delete(taskCategoryModel: TaskCategoryModel) {
-        categoryDao.deleteCategory(taskCategoryModel.toCategoryEntity())
+    suspend fun delete(categoryEntity: CategoryEntity) {
+        categoryDao.deleteCategory(categoryEntity)
     }
-
-}
-
-fun TaskCategoryModel.toCategoryEntity(): CategoryEntity {
-    return CategoryEntity(this.id, this.category, this.userId, this.stateId)
-}
-
-fun CategoryEntity.toCategoryModel(): TaskCategoryModel {
-    return TaskCategoryModel(this.id, this.category, this.stateId)
 }
