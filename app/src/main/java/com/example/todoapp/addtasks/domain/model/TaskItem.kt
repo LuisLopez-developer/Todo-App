@@ -36,7 +36,7 @@ fun TaskEntity.toDomain() = TaskItem(
     updatedAt = updatedAt
 )
 
-fun List<TaskEntity>.toListDomain(): List<TaskItem> = this.map { it.toDomain() }
+fun List<TaskEntity>.toDomainList(): List<TaskItem> = this.map { it.toDomain() }
 
 fun TaskModel.toDomain() = TaskItem(
     id = id,

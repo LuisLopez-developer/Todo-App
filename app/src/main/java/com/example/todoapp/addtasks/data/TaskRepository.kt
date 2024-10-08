@@ -2,7 +2,7 @@ package com.example.todoapp.addtasks.data
 
 import com.example.todoapp.addtasks.domain.model.TaskItem
 import com.example.todoapp.addtasks.domain.model.toDomain
-import com.example.todoapp.addtasks.domain.model.toListDomain
+import com.example.todoapp.addtasks.domain.model.toDomainList
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -13,9 +13,9 @@ import javax.inject.Singleton
 @Singleton
 class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
 
-    val tasks: Flow<List<TaskItem>> = taskDao.getActiveTasks().map { it.toListDomain() }
+    val tasks: Flow<List<TaskItem>> = taskDao.getActiveTasks().map { it.toDomainList() }
 
-    val allTasks: Flow<List<TaskItem>> = taskDao.getTasks().map { it.toListDomain() }
+    val allTasks: Flow<List<TaskItem>> = taskDao.getTasks().map { it.toDomainList() }
 
     suspend fun add(taskEntity: TaskEntity) {
         taskDao.addTask(taskEntity)
