@@ -3,7 +3,6 @@ package com.example.todoapp.addtasks.data
 import com.example.todoapp.addtasks.domain.model.TaskItem
 import com.example.todoapp.addtasks.domain.model.toDomain
 import com.example.todoapp.addtasks.domain.model.toDomainList
-import com.example.todoapp.addtasks.ui.model.TaskModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.threeten.bp.LocalDate
@@ -34,39 +33,19 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
     }
 
     suspend fun getTaskById(taskId: String): TaskItem? {
-        val taskEntity = taskDao.getTaskById(taskId)
-        return taskEntity?.toDomain()
+        return taskDao.getTaskById(taskId)?.toDomain()
     }
 
-    fun getTaskByIdFlow(taskId: String): Flow<TaskModel> {
-        return taskDao.getTaskByIdFlow(taskId).map { it.toTaskModel() }
+    fun getTaskByIdFlow(taskId: String): Flow<TaskItem> {
+        return taskDao.getTaskByIdFlow(taskId).map { it.toDomain() }
     }
 
-    fun getTasksByCategory(categoryId: String): Flow<List<TaskModel>> {
-        return taskDao.getTasksByCategory(categoryId).map { items -> items.toTaskModelList() }
+    fun getTasksByCategory(categoryId: String): Flow<List<TaskItem>> {
+        return taskDao.getTasksByCategory(categoryId).map { items -> items.toDomainList() }
     }
 
-    fun getTasksByDateFlow(date: LocalDate): Flow<List<TaskModel>> {
+    fun getTasksByDateFlow(date: LocalDate): Flow<List<TaskItem>> {
         val dateString = date.format(org.threeten.bp.format.DateTimeFormatter.ISO_LOCAL_DATE)
-        return taskDao.getActiveTasksByDate(dateString).map { it.toTaskModelList() }
+        return taskDao.getActiveTasksByDate(dateString).map { it.toDomainList() }
     }
 }
-
-// Extensión para convertir TaskEntity a TaskModel, que es la representación usada en la UI
-fun TaskEntity.toTaskModel(): TaskModel {
-    return TaskModel(
-        id = this.id,
-        task = this.task,
-        selected = this.selected,
-        startDate = this.startDate,
-        endDate = this.endDate,
-        time = this.time,
-        details = this.details,
-        categoryId = this.categoryId,
-        stateId = this.stateId
-    )
-}
-
-// Extensión para convertir una lista de TaskEntity a una lista de TaskModel.
-// Usa map para aplicar la conversión a cada elemento de la lista.
-fun List<TaskEntity>.toTaskModelList(): List<TaskModel> = this.map { it.toTaskModel() }

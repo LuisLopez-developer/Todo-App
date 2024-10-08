@@ -10,6 +10,7 @@ import com.example.todoapp.addtasks.domain.model.toDomain
 import com.example.todoapp.addtasks.ui.BaseTaskViewModel
 import com.example.todoapp.addtasks.ui.editTask.TaskUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.addtasks.ui.model.toViewModel
 import com.example.todoapp.services.alarm.cancelAlarm
 import com.example.todoapp.services.alarm.setAlarm
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,7 +46,7 @@ class TaskEditViewModel @Inject constructor(
     val taskByIdState: StateFlow<TaskUiState> = taskId
         .flatMapLatest { taskId ->
             if (taskId != null) {
-                getTaskByIdFlowUseCase(taskId).map(::Success)
+                getTaskByIdFlowUseCase(taskId).map{ Success(it.toViewModel()) }
             } else {
                 emptyFlow()
             }

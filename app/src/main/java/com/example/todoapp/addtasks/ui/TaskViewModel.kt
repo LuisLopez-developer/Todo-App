@@ -17,6 +17,7 @@ import com.example.todoapp.addtasks.ui.TasksUiState.Error
 import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.addtasks.ui.model.toViewModelList
 import com.example.todoapp.services.alarm.cancelAlarm
 import com.example.todoapp.services.alarm.setAlarm
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -76,7 +77,7 @@ class TaskViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     val tasksByDateState: StateFlow<TasksUiState> = _selectedDate.asFlow()
         .flatMapLatest { date ->
-            getTasksByDateUseCase(date).map(::Success)
+            getTasksByDateUseCase(date).map{ Success(it.toViewModelList()) }
         }
         .catch { Error(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
