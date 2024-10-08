@@ -7,6 +7,7 @@ import com.google.api.client.http.InputStreamContent
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import org.threeten.bp.OffsetDateTime
 import javax.inject.Inject
 
@@ -48,8 +49,7 @@ class GoogleDriveRepository @Inject constructor() {
             parents = listOf("appDataFolder")
             properties = mapOf("type" to type.value, "updatedAt" to entityUpdateAt.toString())
         }
-        val contentStream =
-            InputStreamContent("application/json", content.toByteArray().inputStream())
+        val contentStream = InputStreamContent("application/json", content.toByteArray().inputStream())
         executeDriveAction {
             val file = driveService.files().create(fileMetadata, contentStream)
                 .setFields("id, name, properties").execute()
@@ -62,22 +62,6 @@ class GoogleDriveRepository @Inject constructor() {
             driveService.files().delete(fileId).execute()
             logMessage("Archivo eliminado en Google Drive: ID=$fileId")
         }
-    }
-
-    fun <T> retrieveFilesFromDrive(
-        driveService: Drive,
-        type: String,
-        clazz: Class<T>,
-    ): List<T> {
-        val query =
-            "mimeType='application/json' and properties has { key='type' and value='$type' }"
-        return executeDriveQuery(driveService, query)?.mapNotNull { file ->
-            executeDriveAction {
-                val inputStream = driveService.files().get(file.id).executeMediaAsInputStream()
-                inputStream.bufferedReader()
-                    .use { reader -> Gson().fromJson(reader.readText(), clazz) }
-            }
-        } ?: emptyList()
     }
 
     fun clearAppDataFromGoogleDrive(driveService: Drive) {
@@ -126,6 +110,47 @@ class GoogleDriveRepository @Inject constructor() {
         TASK("task"),
         CATEGORY("category")
     }
+
+    fun getAllTasksAndCategories(driveService: Drive): Pair<List<TaskEntity>, List<CategoryEntity>> {
+        Log.d("GoogleDriveRepository", "getAllTasksAndCategories")
+        val tasks = mutableListOf<TaskEntity>()
+        val categories = mutableListOf<CategoryEntity>()
+
+        val taskFiles = executeDriveQuery(driveService, "properties has { key='type' and value='${EntityType.TASK.value}' }")
+        val categoryFiles = executeDriveQuery(driveService, "properties has { key='type' and value='${EntityType.CATEGORY.value}' }")
+
+        taskFiles?.forEach { file ->
+            val json = downloadFileContent(driveService, file.id)
+            json?.let {
+                // Convertir el JSON a un objeto TaskEntity
+                val jsonObject = Gson().fromJson(it, JsonObject::class.java)
+                // Extraer el objeto taskEntity del JSON
+                val taskJson = jsonObject.getAsJsonObject("taskEntity")
+                // Convertir el objeto JSON a un objeto TaskEntity
+                val taskEntity = Gson().fromJson(taskJson, TaskEntity::class.java)
+                Log.d("GoogleDriveRepository", "Task entity: $taskEntity")
+                tasks.add(taskEntity)
+            }
+        }
+
+        categoryFiles?.forEach { file ->
+            val json = downloadFileContent(driveService, file.id)
+            json?.let {
+                // Convertir el JSON a un objeto CategoryEntity
+                val jsonObject = Gson().fromJson(it, JsonObject::class.java)
+                // Extraer el objeto categoryEntity del JSON
+                val categoryJson = jsonObject.getAsJsonObject("categoryEntity")
+                // Convertir el objeto JSON a un objeto CategoryEntity
+                val categoryEntity = Gson().fromJson(categoryJson, CategoryEntity::class.java)
+                Log.d("GoogleDriveRepository", "Category entity: $categoryEntity")
+                categories.add(categoryEntity)
+            }
+
+        }
+
+        return Pair(tasks, categories)
+    }
+
 }
 
 sealed class DriveEntity {

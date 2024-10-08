@@ -12,6 +12,7 @@ import com.example.todoapp.addtasks.domain.GetTaskByIdUseCase
 import com.example.todoapp.addtasks.domain.GetTaskUseCase
 import com.example.todoapp.addtasks.domain.GetTasksByDateUseCase
 import com.example.todoapp.addtasks.domain.UpdateTaskUseCase
+import com.example.todoapp.addtasks.domain.model.toDomain
 import com.example.todoapp.addtasks.ui.TasksUiState.Error
 import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
@@ -99,7 +100,7 @@ class TaskViewModel @Inject constructor(
         _showDialog.value = false
 
         viewModelScope.launch {
-            addTaskUseCase(task)
+            addTaskUseCase(task.toDomain())
 
             // Verificar si la fecha y hora están en el futuro antes de programar la alarma
             task.time?.let { time ->
@@ -146,7 +147,7 @@ class TaskViewModel @Inject constructor(
                     }
                 }
 
-                updateTaskUseCase(taskModel.copy(selected = taskModel.selected))
+                updateTaskUseCase(taskModel.copy(selected = taskModel.selected).toDomain())
 
             } catch (e: Exception) {
                 Log.e("error", e.message.toString())

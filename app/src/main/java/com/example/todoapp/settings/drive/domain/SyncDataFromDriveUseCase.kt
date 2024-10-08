@@ -3,16 +3,18 @@ package com.example.todoapp.settings.drive.domain
 
 import android.util.Log
 import com.example.todoapp.addtasks.data.TaskEntity
-import com.example.todoapp.addtasks.data.toTaskModel
 import com.example.todoapp.addtasks.domain.AddTaskUseCase
 import com.example.todoapp.addtasks.domain.GetTaskByIdUseCase
-import com.example.todoapp.addtasks.ui.model.TaskModel
-import com.example.todoapp.settings.auth.domain.DoesUserExistsUseCase
+import com.example.todoapp.addtasks.domain.UpdateTaskUseCase
+import com.example.todoapp.addtasks.domain.model.toDomain
 import com.example.todoapp.settings.drive.data.GoogleDriveRepository
+import com.example.todoapp.settings.utils.toJson
 import com.example.todoapp.taskcategory.data.CategoryEntity
-import com.example.todoapp.taskcategory.data.toCategoryModel
 import com.example.todoapp.taskcategory.domain.AddCategoryUseCase
 import com.example.todoapp.taskcategory.domain.GetCategoryByIdUseCase
+import com.example.todoapp.taskcategory.domain.UpdateCategoryUseCase
+import com.example.todoapp.taskcategory.domain.model.toDomain
+import com.example.todoapp.utils.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -21,76 +23,75 @@ class SyncDataFromDriveUseCase @Inject constructor(
     private val driveRepository: GoogleDriveRepository,
     private val addTaskUseCase: AddTaskUseCase,
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
+    private val updateTaskUseCase: UpdateTaskUseCase,
     private val addCategoryUseCase: AddCategoryUseCase,
+    private val updateCategoryUseCase: UpdateCategoryUseCase,
     private val getCategoryByIdUseCase: GetCategoryByIdUseCase,
-    private val doesUserExistsUseCase: DoesUserExistsUseCase,
 ) {
     suspend operator fun invoke(accessToken: String) = withContext(Dispatchers.IO) {
         val driveService = driveRepository.getDrive(accessToken)
-        handleCategories(
-            driveRepository.retrieveFilesFromDrive(
-                driveService,
-                "category",
-                CategoryEntity::class.java
-            )
-        )
-        handleTasks(
-            driveRepository.retrieveFilesFromDrive(
-                driveService,
-                "task",
-                TaskEntity::class.java
-            )
-        )
-    }
+        val (tasks, categories) = driveRepository.getAllTasksAndCategories(driveService)
 
-    private suspend fun handleTasks(tasks: List<TaskEntity>) {
-        tasks.forEach { taskEntity ->
-            try {
-                val existingTask: TaskModel? =
-                    getTaskByIdUseCase.execute(taskEntity.toTaskModel().id)
-                if (existingTask == null) {
-                    addTaskUseCase(taskEntity.toTaskModel())
-                    logMessage("Tarea añadida: ${taskEntity.task}")
-                } else if (taskEntity.updatedAt.isAfter(existingTask.updatedAt)) {
-                    addTaskUseCase(taskEntity.toTaskModel())
-                    logMessage("Tarea actualizada: ${taskEntity.task}")
-                } else {
-                    logMessage("La tarea ya existe y está actualizada: ${taskEntity.task}")
-                }
-            } catch (e: Exception) {
-                logError("Error al manejar tarea: ${taskEntity.task}", e)
-            }
-        }
-    }
-
-    private suspend fun handleCategories(categories: List<CategoryEntity>) {
         categories.forEach { categoryEntity ->
-            try {
-                if (categoryEntity.userId != null && !doesUserExistsUseCase(categoryEntity.userId)) {
-                    logError("Invalid userId: ${categoryEntity.userId}")
-                    return@forEach
-                }
-                val existingCategory = getCategoryByIdUseCase.invoke(categoryEntity.id)
-                if (existingCategory == null) {
-                    addCategoryUseCase(categoryEntity.toCategoryModel())
-                    logMessage("Categoria añadida: ${categoryEntity.category}")
-                } else if (categoryEntity.updatedAt.isAfter(existingCategory.updatedAt)) {
-                    addCategoryUseCase(categoryEntity.toCategoryModel())
-                    logMessage("Categoria actualizada: ${categoryEntity.category}")
-                } else {
-                    logMessage("La categoría ya existe y está actualizada: ${categoryEntity.category}")
-                }
-            } catch (e: Exception) {
-                logError("Error al manejar categoría: ${categoryEntity.category}", e)
+            handleCategory(categoryEntity)
+        }
+
+        tasks.forEach { taskEntity ->
+            handleTask(taskEntity)
+        }
+    }
+
+    private suspend fun handleCategory(categoryEntity: CategoryEntity) {
+        val localCategory = getCategoryByIdUseCase(categoryEntity.id)
+
+        if (localCategory == null) {
+            // Si la categoría no existe en la base de datos local, agregarla
+            Logger.debug(
+                "SyncDataFromDriveUseCase",
+                "Agregando nueva categoría desde Google Drive: ${categoryEntity.toJson()}"
+            )
+            addCategoryUseCase(categoryEntity.toDomain())
+        } else {
+            // Validar si el `updatedAt` de Google Drive es más reciente antes de actualizar
+            if (categoryEntity.updatedAt.isAfter(localCategory.updatedAt)) {
+                Logger.debug(
+                    "SyncDataFromDriveUseCase",
+                    "Actualizando categoría en base de datos local: ${categoryEntity.toJson()}"
+                )
+                updateCategoryUseCase(categoryEntity.toDomain())
+            } else {
+                Log.d(
+                    "SyncDataFromDriveUseCase",
+                    "La categoría en Google Drive no es más reciente, no se actualiza."
+                )
             }
         }
     }
 
-    private fun logMessage(message: String) {
-        Log.d("SyncDataFromDriveUseCase", message)
-    }
+    private suspend fun handleTask(taskEntity: TaskEntity) {
+        val localTask = getTaskByIdUseCase.execute(taskEntity.id)
 
-    private fun logError(message: String, e: Exception? = null) {
-        Log.e("SyncDataFromDriveUseCase", message, e)
+        if (localTask == null) {
+            // Si la tarea no existe en la base de datos local, agregarla
+            Logger.debug(
+                "SyncDataFromDriveUseCase",
+                "Agregando nueva tarea desde Google Drive: $taskEntity"
+            )
+            addTaskUseCase(taskEntity.toDomain())
+        } else {
+            // Validar si el `updatedAt` de Google Drive es más reciente antes de actualizar
+            if (taskEntity.updatedAt.isAfter(localTask.updatedAt)) {
+                Logger.debug(
+                    "SyncDataFromDriveUseCase",
+                    "Actualizando tarea en base de datos local: ${taskEntity.id}"
+                )
+                updateTaskUseCase(taskEntity.toDomain())
+            } else {
+                Logger.debug(
+                    "SyncDataFromDriveUseCase",
+                    "La tarea en Google Drive no es más reciente, no se actualiza."
+                )
+            }
+        }
     }
 }

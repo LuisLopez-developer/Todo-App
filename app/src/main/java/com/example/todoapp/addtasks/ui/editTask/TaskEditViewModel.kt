@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.todoapp.addtasks.domain.GetTaskByIdFlowUseCase
 import com.example.todoapp.addtasks.domain.GetTaskByIdUseCase
 import com.example.todoapp.addtasks.domain.UpdateTaskUseCase
+import com.example.todoapp.addtasks.domain.model.toDomain
 import com.example.todoapp.addtasks.ui.BaseTaskViewModel
 import com.example.todoapp.addtasks.ui.editTask.TaskUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
@@ -59,7 +60,7 @@ class TaskEditViewModel @Inject constructor(
                 val originalTask = getTaskByIdUseCase.execute(updatedTask.id)
 
                 // Actualizar la tarea en el repositorio
-                updateTaskUseCase(updatedTask)
+                updateTaskUseCase(updatedTask.toDomain())
 
                 // Si la tarea original tenía una alarma programada, cancelarla
                 if (originalTask != null) {

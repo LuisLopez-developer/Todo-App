@@ -3,6 +3,7 @@ package com.example.todoapp.addtasks.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.addtasks.domain.UpdateTaskUseCase
+import com.example.todoapp.addtasks.domain.model.toDomain
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +20,7 @@ open class BaseTaskViewModel @Inject constructor(
 
     fun updateTask(taskModel: TaskModel){
         viewModelScope.launch {
-            updateTaskUseCase(taskModel)
+            updateTaskUseCase(taskModel.toDomain())
         }
     }
 

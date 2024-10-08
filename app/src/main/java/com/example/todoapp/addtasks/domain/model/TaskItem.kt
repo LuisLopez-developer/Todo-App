@@ -9,7 +9,7 @@ import org.threeten.bp.OffsetDateTime
 data class TaskItem(
     val id: String,
     val task: String,
-    val starDate: LocalDate,
+    val startDate: LocalDate,
     val endDate: LocalDate?,
     val time: LocalTime?,
     val selected: Boolean,
@@ -24,7 +24,7 @@ data class TaskItem(
 fun TaskEntity.toDomain() = TaskItem(
     id = id,
     task = task,
-    starDate = startDate,
+    startDate = startDate,
     endDate = endDate,
     time = time,
     selected = selected,
@@ -39,7 +39,7 @@ fun TaskEntity.toDomain() = TaskItem(
 fun TaskModel.toDomain() = TaskItem(
     id = id,
     task = task,
-    starDate = startDate,
+    startDate = startDate,
     endDate = endDate,
     time = time,
     selected = selected,

@@ -3,11 +3,11 @@ package com.example.todoapp.taskcategory.ui
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.todoapp.addtasks.domain.GetTaskByCategoryUseCase
 import com.example.todoapp.taskcategory.domain.AddCategoryUseCase
 import com.example.todoapp.taskcategory.domain.DeleteCategoryUseCase
 import com.example.todoapp.taskcategory.domain.GetCategoryUseCase
 import com.example.todoapp.taskcategory.domain.UpdateCategoryUseCase
+import com.example.todoapp.taskcategory.domain.model.toDomain
 import com.example.todoapp.taskcategory.ui.TaskCategoryUiState.Success
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +25,6 @@ class TaskCategoryViewModel @Inject constructor(
     private val addCategoryUseCase: AddCategoryUseCase,
     private val deleteCategoryUseCase: DeleteCategoryUseCase,
     private val updateCategoryUseCase: UpdateCategoryUseCase,
-    private val getTaskByCategoryUseCase: GetTaskByCategoryUseCase
 ) : ViewModel() {
 
     private val _showDropDown = MutableLiveData(false)
@@ -71,13 +70,13 @@ class TaskCategoryViewModel @Inject constructor(
 
     fun onTaskCategoryCreated(category: String) {
         viewModelScope.launch {
-            addCategoryUseCase(TaskCategoryModel(category = category))
+            addCategoryUseCase(TaskCategoryModel(category = category).toDomain())
         }
     }
 
     fun onTaskCategoryUpdate(category: TaskCategoryModel) {
         viewModelScope.launch {
-            updateCategoryUseCase(category)
+            updateCategoryUseCase(category.toDomain())
         }
     }
 

@@ -3,20 +3,14 @@ package com.example.todoapp.addtasks.data
 import com.example.todoapp.addtasks.domain.model.TaskItem
 import com.example.todoapp.addtasks.domain.model.toDomain
 import com.example.todoapp.addtasks.ui.model.TaskModel
-import com.example.todoapp.settings.auth.data.UserDao
-import com.example.todoapp.state.data.constants.DefaultStateId.ACTIVE_ID
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TaskRepository @Inject constructor(
-    private val taskDao: TaskDao,
-    private val userDao: UserDao,
-) {
+class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
 
     val tasks: Flow<List<TaskModel>> = taskDao.getActiveTasks().map { it.toTaskModelList() }
 
@@ -24,15 +18,12 @@ class TaskRepository @Inject constructor(
         item.map { it.toDomain() }
     }
 
-    suspend fun add(taskModel: TaskModel) {
-        taskDao.addTask(
-            taskModel.toData()
-                .copy(userId = userDao.getUser().first()?.uid, stateId = ACTIVE_ID)
-        )
+    suspend fun add(taskEntity: TaskEntity) {
+        taskDao.addTask(taskEntity)
     }
 
-    suspend fun update(taskModel: TaskModel) {
-        taskDao.updateTask(taskModel.toData())
+    suspend fun update(taskEntity: TaskEntity) {
+        taskDao.updateTask(taskEntity)
     }
 
     suspend fun delete(taskModel: TaskModel) {
@@ -43,9 +34,9 @@ class TaskRepository @Inject constructor(
         taskDao.deleteTasksByCategoryLogically(categoryId)
     }
 
-    suspend fun getTaskById(taskId: String): TaskModel? {
+    suspend fun getTaskById(taskId: String): TaskItem? {
         val taskEntity = taskDao.getTaskById(taskId)
-        return taskEntity?.toTaskModel()
+        return taskEntity?.toDomain()
     }
 
     fun getTaskByIdFlow(taskId: String): Flow<TaskModel> {

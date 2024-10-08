@@ -9,6 +9,7 @@ import com.example.todoapp.settings.utils.toJson
 import com.example.todoapp.state.data.constants.DefaultStateId.DELETED_ID
 import com.example.todoapp.taskcategory.data.toDatabase
 import com.example.todoapp.taskcategory.domain.GetAllCategoriesUseCase
+import com.example.todoapp.utils.Logger
 import com.google.api.services.drive.Drive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -70,6 +71,7 @@ class SyncDataWithDriveUseCase @Inject constructor(
 
         if (existingFile != null) {
             val existingContent = driveRepository.downloadFileContent(driveService, existingFile.id)
+            Logger.debug("SyncDataWithDriveUseCase", "Existing content: $existingContent")
             val newContent = entity.toJson()
 
             if (existingContent == newContent) {
@@ -79,6 +81,8 @@ class SyncDataWithDriveUseCase @Inject constructor(
             val existingUpdateAt =
                 existingFile.properties?.get("updatedAt")?.let { OffsetDateTime.parse(it) }
 
+            // Si la fecha de actualización de la entidad en la base de datos local es anterior a la
+            // fecha de actualización de la entidad en Google Drive, actualizar la entidad en Google Drive
             if (existingUpdateAt != null && entityUpdateAt.isBefore(existingUpdateAt)) {
                 return
             } else {
@@ -87,6 +91,7 @@ class SyncDataWithDriveUseCase @Inject constructor(
             }
         }
 
+        Logger.debug("SyncDataWithDriveUseCase", "Saving new file in Drive ${entity.toJson()}")
         driveRepository.createFileInDrive(
             driveService,
             entityId,

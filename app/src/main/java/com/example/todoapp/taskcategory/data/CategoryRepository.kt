@@ -26,16 +26,16 @@ class CategoryRepository @Inject constructor(private val categoryDao: CategoryDa
     suspend fun isCategoryNameValid(categoryName: String) =
         categoryDao.isCategoryNameValid(categoryName)
 
-    suspend fun add(taskCategoryModel: TaskCategoryModel) {
-        categoryDao.addCategory(taskCategoryModel.toCategoryEntity())
+    suspend fun add(categoryEntity: CategoryEntity) {
+        categoryDao.addCategory(categoryEntity)
     }
 
     suspend fun deleteCategoryLogically(categoryId: String, newCategoryName: String) {
         categoryDao.deleteCategoryLogically(categoryId, newCategoryName)
     }
 
-    suspend fun update(taskCategoryModel: TaskCategoryModel) {
-        categoryDao.updateCategory(taskCategoryModel.toCategoryEntity())
+    suspend fun update(categoryEntity: CategoryEntity) {
+        categoryDao.updateCategory(categoryEntity)
     }
 
     suspend fun delete(taskCategoryModel: TaskCategoryModel) {
