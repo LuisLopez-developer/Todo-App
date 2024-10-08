@@ -37,12 +37,11 @@ import javax.inject.Inject
 @HiltViewModel
 class TaskViewModel @Inject constructor(
     private val addTaskUseCase: AddTaskUseCase,
-    private val deleteTaskUseCase: DeleteTaskUseCase,
     private val getTaskUseCase: GetTaskUseCase,
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
-    updateTaskUseCase: UpdateTaskUseCase,
-) : BaseTaskViewModel(updateTaskUseCase) {
+    updateTaskUseCase: UpdateTaskUseCase, deleteTaskUseCase: DeleteTaskUseCase,
+) : BaseTaskViewModel(updateTaskUseCase, deleteTaskUseCase) {
 
     // Flujo que mantiene todas las fechas de tareas
     private val _taskDatesFlow = MutableStateFlow<List<LocalDate>>(emptyList())
@@ -146,12 +145,6 @@ class TaskViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("error", e.message.toString())
             }
-        }
-    }
-
-    fun onItemRemove(taskModel: TaskModel) {
-        viewModelScope.launch {
-            deleteTaskUseCase(taskModel.toDomain())
         }
     }
 }

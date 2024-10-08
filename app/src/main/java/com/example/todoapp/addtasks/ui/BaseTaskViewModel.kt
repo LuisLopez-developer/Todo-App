@@ -2,6 +2,7 @@ package com.example.todoapp.addtasks.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.todoapp.addtasks.domain.DeleteTaskUseCase
 import com.example.todoapp.addtasks.domain.UpdateTaskUseCase
 import com.example.todoapp.addtasks.domain.model.toDomain
 import com.example.todoapp.addtasks.ui.model.TaskModel
@@ -15,12 +16,19 @@ import javax.inject.Inject
 
 @HiltViewModel
 open class BaseTaskViewModel @Inject constructor(
-    protected val updateTaskUseCase: UpdateTaskUseCase
+    protected val updateTaskUseCase: UpdateTaskUseCase,
+    protected val deleteTaskUseCase: DeleteTaskUseCase
 ) : ViewModel() {
 
     fun updateTask(taskModel: TaskModel){
         viewModelScope.launch {
             updateTaskUseCase(taskModel.toDomain())
+        }
+    }
+
+    fun onDeleted(taskModel: TaskModel) {
+        viewModelScope.launch {
+            deleteTaskUseCase(taskModel.toDomain())
         }
     }
 

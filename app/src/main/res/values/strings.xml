@@ -23,6 +23,8 @@
     <string name="ic_notes">Icono de notas</string>
     <string name="ic_access_time">Icono de acceso a tiempo</string>
     <string name="ic_calendar">Icono de calendario</string>
+    <string name="ic_arrow_back">Icono para retroceder</string>
+    <string name="ic_more_vert">Icono con mas opciones</string>
 
     <!-- Para el BottomBar -->
     <string name="bb_calendar_title">Calendario</string>

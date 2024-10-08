@@ -34,7 +34,6 @@ import com.example.todoapp.ui.navigation.TaskCategoryRoute
 import com.example.todoapp.ui.navigation.TaskListRoute
 import com.example.todoapp.ui.partials.BottomNavigationBar
 import com.example.todoapp.ui.partials.TopAppBar
-import com.example.todoapp.ui.partials.TopAppBarSecondary
 import com.example.todoapp.ui.utils.extractCleanRoute
 
 @Composable
@@ -45,6 +44,8 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
     val holidaysModel: HolidaysViewModel = viewModel()
     val settingsViewModel: SettingsViewModel = viewModel()
     val taskEditViewModel: TaskEditViewModel = viewModel()
+
+    val sharedViewModel: SharedViewModel = viewModel()
 
     val navigationController = rememberNavController()
 
@@ -61,12 +62,16 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
         when (cleanedRoute) {
             extractCleanRoute(EditTaskRoute.toString()) -> {
                 bottomBarState.value = false
-                styleTopBarState.value = StylesTopBar.SECONDARY_BACK_OPTIONS
+                styleTopBarState.value = StylesTopBar.MAIN
             }
 
             else -> {
                 bottomBarState.value = true
                 styleTopBarState.value = StylesTopBar.MAIN
+                // Restablecer valores del TopAppBar
+                sharedViewModel.topBarTitle.value = "Todo App"
+                sharedViewModel.topBarNavigationIcon.value = {}
+                sharedViewModel.topBarActions.value = {}
             }
         }
     }
@@ -74,11 +79,10 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
     Scaffold(
         topBar = {
             if (styleTopBarState.value == StylesTopBar.MAIN) {
-                TopAppBar()
-            } else {
-                TopAppBarSecondary(
-                    style = styleTopBarState.value,
-                    navController = navigationController
+                TopAppBar(
+                    title = sharedViewModel.topBarTitle.value,
+                    navigationIcon = sharedViewModel.topBarNavigationIcon.value,
+                    actions = sharedViewModel.topBarActions.value
                 )
             }
         },
@@ -109,7 +113,13 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
             }
             composable<EditTaskRoute> {
                 val args = it.toRoute<EditTaskRoute>()
-                EditTaskScreen(taskCategoryViewModel, taskEditViewModel, args.id)
+                EditTaskScreen(
+                    taskCategoryViewModel = taskCategoryViewModel,
+                    taskEditViewModel = taskEditViewModel,
+                    id = args.id,
+                    sharedViewModel = sharedViewModel,
+                    navController = navigationController
+                )
             }
             composable<SettingsRoute> {
                 SettingsScreen(

@@ -19,6 +19,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
@@ -29,7 +30,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -43,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavHostController
 import com.example.todoapp.R.drawable
 import com.example.todoapp.R.string
 import com.example.todoapp.addtasks.ui.model.TaskModel
@@ -51,6 +56,7 @@ import com.example.todoapp.addtasks.ui.utils.formatTime
 import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.components.DatePickerDialogComponent
+import com.example.todoapp.ui.layouts.SharedViewModel
 import com.example.todoapp.ui.theme.Typography
 import org.threeten.bp.LocalDate
 
@@ -59,6 +65,8 @@ fun EditTaskScreen(
     taskCategoryViewModel: TaskCategoryViewModel,
     taskEditViewModel: TaskEditViewModel,
     id: String,
+    sharedViewModel: SharedViewModel,
+    navController: NavHostController,
 ) {
     // Establecer el ID de la tarea en el ViewModel
     LaunchedEffect(id) {
@@ -98,6 +106,13 @@ fun EditTaskScreen(
         }
 
         is TaskUiState.Success -> {
+            configTopBar(
+                sharedViewModel,
+                navController,
+                taskEditViewModel,
+                (uiStateById as TaskUiState.Success).task
+            )
+
             Container(
                 taskEditViewModel,
                 showDatePicker,
@@ -110,6 +125,55 @@ fun EditTaskScreen(
 
         is TaskUiState.Empty -> {
             Text(text = "Tarea no encontrada.")
+        }
+    }
+}
+
+@Composable
+fun configTopBar(
+    sharedViewModel: SharedViewModel,
+    navController: NavHostController,
+    taskEditViewModel: TaskEditViewModel,
+    task: TaskModel,
+) {
+    var openDropdownMenu by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        sharedViewModel.topBarTitle.value = ""
+        sharedViewModel.topBarNavigationIcon.value = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(
+                    painter = painterResource(id = drawable.ic_arrow_back),
+                    contentDescription = stringResource(id = string.ic_arrow_back),
+                    tint = colorScheme.onPrimaryContainer,
+                )
+            }
+        }
+        sharedViewModel.topBarActions.value = {
+            Box {
+                IconButton(onClick = {
+                    openDropdownMenu = true
+                }) {
+                    Icon(
+                        painter = painterResource(id = drawable.ic_more_vert),
+                        contentDescription = stringResource(id = string.ic_more_vert),
+                        tint = colorScheme.onPrimaryContainer,
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = openDropdownMenu,
+                    onDismissRequest = { openDropdownMenu = false }
+                ) {
+                    DropdownMenuItem(text = { Text(text = stringResource(id = string.dw_delete)) },
+                        onClick = {
+                            taskEditViewModel.onDeleted(task)
+                            navController.popBackStack()
+                        }
+                    )
+                }
+
+            }
         }
     }
 }

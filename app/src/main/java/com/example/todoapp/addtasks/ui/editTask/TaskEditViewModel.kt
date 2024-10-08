@@ -3,6 +3,7 @@ package com.example.todoapp.addtasks.ui.editTask
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.example.todoapp.addtasks.domain.DeleteTaskUseCase
 import com.example.todoapp.addtasks.domain.GetTaskByIdFlowUseCase
 import com.example.todoapp.addtasks.domain.GetTaskByIdUseCase
 import com.example.todoapp.addtasks.domain.UpdateTaskUseCase
@@ -32,8 +33,8 @@ import javax.inject.Inject
 class TaskEditViewModel @Inject constructor(
     private val getTaskByIdFlowUseCase: GetTaskByIdFlowUseCase,
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
-    updateTaskUseCase: UpdateTaskUseCase
-) : BaseTaskViewModel(updateTaskUseCase) {
+    updateTaskUseCase: UpdateTaskUseCase, deleteTaskUseCase: DeleteTaskUseCase,
+) : BaseTaskViewModel(updateTaskUseCase, deleteTaskUseCase) {
 
     private val _taskId = MutableStateFlow<String?>(null)
     val taskId: StateFlow<String?> = _taskId
@@ -46,7 +47,7 @@ class TaskEditViewModel @Inject constructor(
     val taskByIdState: StateFlow<TaskUiState> = taskId
         .flatMapLatest { taskId ->
             if (taskId != null) {
-                getTaskByIdFlowUseCase(taskId).map{ Success(it.toViewModel()) }
+                getTaskByIdFlowUseCase(taskId).map { Success(it.toViewModel()) }
             } else {
                 emptyFlow()
             }
