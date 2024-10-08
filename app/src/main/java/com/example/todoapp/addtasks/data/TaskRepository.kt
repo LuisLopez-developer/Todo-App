@@ -25,8 +25,8 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
         taskDao.updateTask(taskEntity)
     }
 
-    suspend fun delete(taskModel: TaskModel) {
-        taskDao.deleteTask(taskModel.toData())
+    suspend fun delete(taskEntity: TaskEntity) {
+        taskDao.deleteTask(taskEntity)
     }
 
     suspend fun deleteTasksByCategoryLogically(categoryId: String) {
@@ -50,23 +50,6 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
         val dateString = date.format(org.threeten.bp.format.DateTimeFormatter.ISO_LOCAL_DATE)
         return taskDao.getActiveTasksByDate(dateString).map { it.toTaskModelList() }
     }
-}
-
-// Extensión para convertir TaskModel a TaskEntity, que es la representación de la base de datos.
-fun TaskModel.toData(): TaskEntity {
-    return TaskEntity(
-        this.id,
-        this.task,
-        this.selected,
-        this.startDate,
-        this.endDate,
-        this.time,
-        this.details,
-        this.categoryId,
-        stateId = this.stateId,
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt
-    )
 }
 
 // Extensión para convertir TaskEntity a TaskModel, que es la representación usada en la UI

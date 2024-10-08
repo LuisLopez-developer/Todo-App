@@ -150,7 +150,7 @@ class TaskViewModel @Inject constructor(
 
     fun onItemRemove(taskModel: TaskModel) {
         viewModelScope.launch {
-            deleteTaskUseCase(taskModel)
+            deleteTaskUseCase(taskModel.toDomain())
         }
     }
 }
