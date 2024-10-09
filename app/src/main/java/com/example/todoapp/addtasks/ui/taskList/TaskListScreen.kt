@@ -34,7 +34,6 @@ import com.example.todoapp.R
 import com.example.todoapp.addtasks.ui.TasksUiState
 import com.example.todoapp.addtasks.ui.components.TaskItemComponent
 import com.example.todoapp.addtasks.ui.model.TaskModel
-import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 
@@ -101,7 +100,8 @@ fun Container(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 15.dp)) {
+                    .padding(horizontal = 15.dp)
+            ) {
                 // Si la lista de tareas está vacía, mostrar un mensaje.
                 if (tasks.isEmpty()) {
                     Text(

@@ -77,6 +77,7 @@ data class CardData(
     val title: String,
     val description: String,
     val isSyncAuto: Boolean = false, // Para identificar si lleva un toggle
+    val textClick: String? = null, // Texto para clickear
     val onClick: () -> Unit = {},    // Función para manejar el clic
     val toggleChecked: Boolean = false, // Estado del toggle si aplica
     val onToggleChange: ((Boolean) -> Unit)? = null, // Función para manejar el cambio del toggle si aplica
@@ -98,7 +99,8 @@ fun cardItems(
             authViewModel.requestDriveAuthorization(activity = (context as Activity), onResult = {
                 driveViewModel.syncDataWith(it)
             })
-        }
+        },
+        textClick = stringResource(R.string.btn_sync)
     ),
     CardData(
         icon = painterResource(R.drawable.ic_cloud_download),
@@ -109,7 +111,8 @@ fun cardItems(
             authViewModel.requestDriveAuthorization(activity = (context as Activity), onResult = {
                 driveViewModel.syncDataFrom(it)
             })
-        }
+        },
+        textClick = stringResource(R.string.btn_cloud_download)
     ),
     CardData(
         icon = painterResource(R.drawable.ic_autorenew),
@@ -163,7 +166,7 @@ fun Container(
                 onClickText = {
                     if (!card.isSyncAuto) {
                         Text(
-                            text = stringResource(R.string.btn_sync),
+                            text = card.textClick ?: "",
                             style = MaterialTheme.typography.bodyMedium,
                             color = colorScheme.tertiary,
                             modifier = Modifier.clickable { card.onClick() }
