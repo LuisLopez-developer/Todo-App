@@ -23,29 +23,36 @@ class DriveViewModel @Inject constructor(
     private val _userId = MutableStateFlow<String?>(null)
     val userId: StateFlow<String?> = _userId
 
-    fun setUserId(userId: String){
+    fun setUserId(userId: String) {
         _userId.value = userId
     }
 
-    fun syncDataWith(accessToken: String){
+    private val _syncAutoChecked = MutableStateFlow(false)
+    val syncAutoChecked: StateFlow<Boolean> = _syncAutoChecked
+
+    fun onSyncAutoChecked() {
+        _syncAutoChecked.value = !_syncAutoChecked.value
+    }
+
+    fun syncDataWith(accessToken: String) {
         viewModelScope.launch {
             syncDataWithDriveUseCase(accessToken)
         }
     }
 
-    fun syncDataFrom(accessToken: String){
+    fun syncDataFrom(accessToken: String) {
         viewModelScope.launch {
             syncDataFromDriveUseCase(accessToken)
         }
     }
 
-    fun clearAppDataFromGoogleDrive(accessToken: String){
+    fun clearAppDataFromGoogleDrive(accessToken: String) {
         viewModelScope.launch {
             clearAppDataFromGoogleDriveUseCase(accessToken)
         }
     }
 
-    fun getTotalFileNumbers(accessToken: String){
+    fun getTotalFileNumbers(accessToken: String) {
         viewModelScope.launch {
             countFilesInDriveUseCase(accessToken)
         }

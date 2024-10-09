@@ -3,7 +3,6 @@ package com.example.todoapp.settings.ui
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Paint
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -50,7 +49,7 @@ import androidx.navigation.NavHostController
 import com.example.todoapp.R
 import com.example.todoapp.settings.auth.doGoogleSignIn
 import com.example.todoapp.settings.auth.ui.model.UserModel
-import com.example.todoapp.settings.components.CardSettings
+import com.example.todoapp.ui.components.CardSettings
 import com.example.todoapp.ui.navigation.DriveRoute
 import kotlinx.coroutines.CoroutineScope
 

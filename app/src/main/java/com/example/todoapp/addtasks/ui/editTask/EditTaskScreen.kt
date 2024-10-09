@@ -106,7 +106,7 @@ fun EditTaskScreen(
         }
 
         is TaskUiState.Success -> {
-            configTopBar(
+            ConfigTopBar(
                 sharedViewModel,
                 navController,
                 taskEditViewModel,
@@ -130,7 +130,7 @@ fun EditTaskScreen(
 }
 
 @Composable
-fun configTopBar(
+fun ConfigTopBar(
     sharedViewModel: SharedViewModel,
     navController: NavHostController,
     taskEditViewModel: TaskEditViewModel,

@@ -22,6 +22,7 @@ import com.example.todoapp.addtasks.ui.taskList.TaskListScreen
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.services.notification.RequestNotificationPermission
+import com.example.todoapp.settings.auth.ui.AuthViewModel
 import com.example.todoapp.settings.drive.ui.DriveScreen
 import com.example.todoapp.settings.drive.ui.DriveViewModel
 import com.example.todoapp.settings.ui.SettingsScreen
@@ -48,6 +49,7 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
     val settingsViewModel: SettingsViewModel = viewModel()
     val taskEditViewModel: TaskEditViewModel = viewModel()
     val driveViewModel: DriveViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
 
     val sharedViewModel: SharedViewModel = viewModel()
 
@@ -150,7 +152,7 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
                     userId = args.userId,
                     driveViewModel = driveViewModel,
                     sharedViewModel = sharedViewModel,
-                    navController = navigationController
+                    authViewModel = authViewModel
                 )
             }
         }

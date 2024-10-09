@@ -1,4 +1,4 @@
-package com.example.todoapp.settings.components
+package com.example.todoapp.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

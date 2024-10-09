@@ -29,14 +29,13 @@ fun CardComponent(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(15.dp),
-        elevation = CardDefaults.cardElevation(8.dp)
+            .wrapContentHeight(),
+        elevation = CardDefaults.cardElevation(10.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorScheme.surfaceContainer)
+                .background(colorScheme.surfaceContainerLowest)
                 .padding(15.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -59,7 +58,7 @@ fun CardComponent(
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(10.dp)
             )
-            Box(Modifier.padding(horizontal =  10.dp)) { onClickText?.invoke() }
+            Box(Modifier.padding(horizontal = 10.dp)) { onClickText?.invoke() }
         }
     }
 }
