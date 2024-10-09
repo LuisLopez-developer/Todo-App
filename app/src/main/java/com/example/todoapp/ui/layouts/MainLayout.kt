@@ -136,7 +136,8 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
             composable<SettingsRoute> {
                 SettingsScreen(
                     settingsViewModel = settingsViewModel,
-                    navController = navigationController
+                    navController = navigationController,
+                    authViewModel = authViewModel
                 )
             }
             composable<TaskListRoute> {

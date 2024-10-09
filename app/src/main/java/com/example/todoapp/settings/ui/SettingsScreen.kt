@@ -32,7 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,21 +46,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.todoapp.R
-import com.example.todoapp.settings.auth.doGoogleSignIn
+import com.example.todoapp.settings.auth.ui.AuthViewModel
 import com.example.todoapp.settings.auth.ui.model.UserModel
 import com.example.todoapp.ui.components.CardSettings
 import com.example.todoapp.ui.navigation.DriveRoute
-import kotlinx.coroutines.CoroutineScope
 
 @Composable
-fun SettingsScreen(settingsViewModel: SettingsViewModel, navController: NavHostController) {
-    val coroutineScope = rememberCoroutineScope()
+fun SettingsScreen(
+    settingsViewModel: SettingsViewModel,
+    navController: NavHostController,
+    authViewModel: AuthViewModel,
+) {
     val context = LocalContext.current as Activity
 
     val startAddAccountIntentLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
             // Una vez agregada la cuenta, inicie sesión nuevamente.
-            doGoogleSignIn(settingsViewModel, coroutineScope, context, null)
+            authViewModel.doGoogleSignIn(settingsViewModel, context, null)
         }
 
     val userUiState by settingsViewModel.userUiState.collectAsState()
@@ -75,10 +76,10 @@ fun SettingsScreen(settingsViewModel: SettingsViewModel, navController: NavHostC
                 userModel = (userUiState as UserUiState.Success).user,
                 startAddAccountIntentLauncher = startAddAccountIntentLauncher,
                 settingsViewModel = settingsViewModel,
-                coroutineScope = coroutineScope,
                 context = context,
                 dropDownAuthMenuExpanded = dropDownAuthMenuExpanded,
-                navController = navController
+                navController = navController,
+                authViewModel = authViewModel
             )
         }
 
@@ -87,10 +88,10 @@ fun SettingsScreen(settingsViewModel: SettingsViewModel, navController: NavHostC
                 userModel = null,
                 startAddAccountIntentLauncher = startAddAccountIntentLauncher,
                 settingsViewModel = settingsViewModel,
-                coroutineScope = coroutineScope,
                 context = context,
                 dropDownAuthMenuExpanded = dropDownAuthMenuExpanded,
-                navController = navController
+                navController = navController,
+                authViewModel = authViewModel
             )
         }
 
@@ -109,19 +110,19 @@ fun Container(
     userModel: UserModel?,
     startAddAccountIntentLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>?,
     settingsViewModel: SettingsViewModel,
-    coroutineScope: CoroutineScope,
     context: Activity,
     dropDownAuthMenuExpanded: Boolean,
     navController: NavHostController,
+    authViewModel: AuthViewModel,
 ) {
     Column {
         Auth(
             userModel = userModel,
             startAddAccountIntentLauncher = startAddAccountIntentLauncher,
             settingsViewModel = settingsViewModel,
-            coroutineScope = coroutineScope,
             context = context,
-            dropDownAuthMenuExpanded = dropDownAuthMenuExpanded
+            dropDownAuthMenuExpanded = dropDownAuthMenuExpanded,
+            authViewModel = authViewModel
         )
 
         CardSettings(enable = userModel != null, onClick = {
@@ -146,9 +147,9 @@ fun Auth(
     userModel: UserModel?,
     startAddAccountIntentLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>?,
     settingsViewModel: SettingsViewModel,
-    coroutineScope: CoroutineScope,
     context: Activity,
     dropDownAuthMenuExpanded: Boolean,
+    authViewModel: AuthViewModel,
 ) {
     val colorScheme = colorScheme
 
@@ -175,9 +176,8 @@ fun Auth(
                 )
                 Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
                     IconButton(onClick = {
-                        doGoogleSignIn(
+                        authViewModel.doGoogleSignIn(
                             settingsViewModel,
-                            coroutineScope,
                             context,
                             startAddAccountIntentLauncher
                         )
