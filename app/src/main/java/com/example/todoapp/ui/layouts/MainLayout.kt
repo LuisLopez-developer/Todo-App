@@ -1,5 +1,6 @@
 package com.example.todoapp.ui.layouts
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -22,12 +23,16 @@ import com.example.todoapp.addtasks.ui.taskList.TaskListScreen
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.services.notification.RequestNotificationPermission
+import com.example.todoapp.settings.drive.ui.DriveScreen
+import com.example.todoapp.settings.drive.ui.DriveViewModel
 import com.example.todoapp.settings.ui.SettingsScreen
 import com.example.todoapp.settings.ui.SettingsViewModel
+import com.example.todoapp.settings.utils.toJson
 import com.example.todoapp.taskcategory.ui.TaskCategoryScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.constants.StylesTopBar
 import com.example.todoapp.ui.navigation.CalendarRoute
+import com.example.todoapp.ui.navigation.DriveRoute
 import com.example.todoapp.ui.navigation.EditTaskRoute
 import com.example.todoapp.ui.navigation.SettingsRoute
 import com.example.todoapp.ui.navigation.TaskCategoryRoute
@@ -44,6 +49,7 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
     val holidaysModel: HolidaysViewModel = viewModel()
     val settingsViewModel: SettingsViewModel = viewModel()
     val taskEditViewModel: TaskEditViewModel = viewModel()
+    val driveViewModel: DriveViewModel = viewModel()
 
     val sharedViewModel: SharedViewModel = viewModel()
 
@@ -59,8 +65,14 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
         val currentRoute = navBackStackEntry?.destination?.route
 
         val cleanedRoute = extractCleanRoute(currentRoute ?: "")
+
         when (cleanedRoute) {
             extractCleanRoute(EditTaskRoute.toString()) -> {
+                bottomBarState.value = false
+                styleTopBarState.value = StylesTopBar.MAIN
+            }
+
+            extractCleanRoute(DriveRoute.toString()) -> {
                 bottomBarState.value = false
                 styleTopBarState.value = StylesTopBar.MAIN
             }
@@ -123,7 +135,8 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
             }
             composable<SettingsRoute> {
                 SettingsScreen(
-                    settingsViewModel = settingsViewModel
+                    settingsViewModel = settingsViewModel,
+                    navController = navigationController
                 )
             }
             composable<TaskListRoute> {
@@ -131,6 +144,15 @@ fun MainLayout(permissionService: RequestNotificationPermission) {
                     taskListViewModel = taskListViewModel,
                     taskCategoryViewModel = taskCategoryViewModel,
                     navigationController = navigationController
+                )
+            }
+            composable<DriveRoute> {
+                val args = it.toRoute<DriveRoute>()
+                DriveScreen(
+                    userId = args.userId,
+                    driveViewModel = driveViewModel,
+                    sharedViewModel = sharedViewModel,
+                    navController = navigationController
                 )
             }
         }

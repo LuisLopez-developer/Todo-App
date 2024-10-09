@@ -3,6 +3,8 @@ package com.example.todoapp.settings.ui
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Paint
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -19,7 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -27,12 +28,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,21 +46,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavHostController
 import com.example.todoapp.R
 import com.example.todoapp.settings.auth.doGoogleSignIn
-import com.example.todoapp.settings.auth.requestDriveAuthorization
 import com.example.todoapp.settings.auth.ui.model.UserModel
+import com.example.todoapp.settings.components.CardSettings
+import com.example.todoapp.ui.navigation.DriveRoute
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
-fun SettingsScreen(settingsViewModel: SettingsViewModel) {
+fun SettingsScreen(settingsViewModel: SettingsViewModel, navController: NavHostController) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current as Activity
-
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
 
     val startAddAccountIntentLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
@@ -68,13 +65,7 @@ fun SettingsScreen(settingsViewModel: SettingsViewModel) {
             doGoogleSignIn(settingsViewModel, coroutineScope, context, null)
         }
 
-    val userUiState by produceState<UserUiState>(
-        initialValue = UserUiState.Loading, key1 = lifecycle, key2 = settingsViewModel
-    ) {
-        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            settingsViewModel.userUiState.collect { value = it }
-        }
-    }
+    val userUiState by settingsViewModel.userUiState.collectAsState()
 
     // Inicializaciones
     val dropDownAuthMenuExpanded by settingsViewModel.dropDownExpanded.collectAsState()
@@ -87,7 +78,8 @@ fun SettingsScreen(settingsViewModel: SettingsViewModel) {
                 settingsViewModel = settingsViewModel,
                 coroutineScope = coroutineScope,
                 context = context,
-                dropDownAuthMenuExpanded = dropDownAuthMenuExpanded
+                dropDownAuthMenuExpanded = dropDownAuthMenuExpanded,
+                navController = navController
             )
         }
 
@@ -98,7 +90,8 @@ fun SettingsScreen(settingsViewModel: SettingsViewModel) {
                 settingsViewModel = settingsViewModel,
                 coroutineScope = coroutineScope,
                 context = context,
-                dropDownAuthMenuExpanded = dropDownAuthMenuExpanded
+                dropDownAuthMenuExpanded = dropDownAuthMenuExpanded,
+                navController = navController
             )
         }
 
@@ -120,6 +113,7 @@ fun Container(
     coroutineScope: CoroutineScope,
     context: Activity,
     dropDownAuthMenuExpanded: Boolean,
+    navController: NavHostController,
 ) {
     Column {
         Auth(
@@ -130,6 +124,21 @@ fun Container(
             context = context,
             dropDownAuthMenuExpanded = dropDownAuthMenuExpanded
         )
+
+        CardSettings(enable = userModel != null, onClick = {
+            if (userModel != null) {
+                navController.navigate(DriveRoute(userId = userModel.id))
+            } else {
+                Toast.makeText(context, "Inicie sesión para sincronizar", Toast.LENGTH_SHORT).show()
+            }
+        }, icon = {
+            Icon(
+                painter = painterResource(R.drawable.ic_cloud_sync),
+                contentDescription = stringResource(R.string.ic_sync_cloud),
+                tint = colorScheme.tertiaryContainer.copy(alpha = if (userModel != null) 1f else 0.5f)
+            )
+        })
+
     }
 }
 
@@ -142,7 +151,7 @@ fun Auth(
     context: Activity,
     dropDownAuthMenuExpanded: Boolean,
 ) {
-    val colorScheme = MaterialTheme.colorScheme
+    val colorScheme = colorScheme
 
     Card(
         modifier = Modifier
@@ -233,34 +242,6 @@ fun Auth(
                         }
                     }
                 }
-                Button(onClick = { requestDriveAuthorization(context, onResult = {
-                    settingsViewModel.syncTasks(it)
-                }) }) {
-                    Text("Sincronizar")
-                }
-
-                Button(onClick = { requestDriveAuthorization(context, onResult = {
-                    settingsViewModel.syncTasksFrom(it)
-                }) }) {
-                    Text("Sincronizar desde Firebase")
-                }
-
-                Button(onClick = { requestDriveAuthorization(context, onResult = {
-                    settingsViewModel.clearAppDataFrom(it)
-                }) }) {
-                    Text("Borrar datos de la app")
-                }
-
-                Button(onClick = { requestDriveAuthorization(context, onResult = {
-                    settingsViewModel.getFileSizeInDrive(it)
-                }) }) {
-                    Text("Obtener tamaño de archivos en Drive")
-                }
-
-                val countFilesInDrive by settingsViewModel.countFilesInDriveState.collectAsState()
-
-                Text("Cantidad de archivos en Drive: $countFilesInDrive")
-
             }
         }
     }

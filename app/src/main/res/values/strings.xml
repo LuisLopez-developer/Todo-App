@@ -25,6 +25,9 @@
     <string name="ic_calendar">Icono de calendario</string>
     <string name="ic_arrow_back">Icono para retroceder</string>
     <string name="ic_more_vert">Icono con mas opciones</string>
+    <string name="ic_sync_cloud">Icono para sincronizar tus datos en la nube</string>
+    <string name="ic_navigate_next">Icono para navegar a la siguiente pantalla</string>
+    <string name="ic_settings">Icono para acceder a los ajustes</string>
 
     <!-- Para el BottomBar -->
     <string name="bb_calendar_title">Calendario</string>
@@ -51,5 +54,6 @@
     <string name="settings_about">Acerca de</string>
     <string name="sign_in">↘️ Elija una opción para Iniciar sesión ↙️</string>
     <string name="sign_out">Cerrar sesión</string>
+    <string name="sync_cloud">Sincronizar tareas en la nube</string>
 
 </resources>

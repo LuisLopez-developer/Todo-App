@@ -51,7 +51,6 @@ import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.holidays.ui.model.HolidayModel
 import com.example.todoapp.services.notification.RequestNotificationPermission
 import com.example.todoapp.state.data.constants.DefaultStateId.DELETED_ID
-import com.example.todoapp.state.data.constants.DefaultStateId.DELETED_STATE
 import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
