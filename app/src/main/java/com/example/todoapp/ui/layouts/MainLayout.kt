@@ -1,6 +1,5 @@
 package com.example.todoapp.ui.layouts
 
-import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -27,7 +26,6 @@ import com.example.todoapp.settings.drive.ui.DriveScreen
 import com.example.todoapp.settings.drive.ui.DriveViewModel
 import com.example.todoapp.settings.ui.SettingsScreen
 import com.example.todoapp.settings.ui.SettingsViewModel
-import com.example.todoapp.settings.utils.toJson
 import com.example.todoapp.taskcategory.ui.TaskCategoryScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.constants.StylesTopBar
