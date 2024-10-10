@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.todoapp.addtasks.ui.editTask
 
 import android.content.Context
@@ -18,6 +20,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -51,6 +54,7 @@ import com.example.todoapp.addtasks.ui.utils.formatDate
 import com.example.todoapp.addtasks.ui.utils.formatTime
 import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
+import com.example.todoapp.ui.components.AlertDialogComponent
 import com.example.todoapp.ui.components.DatePickerDialogComponent
 import com.example.todoapp.ui.layouts.SharedViewModel
 import com.example.todoapp.ui.theme.Typography
@@ -139,6 +143,7 @@ fun ConfigTopBar(
     task: TaskModel,
 ) {
     var openDropdownMenu by remember { mutableStateOf(false) }
+    var openAlertDialog by remember { mutableStateOf(false) }
 
     sharedViewModel.topBarTitle.value = ""
     sharedViewModel.topBarNavigationIcon.value = {
@@ -180,12 +185,26 @@ fun ConfigTopBar(
                 )
                 DropdownMenuItem(text = { Text(text = stringResource(id = string.dw_delete)) },
                     onClick = {
-                        taskEditViewModel.onDeleted(task)
-                        navController.popBackStack()
+                        openDropdownMenu = false
+                        openAlertDialog = true
                     }
                 )
             }
         }
+    }
+
+    if (openAlertDialog) {
+        AlertDialogComponent(
+            onDismissRequest = { openAlertDialog = false },
+            title = stringResource(string.question_delete_task),
+            message = stringResource(string.question_delete_task_message),
+            onConfirm = {
+                openAlertDialog = false
+                taskEditViewModel.onDeleted(task)
+                navController.popBackStack()
+            },
+            timer = 0
+        )
     }
 }
 

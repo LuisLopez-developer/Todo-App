@@ -8,9 +8,6 @@ import javax.inject.Inject
 
 class DeleteTaskUseCase @Inject constructor(private val taskRepository: TaskRepository) {
     suspend operator fun invoke(taskItem: TaskItem) {
-        val newCategoryName = "${taskItem.task}_${System.currentTimeMillis()}"
-        taskRepository.update(
-            taskItem.copy(task = newCategoryName, stateId = DELETED_ID).toDatabase()
-        )
+        taskRepository.update(taskItem.copy(stateId = DELETED_ID).toDatabase())
     }
 }

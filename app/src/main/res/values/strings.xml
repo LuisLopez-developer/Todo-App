@@ -11,6 +11,8 @@
     <string name="edit_date_and_time">Editar la fecha y hora</string>
     <string name="mark_done">Marcar como hecho</string>
     <string name="mark_undone">Marcar como deshecho</string>
+    <string name="question_delete_task">¿Deseas borrar la tarea?</string>
+    <string name="question_delete_task_message">Al aceptar, se eliminará la tarea de forma permanente, sin posibilidad de recuperación.</string>
 
     <!-- Para la pantalla de listar tareas -->
     <string name="list_all">Todas</string>

@@ -41,14 +41,15 @@ fun AlertDialogComponent(
     dismissEnabled: Boolean = true,
     confirmEnabled: Boolean = true,
     onDismissRequest: () -> Unit,
+    timer: Int = 10,
 ) {
-    var timer by remember { mutableStateOf(10) }
+    var  timerDefault by remember { mutableStateOf(timer) }
     var isConfirmEnabled by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        while (timer > 0) {
+        while (timerDefault > 0) {
             delay(1000L)
-            timer--
+            timerDefault--
         }
         isConfirmEnabled = true
     }
@@ -99,7 +100,7 @@ fun AlertDialogComponent(
                                 enabled = isConfirmEnabled,
                             ) {
                                 Text(
-                                    text = if (isConfirmEnabled) confirmText else "($timer) $confirmText",
+                                    text = if (isConfirmEnabled) confirmText else "($timerDefault) $confirmText",
                                     color = if (isConfirmEnabled) colorScheme.error else colorScheme.error.copy(0.5f)
                                 )
                             }
