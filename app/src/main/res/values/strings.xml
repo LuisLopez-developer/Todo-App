@@ -9,6 +9,8 @@
     <string name="edit_task_details">Agregar detalles</string>
     <string name="uncategorized">Sin categoría</string>
     <string name="edit_date_and_time">Editar la fecha y hora</string>
+    <string name="mark_done">Marcar como hecho</string>
+    <string name="mark_undone">Marcar como deshecho</string>
 
     <!-- Para la pantalla de listar tareas -->
     <string name="list_all">Todas</string>

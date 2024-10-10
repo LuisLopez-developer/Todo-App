@@ -31,7 +31,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,9 +43,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.example.todoapp.R.drawable
 import com.example.todoapp.R.string
@@ -73,18 +69,7 @@ fun EditTaskScreen(
         taskEditViewModel.setTaskId(id)
     }
 
-    // Observar el estado de la tarea
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-
-    val uiStateById by produceState<TaskUiState>(
-        initialValue = TaskUiState.Loading,
-        key1 = lifecycle,
-        key2 = id
-    ) {
-        lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
-            taskEditViewModel.taskByIdState.collect { value = it }
-        }
-    }
+    val uiStateById by taskEditViewModel.taskByIdState.collectAsState(TaskUiState.Loading)
 
     val showDatePicker by taskEditViewModel.showDatePicker.collectAsState()
 
@@ -106,20 +91,15 @@ fun EditTaskScreen(
         }
 
         is TaskUiState.Success -> {
-            ConfigTopBar(
-                sharedViewModel,
-                navController,
-                taskEditViewModel,
-                (uiStateById as TaskUiState.Success).task
-            )
-
-            Container(
-                taskEditViewModel,
-                showDatePicker,
-                taskCategoryViewModel,
-                (uiStateById as TaskUiState.Success).task,
-                categoryUiState,
-                context
+            Main(
+                taskEditViewModel = taskEditViewModel,
+                taskCategoryViewModel = taskCategoryViewModel,
+                sharedViewModel = sharedViewModel,
+                navController = navController,
+                task = (uiStateById as TaskUiState.Success).task,
+                categoryUiState = categoryUiState,
+                context = context,
+                showDatePicker = showDatePicker
             )
         }
 
@@ -127,6 +107,28 @@ fun EditTaskScreen(
             Text(text = "Tarea no encontrada.")
         }
     }
+}
+
+@Composable
+fun Main(
+    taskEditViewModel: TaskEditViewModel,
+    taskCategoryViewModel: TaskCategoryViewModel,
+    sharedViewModel: SharedViewModel,
+    navController: NavHostController,
+    task: TaskModel,
+    categoryUiState: TaskCategoryUiState,
+    context: Context,
+    showDatePicker: Boolean,
+) {
+    ConfigTopBar(sharedViewModel, navController, taskEditViewModel, task)
+    Container(
+        taskEditViewModel,
+        showDatePicker,
+        taskCategoryViewModel,
+        task,
+        categoryUiState,
+        context
+    )
 }
 
 @Composable
@@ -138,41 +140,50 @@ fun ConfigTopBar(
 ) {
     var openDropdownMenu by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        sharedViewModel.topBarTitle.value = ""
-        sharedViewModel.topBarNavigationIcon.value = {
-            IconButton(onClick = { navController.popBackStack() }) {
+    sharedViewModel.topBarTitle.value = ""
+    sharedViewModel.topBarNavigationIcon.value = {
+        IconButton(onClick = { navController.popBackStack() }) {
+            Icon(
+                painter = painterResource(id = drawable.ic_arrow_back),
+                contentDescription = stringResource(id = string.ic_arrow_back),
+                tint = colorScheme.onPrimaryContainer,
+            )
+        }
+    }
+    sharedViewModel.topBarActions.value = {
+        Box {
+            IconButton(onClick = {
+                openDropdownMenu = true
+            }) {
                 Icon(
-                    painter = painterResource(id = drawable.ic_arrow_back),
-                    contentDescription = stringResource(id = string.ic_arrow_back),
+                    painter = painterResource(id = drawable.ic_more_vert),
+                    contentDescription = stringResource(id = string.ic_more_vert),
                     tint = colorScheme.onPrimaryContainer,
                 )
             }
-        }
-        sharedViewModel.topBarActions.value = {
-            Box {
-                IconButton(onClick = {
-                    openDropdownMenu = true
-                }) {
-                    Icon(
-                        painter = painterResource(id = drawable.ic_more_vert),
-                        contentDescription = stringResource(id = string.ic_more_vert),
-                        tint = colorScheme.onPrimaryContainer,
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = openDropdownMenu,
-                    onDismissRequest = { openDropdownMenu = false }
-                ) {
-                    DropdownMenuItem(text = { Text(text = stringResource(id = string.dw_delete)) },
-                        onClick = {
-                            taskEditViewModel.onDeleted(task)
-                            navController.popBackStack()
-                        }
-                    )
-                }
-
+            DropdownMenu(
+                expanded = openDropdownMenu,
+                onDismissRequest = { openDropdownMenu = false }
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = if (task.selected) stringResource(string.mark_undone) else stringResource(
+                                string.mark_done
+                            )
+                        )
+                    },
+                    onClick = {
+                        openDropdownMenu = false
+                        taskEditViewModel.updateTask(task.copy(selected = task.selected.not()))
+                    }
+                )
+                DropdownMenuItem(text = { Text(text = stringResource(id = string.dw_delete)) },
+                    onClick = {
+                        taskEditViewModel.onDeleted(task)
+                        navController.popBackStack()
+                    }
+                )
             }
         }
     }
