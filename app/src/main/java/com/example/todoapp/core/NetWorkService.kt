@@ -22,21 +22,25 @@ class NetWorkService @Inject constructor(
         }
     }
 
-    fun getNetworkService(): Boolean {
+    /**
+     * Verifica el estado de la red. Si [showErrorToast] es true, mostrará un Toast en caso de
+     * que no haya conexión.
+     */
+    fun getNetworkService(showErrorToast: Boolean = true): Boolean {
         return try {
             val connectivityManager =
                 context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val network = connectivityManager.activeNetwork
             if (network == null) {
                 Logger.error("NetworkUtils", "No active network")
-                showToast()
+                if (showErrorToast) showToast()
                 return false
             }
 
             val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
             if (networkCapabilities == null) {
                 Logger.error("NetworkUtils", "No network capabilities available")
-                showToast()
+                if (showErrorToast) showToast()
                 return false
             }
 
@@ -48,12 +52,13 @@ class NetWorkService @Inject constructor(
 
             if (!hasInternet) {
                 Logger.error("NetworkUtils", "No internet transport available")
+                if (showErrorToast) showToast()
             }
 
             hasInternet
         } catch (e: Exception) {
             Logger.error("NetworkUtils", "Error checking internet connectivity: ${e.message}")
-            showToast()
+            if (showErrorToast) showToast()
             false
         }
     }

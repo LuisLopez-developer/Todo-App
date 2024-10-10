@@ -10,25 +10,17 @@ import javax.inject.Singleton
 class HoliDaysService {
     private val retrofit = RetrofitHelper.getRetrofit()
 
-    suspend fun holidays(): List<HoliDaysResponse>? {
+    suspend fun holidays(): List<HoliDaysResponse> {
         return withContext(Dispatchers.IO) {
             val response = retrofit.create(HoliDays::class.java).holidays()
-            if (response.isSuccessful) {
-                response.body() // Devuelve la lista de HoliDaysResponse
-            } else {
-                null
-            }
+            response.body() ?: emptyList()
         }
     }
 
     suspend fun holidayByDate(fecha: String): HoliDaysResponse? {
         return withContext(Dispatchers.IO) {
             val response = retrofit.create(HoliDays::class.java).holidayByDate(fecha)
-            if (response.isSuccessful) {
-                response.body() // Devuelve un solo HoliDaysResponse
-            } else {
-                null // Manejo de errores
-            }
+            response.body()
         }
     }
 }

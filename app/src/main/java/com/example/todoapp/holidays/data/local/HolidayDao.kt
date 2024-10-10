@@ -12,4 +12,7 @@ interface HolidayDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addHolidays(holidays: List<HolidayEntity>)
+
+    @Query("DELETE FROM holidays")
+    suspend fun deleteAllHolidays()
 }
