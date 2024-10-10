@@ -12,17 +12,18 @@ class GetHolidaysUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(): List<HolidayItem> {
         if (!netWorkService.getNetworkService(showErrorToast = false)) {
-            return emptyList()
+            return repository.getHolidaysFromDatabase()
         }
 
         val holidays = repository.getAllHolidaysFromApi()
 
-        return if (holidays.isNotEmpty()) {
-            repository.clearHolidays()
-            repository.insertHolidays(holidays.toDatabaseList())
-            holidays
-        } else {
-            repository.getHolidaysFromDatabase()
+        if (holidays.isEmpty()) {
+            return repository.getHolidaysFromDatabase()
         }
+
+        repository.clearHolidays()
+        repository.insertHolidays(holidays.toDatabaseList())
+
+        return holidays
     }
 }
