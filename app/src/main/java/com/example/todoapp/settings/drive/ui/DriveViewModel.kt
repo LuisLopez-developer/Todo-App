@@ -1,5 +1,7 @@
 package com.example.todoapp.settings.drive.ui
 
+import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.settings.drive.domain.ClearAppDataFromGoogleDriveUseCase
@@ -27,6 +29,15 @@ class DriveViewModel @Inject constructor(
         _userId.value = userId
     }
 
+    private val _totalFiles = MutableStateFlow(0)
+
+    private val _expandedAlert = MutableStateFlow(false)
+    val expandedAlert: StateFlow<Boolean> = _expandedAlert
+
+    fun onExpandedAlert() {
+        _expandedAlert.value = !_expandedAlert.value
+    }
+
     private val _syncAutoChecked = MutableStateFlow(false)
     val syncAutoChecked: StateFlow<Boolean> = _syncAutoChecked
 
@@ -49,12 +60,18 @@ class DriveViewModel @Inject constructor(
     fun clearAppDataFromGoogleDrive(accessToken: String) {
         viewModelScope.launch {
             clearAppDataFromGoogleDriveUseCase(accessToken)
+            onExpandedAlert()
         }
     }
 
-    fun getTotalFileNumbers(accessToken: String) {
+    fun getTotalFileNumbers(accessToken: String, context: Context) {
         viewModelScope.launch {
-            countFilesInDriveUseCase(accessToken)
+            _totalFiles.value = countFilesInDriveUseCase(accessToken)
+            Toast.makeText(
+                context,
+                "Total de archivos: ${_totalFiles.value}, Eliminación exitosa",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
