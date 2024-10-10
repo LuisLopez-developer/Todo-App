@@ -2,6 +2,7 @@ package com.example.todoapp.settings.drive.domain
 
 import com.example.todoapp.addtasks.data.toDatabase
 import com.example.todoapp.addtasks.domain.GetAllTasksUseCase
+import com.example.todoapp.core.NetWorkService
 import com.example.todoapp.settings.drive.data.DriveEntity
 import com.example.todoapp.settings.drive.data.GoogleDriveRepository
 import com.example.todoapp.settings.drive.data.GoogleDriveRepository.EntityType
@@ -21,8 +22,13 @@ class SyncDataWithDriveUseCase @Inject constructor(
     private val driveRepository: GoogleDriveRepository,
     private val getAllTasksUseCase: GetAllTasksUseCase,
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
+    private val netWorkService: NetWorkService,
 ) {
     suspend operator fun invoke(accessToken: String) = withContext(Dispatchers.IO) {
+        if (!netWorkService.getNetworkService()) {
+            return@withContext
+        }
+
         val driveService = driveRepository.getDrive(accessToken)
 
         getAllCategoriesUseCase().first().forEach { category ->

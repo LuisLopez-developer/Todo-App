@@ -87,5 +87,11 @@
     <string name="edit">Editar</string>
     <string name="add">Agregar</string>
     <string name="sn">Sin información</string>
+    <string name="internet_error">Sin acceso a internet, revise su conexión.</string>
+
+    <!-- Para toast -->
+    <string name="total_files">Total de archivos</string>
+    <string name="deleted_success">Eliminación exitosa</string>
+    <string name="deleted_error">Error al eliminar</string>
 
 </resources>

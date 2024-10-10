@@ -207,12 +207,9 @@ fun Container(
                     activity = (context as Activity),
                     onResult = {
                         driveViewModel.clearAppDataFromGoogleDrive(it)
-                        driveViewModel.getTotalFileNumbers(it, context)
                     }
                 )
             }
         )
-
     }
-
 }

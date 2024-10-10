@@ -3,6 +3,7 @@ package com.example.todoapp.settings.drive.domain
 import com.example.todoapp.addtasks.data.TaskEntity
 import com.example.todoapp.addtasks.domain.GetAllTasksUseCase
 import com.example.todoapp.addtasks.domain.model.toDomain
+import com.example.todoapp.core.NetWorkService
 import com.example.todoapp.settings.drive.data.GoogleDriveRepository
 import com.example.todoapp.settings.drive.data.GoogleDriveRepository.EntityType
 import com.example.todoapp.state.data.constants.DefaultStateId.DELETED_ID
@@ -36,6 +37,9 @@ class SyncDataWithDriveUseCaseTest {
     @MockK
     private lateinit var driveService: Drive
 
+    @MockK
+    private lateinit var netWorkService: NetWorkService
+
     private lateinit var syncDataWithDriveUseCase: SyncDataWithDriveUseCase
 
     @Before
@@ -45,12 +49,16 @@ class SyncDataWithDriveUseCaseTest {
         syncDataWithDriveUseCase = SyncDataWithDriveUseCase(
             driveRepository,
             getAllTasksUseCase,
-            getAllCategoriesUseCase
+            getAllCategoriesUseCase,
+            netWorkService
         )
     }
 
     @Test
     fun `test synchronization of categories and tasks`() = runBlocking {
+        // Mock network service
+        coEvery { netWorkService.getNetworkService() } returns true
+
         // Mock data
         val categories = listOf(mockCategory().toDomain())
         val tasks = listOf(mockTask().toDomain())
@@ -113,6 +121,9 @@ class SyncDataWithDriveUseCaseTest {
 
     @Test
     fun `test handling of deleted entities`() = runBlocking {
+        // Mock network service
+        coEvery { netWorkService.getNetworkService() } returns true
+
         // Mock data
         val deletedCategory = mockCategory(stateId = DELETED_ID).toDomain()
         val deletedTask = mockTask(stateId = DELETED_ID).toDomain()
@@ -131,16 +142,14 @@ class SyncDataWithDriveUseCaseTest {
                 deletedCategory.id,
                 EntityType.CATEGORY.value
             )
-        }
-            .returns(mockFile)
+        } returns mockFile
         coEvery {
             driveRepository.searchFileInDrive(
                 driveService,
                 deletedTask.id,
                 EntityType.TASK.value
             )
-        }
-            .returns(mockFile)
+        } returns mockFile
 
         // Mock deleteFileInDrive response
         coEvery { driveRepository.deleteFileInDrive(any(), any()) } returns Unit
