@@ -28,7 +28,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,9 +36,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.example.todoapp.R.drawable
 import com.example.todoapp.R.string
@@ -49,15 +45,14 @@ import com.example.todoapp.addtasks.ui.components.TaskItemComponent
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.holidays.ui.model.HolidayModel
-import com.example.todoapp.services.notification.RequestNotificationPermission
 import com.example.todoapp.state.data.constants.DefaultStateId.DELETED_ID
 import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 import com.example.todoapp.ui.components.CalendarComponent
 import com.example.todoapp.ui.navigation.EditTaskRoute
+import com.example.todoapp.utilsservice.notification.RequestNotificationPermission
 import org.threeten.bp.LocalDate
-
 
 @Composable
 fun TasksScreen(
@@ -67,21 +62,11 @@ fun TasksScreen(
     holidaysViewModel: HolidaysViewModel,
     permissionService: RequestNotificationPermission,
 ) {
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-
     // Obtener el contexto en el composable usando `LocalContext`
     val context = LocalContext.current
 
     // Recuperamos el estado de las tareas por fecha
-    val uiStateByDate by produceState<TasksUiState>(
-        initialValue = TasksUiState.Loading,
-        key1 = lifecycle,
-        key2 = taskViewModel
-    ) {
-        lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
-            taskViewModel.tasksByDateState.collect { value = it }
-        }
-    }
+    val uiStateByDate by taskViewModel.tasksByDateState.collectAsState()
 
     // Recuperamos todas las fechas de las tareas y días festivos
     val taskDates by taskViewModel.taskDatesFlow.collectAsState(emptyList())
