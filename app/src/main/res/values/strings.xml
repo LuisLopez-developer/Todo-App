@@ -35,6 +35,7 @@
     <string name="ic_cloud_download">Icono para descargar datos de la nube</string>
     <string name="ic_autoRenew">Icono para activar la Sincronización automática</string>
     <string name="ic_warning">Icono de advertencia</string>
+    <string name="ic_notifications">Icono de notificaciones</string>
 
     <!-- Para el BottomBar -->
     <string name="bb_calendar_title">Calendario</string>
@@ -62,6 +63,7 @@
     <string name="sign_in">↘️ Elija una opción para Iniciar sesión ↙️</string>
     <string name="sign_out">Cerrar sesión</string>
     <string name="sync_cloud">Sincronizar tareas en la nube</string>
+    <string name="alerts_and_notifications">Alertas y notificaciones</string>
 
     <!-- Para la pantalla de sincronización -->
     <string name="sync_cloud_description">Guarda tus tareas y categorías en tu Google Drive como copia de seguridad.</string>
@@ -93,6 +95,7 @@
     <string name="total_files">Total de archivos</string>
     <string name="deleted_success">Eliminación exitosa</string>
     <string name="deleted_error">Error al eliminar</string>
+    <string name="sign_in_to_sync">Inicia sesión para sincronizar tus tareas en la nube</string>
 
     <!-- Para los servicios de alarma -->
     <string name="stop_alarm">Detener alarma</string>

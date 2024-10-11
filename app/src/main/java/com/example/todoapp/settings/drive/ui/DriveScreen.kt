@@ -97,7 +97,7 @@ fun cardItems(
     context: Context,
 ) = listOf(
     CardData(
-        icon = painterResource(R.drawable.ic_cloud_sync),
+        icon = painterResource(R.drawable.ic_outline_cloud_sync),
         contentDescription = stringResource(R.string.ic_sync_cloud),
         title = stringResource(R.string.sync_cloud),
         description = stringResource(R.string.sync_cloud_description),
@@ -109,7 +109,7 @@ fun cardItems(
         textClick = stringResource(R.string.btn_sync)
     ),
     CardData(
-        icon = painterResource(R.drawable.ic_cloud_download),
+        icon = painterResource(R.drawable.ic_outline_cloud_download),
         contentDescription = stringResource(R.string.ic_cloud_download),
         title = stringResource(R.string.sync_cloud_download),
         description = stringResource(R.string.sync_cloud_download_description),

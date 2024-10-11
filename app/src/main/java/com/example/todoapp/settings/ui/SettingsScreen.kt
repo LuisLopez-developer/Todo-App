@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.todoapp.R
+import com.example.todoapp.R.string
 import com.example.todoapp.settings.auth.ui.AuthViewModel
 import com.example.todoapp.settings.auth.ui.component.SignInWithGoogle
 import com.example.todoapp.ui.components.CardSettings
@@ -109,17 +110,29 @@ fun Container(
             authViewModel = authViewModel
         )
 
-        CardSettings(enable = userModel != null, onClick = {
+        CardSettings(modifier = Modifier.padding(horizontal = 15.dp), enable = userModel != null, text = stringResource(string.sync_cloud), onClick = {
             if (userModel != null) {
                 navController.navigate(DriveRoute(userId = userModel.id))
             } else {
-                Toast.makeText(context, "Inicie sesión para sincronizar", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, string.sign_in_to_sync, Toast.LENGTH_SHORT).show()
             }
         }, icon = {
             Icon(
-                painter = painterResource(R.drawable.ic_cloud_sync),
-                contentDescription = stringResource(R.string.ic_sync_cloud),
+                painter = painterResource(R.drawable.ic_outline_cloud_sync),
+                contentDescription = stringResource(string.ic_sync_cloud),
                 tint = colorScheme.tertiaryContainer.copy(alpha = if (userModel != null) 1f else 0.5f)
+            )
+        })
+
+        Spacer(modifier = Modifier.padding(6.dp))
+
+        CardSettings(modifier = Modifier.padding(horizontal = 15.dp), enable = true, text = stringResource(string.alerts_and_notifications), onClick = {
+
+        }, icon = {
+            Icon(
+                painter = painterResource(R.drawable.ic_outline_notifications),
+                contentDescription = stringResource(string.ic_notifications),
+                tint = colorScheme.tertiaryContainer.copy(alpha = 1f)
             )
         })
 
@@ -139,7 +152,7 @@ fun Auth(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(15.dp),
+            .padding(horizontal = 15.dp, vertical = 20.dp),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
         Column(
@@ -150,7 +163,7 @@ fun Auth(
         ) {
             if (userModel == null) {
                 Text(
-                    stringResource(R.string.sign_in),
+                    stringResource(string.sign_in),
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
                 HorizontalDivider(
@@ -203,13 +216,13 @@ fun Auth(
                         IconButton(onClick = { settingsViewModel.onShowDropDownExpanded() }) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_more_vert),
-                                contentDescription = stringResource(R.string.sign_out)
+                                contentDescription = stringResource(string.sign_out)
                             )
                         }
                         DropdownMenu(expanded = dropDownAuthMenuExpanded,
                             onDismissRequest = { settingsViewModel.onHideDropDownExpanded() }) {
                             DropdownMenuItem(onClick = { settingsViewModel.signOut() },
-                                text = { Text(stringResource(R.string.sign_out)) })
+                                text = { Text(stringResource(string.sign_out)) })
                         }
                     }
                 }

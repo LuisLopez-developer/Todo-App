@@ -26,14 +26,15 @@ fun CardSettings(
     enable: Boolean,
     onClick: () -> Unit,
     icon: @Composable (() -> Unit?)? = null,
+    text: String = stringResource(R.string.sn),
+    modifier: Modifier = Modifier
 ) {
     val alpha = if (enable) 1f else 0.5f
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(15.dp)
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
@@ -58,7 +59,7 @@ fun CardSettings(
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    stringResource(R.string.sync_cloud),
+                    text,
                     color = colorScheme.onSurface.copy(alpha)
                 )
             }
