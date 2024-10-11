@@ -11,8 +11,8 @@ fun extractCleanRoute(fullRoute: String): String {
     // Extraemos la parte después del último punto
     val afterLastDot = fullRoute.substring(lastDotIndex + 1)
 
-    // Eliminamos cualquier parte que empiece con caracteres especiales (como $, {, /, etc.)
-    val cleanedRoute = afterLastDot.split(Regex("[\${/\\[\\]()]")).firstOrNull() ?: afterLastDot
+    // Eliminamos cualquier parte que empiece con caracteres especiales (como $, {, /, @, etc.)
+    val cleanedRoute = afterLastDot.split(Regex("[\${/\\[\\]()@]")).firstOrNull() ?: afterLastDot
 
     return cleanedRoute
 }
