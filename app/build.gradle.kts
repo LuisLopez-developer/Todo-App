@@ -100,13 +100,10 @@ dependencies {
 
     // Test dependencies
     testImplementation(libs.junit)
-    testImplementation(libs.mockito.core)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.threetenbp)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockk)
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.junit)
 
     // Android Test dependencies
     androidTestImplementation(libs.androidx.junit)
@@ -115,9 +112,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-    androidTestImplementation(libs.androidx.room.testing)
-    androidTestImplementation(libs.mockk)
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
@@ -169,6 +163,7 @@ dependencies {
     implementation(libs.google.api.client.android)
     implementation(libs.google.api.client.gson)
     implementation(libs.google.api.services.drive)
+
 }
 java {
     toolchain {
