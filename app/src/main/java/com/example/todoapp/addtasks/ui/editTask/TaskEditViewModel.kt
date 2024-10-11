@@ -1,6 +1,5 @@
 package com.example.todoapp.addtasks.ui.editTask
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.addtasks.domain.DeleteTaskUseCase
@@ -12,8 +11,7 @@ import com.example.todoapp.addtasks.ui.BaseTaskViewModel
 import com.example.todoapp.addtasks.ui.editTask.TaskUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.model.toViewModel
-import com.example.todoapp.services.alarm.cancelAlarm
-import com.example.todoapp.services.alarm.setAlarm
+import com.example.todoapp.services.AlarmManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +31,7 @@ import javax.inject.Inject
 class TaskEditViewModel @Inject constructor(
     private val getTaskByIdFlowUseCase: GetTaskByIdFlowUseCase,
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
+    private val alarmManager: AlarmManager,
     updateTaskUseCase: UpdateTaskUseCase, deleteTaskUseCase: DeleteTaskUseCase,
 ) : BaseTaskViewModel(updateTaskUseCase, deleteTaskUseCase) {
 
@@ -55,7 +54,7 @@ class TaskEditViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TaskUiState.Loading)
 
 
-    fun onDateAndTime(updatedTask: TaskModel, context: Context) {
+    fun onDateAndTime(updatedTask: TaskModel) {
         viewModelScope.launch {
             try {
                 // Guardar una copia de la tarea original antes de actualizarla
@@ -65,28 +64,23 @@ class TaskEditViewModel @Inject constructor(
                 updateTaskUseCase(updatedTask.toDomain())
 
                 // Si la tarea original tenía una alarma programada, cancelarla
-                if (originalTask != null) {
-                    if (originalTask.time != null) {
-                        cancelAlarm(context, originalTask.id)
-                    }
+                originalTask?.time?.let {
+                    alarmManager.cancelAlarm(originalTask.id.hashCode(), originalTask.task)
                 }
 
                 // Verificar si la nueva tarea tiene una hora y fecha en el futuro antes de programar la alarma
-                if (updatedTask.time != null) {
+                updatedTask.time?.let { time ->
                     val currentDate = LocalDate.now()
                     val currentTime = LocalTime.now()
 
                     if (updatedTask.startDate.isAfter(currentDate) ||
-                        (updatedTask.startDate.isEqual(currentDate) && updatedTask.time.isAfter(
-                            currentTime
-                        ))
+                        (updatedTask.startDate.isEqual(currentDate) && time.isAfter(currentTime))
                     ) {
-                        setAlarm(
-                            context,
-                            updatedTask.id,
+                        alarmManager.handleAlarmTrigger(
+                            updatedTask.id.hashCode(),
+                            updatedTask.task,
                             updatedTask.startDate,
-                            updatedTask.time,
-                            updatedTask.task
+                            updatedTask.time
                         )
                     }
                 }

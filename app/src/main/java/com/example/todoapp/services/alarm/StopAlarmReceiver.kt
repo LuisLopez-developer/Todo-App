@@ -3,23 +3,23 @@ package com.example.todoapp.services.alarm
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
-import androidx.core.app.NotificationManagerCompat
-import com.example.todoapp.constants.NotificationStructure.TASK_ID
+import com.example.todoapp.constants.NotificationStructure
+import com.example.todoapp.services.AlarmManager
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class StopAlarmReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent?) {
-        Log.d("StopAlarmReceiver", "Deteniendo sonido de alarma")
 
-        // Detener el sonido de la alarma
-        AlarmReceiver.stopAlarmSound()
+    @Inject
+    lateinit var alarmManager: AlarmManager
 
-        // Eliminar la notificación
-        val taskId = intent?.getIntExtra(TASK_ID, -1) ?: -1
+    override fun onReceive(context: Context, intent: Intent) {
+        val taskId = intent.getIntExtra(NotificationStructure.ALARM_ID, -1)
+
+        // Verificamos que el taskId sea válido
         if (taskId != -1) {
-            Log.d("StopAlarmReceiver", "Eliminando la notificación con ID: $taskId")
-            val notificationManager = NotificationManagerCompat.from(context)
-            notificationManager.cancel(taskId) // Cancela la notificación con el ID específico
+            alarmManager.stopAlarm(taskId)
         }
     }
 }

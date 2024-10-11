@@ -94,4 +94,9 @@
     <string name="deleted_success">Eliminación exitosa</string>
     <string name="deleted_error">Error al eliminar</string>
 
+    <!-- Para los servicios de alarma -->
+    <string name="stop_alarm">Detener alarma</string>
+    <string name="permission_denied">Permiso denegado</string>
+    <string name="permission_allow">Permiso permitido</string>
+
 </resources>

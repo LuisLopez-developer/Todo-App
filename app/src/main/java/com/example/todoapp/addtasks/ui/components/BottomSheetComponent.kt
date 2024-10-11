@@ -34,7 +34,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -87,9 +86,6 @@ fun BottomSheetComponent(
         taskViewModel.resetTemporaryDateTime()
     }
 
-    // Obtener el contexto en el composable usando `LocalContext`
-    val context = LocalContext.current
-
     fun regainFocus() {
         if (isTaskFocused) {
             invisibleFocusRequester.requestFocus()
@@ -119,7 +115,7 @@ fun BottomSheetComponent(
                 time = selectedTime
             )
 
-            taskViewModel.onTaskCreated(taskModel, context)
+            taskViewModel.onTaskCreated(taskModel)
             cleanFields()
             onConfirm()
             taskViewModel.resetTemporaryDateTime()

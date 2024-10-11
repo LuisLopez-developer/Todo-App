@@ -21,7 +21,7 @@ import com.example.todoapp.addtasks.ui.editTask.TaskEditViewModel
 import com.example.todoapp.addtasks.ui.taskList.TaskListScreen
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
-import com.example.todoapp.services.notification.RequestNotificationPermission
+import com.example.todoapp.services.permission.PermissionService
 import com.example.todoapp.settings.auth.ui.AuthViewModel
 import com.example.todoapp.settings.drive.ui.DriveScreen
 import com.example.todoapp.settings.drive.ui.DriveViewModel
@@ -41,7 +41,7 @@ import com.example.todoapp.ui.partials.TopAppBar
 import com.example.todoapp.ui.utils.extractCleanRoute
 
 @Composable
-fun MainLayout(permissionService: RequestNotificationPermission) {
+fun MainLayout(permissionService: PermissionService) {
     val taskViewModel: TaskViewModel = viewModel()
     val taskCategoryViewModel: TaskCategoryViewModel = viewModel()
     val taskListViewModel: TaskListViewModel = viewModel()

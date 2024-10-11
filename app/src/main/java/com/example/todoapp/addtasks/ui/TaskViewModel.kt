@@ -1,6 +1,5 @@
 package com.example.todoapp.addtasks.ui
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -18,8 +17,7 @@ import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.model.toViewModelList
-import com.example.todoapp.services.alarm.cancelAlarm
-import com.example.todoapp.services.alarm.setAlarm
+import com.example.todoapp.services.AlarmManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +29,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
-import org.threeten.bp.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -40,6 +37,7 @@ class TaskViewModel @Inject constructor(
     private val getTaskUseCase: GetTaskUseCase,
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
+    private val alarmManager: AlarmManager,
     updateTaskUseCase: UpdateTaskUseCase, deleteTaskUseCase: DeleteTaskUseCase,
 ) : BaseTaskViewModel(updateTaskUseCase, deleteTaskUseCase) {
 
@@ -76,7 +74,7 @@ class TaskViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     val tasksByDateState: StateFlow<TasksUiState> = _selectedDate.asFlow()
         .flatMapLatest { date ->
-            getTasksByDateUseCase(date).map{ Success(it.toViewModelList()) }
+            getTasksByDateUseCase(date).map { Success(it.toViewModelList()) }
         }
         .catch { Error(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
@@ -89,23 +87,11 @@ class TaskViewModel @Inject constructor(
         _showDialog.value = false
     }
 
-    fun onTaskCreated(task: TaskModel, context: Context) {
+    fun onTaskCreated(task: TaskModel) {
         _showDialog.value = false
 
         viewModelScope.launch {
             addTaskUseCase(task.toDomain())
-
-            // Verificar si la fecha y hora están en el futuro antes de programar la alarma
-            task.time?.let { time ->
-                val currentDate = LocalDate.now()
-                val currentTime = LocalTime.now()
-
-                if (task.startDate.isAfter(currentDate) ||
-                    (task.startDate.isEqual(currentDate) && time.isAfter(currentTime))
-                ) {
-                    setAlarm(context, task.id, task.startDate, time, task.task)
-                }
-            }
         }
     }
 
@@ -113,7 +99,7 @@ class TaskViewModel @Inject constructor(
         _showDialog.value = true
     }
 
-    fun onCheckBox(taskModel: TaskModel, context: Context) {
+    fun onCheckBox(taskModel: TaskModel) {
         viewModelScope.launch {
             try {
                 // Obtener la tarea original antes de actualizarla
@@ -126,15 +112,14 @@ class TaskViewModel @Inject constructor(
                         // debido a que si esta seleccionada significa que al llamar a esta función
                         // se esta deseleccionando la tarea y viceversa
                         if (originalTask.selected) { // Si la tarea original esta seleccionada (Realizada)
-                            setAlarm(
-                                context,
-                                originalTask.id,
+                            alarmManager.handleAlarmTrigger(
+                                originalTask.id.hashCode(),
+                                originalTask.task,
                                 originalTask.startDate,
-                                originalTask.time,
-                                originalTask.task
+                                originalTask.time
                             )
                         } else { // Si la tarea original no esta seleccionada (No realizada)
-                            cancelAlarm(context, originalTask.id)
+                            alarmManager.cancelAlarm(originalTask.id.hashCode(), originalTask.task)
                         }
 
                     }
