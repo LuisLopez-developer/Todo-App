@@ -48,4 +48,8 @@ class TaskRepository @Inject constructor(private val taskDao: TaskDao) {
         val dateString = date.format(org.threeten.bp.format.DateTimeFormatter.ISO_LOCAL_DATE)
         return taskDao.getActiveTasksByDate(dateString).map { it.toDomainList() }
     }
+
+    suspend fun reassignTasksToUser(newUserId: String?) {
+        taskDao.reassignTasksToUser(newUserId)
+    }
 }

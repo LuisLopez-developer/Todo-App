@@ -4,10 +4,10 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.example.todoapp.settings.auth.data.UserEntity
 import com.example.todoapp.state.data.StateEntity
 import com.example.todoapp.state.data.constants.DefaultStateId.ACTIVE_ID
 import com.example.todoapp.taskcategory.domain.model.CategoryItem
+import com.example.todoapp.user.data.UserEntity
 import kotlinx.serialization.Contextual
 import org.threeten.bp.OffsetDateTime
 import java.util.UUID

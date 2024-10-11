@@ -40,4 +40,8 @@ class CategoryRepository @Inject constructor(private val categoryDao: CategoryDa
     suspend fun delete(categoryEntity: CategoryEntity) {
         categoryDao.deleteCategory(categoryEntity)
     }
+
+    suspend fun reassignCategoriesToUser(newUserId: String?) {
+        categoryDao.reassignCategoriesToUser(newUserId)
+    }
 }

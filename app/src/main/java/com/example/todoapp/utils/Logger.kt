@@ -26,5 +26,9 @@ object Logger {
         Log.e(tag, message, throwable)
     }
 
+    fun info(tag: String, message: String) {
+        Log.i(tag, message)
+    }
+
     // Puedes agregar más métodos si es necesario (info, warning, etc.)
 }

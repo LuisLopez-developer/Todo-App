@@ -34,4 +34,7 @@ interface CategoryDao {
 
     @Query("SELECT COUNT(*) > 0 FROM CategoryEntity WHERE category = :categoryName")
     suspend fun isCategoryNameValid(categoryName: String): Boolean
+
+    @Query("UPDATE CategoryEntity SET userId = :newUserId")
+    suspend fun reassignCategoriesToUser(newUserId: String?)
 }

@@ -1,9 +1,9 @@
 package com.example.todoapp.taskcategory.domain
 
-import com.example.todoapp.settings.auth.domain.GetUserUseCase
 import com.example.todoapp.taskcategory.data.CategoryRepository
 import com.example.todoapp.taskcategory.data.toDatabase
 import com.example.todoapp.taskcategory.domain.model.CategoryItem
+import com.example.todoapp.user.domain.GetUserUseCase
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
@@ -17,7 +17,7 @@ class AddCategoryUseCase @Inject constructor(
         }
         // recuperar el id del usuario actual
         categoryRepository.add(
-            categoryItem.toDatabase().copy(userId = getUserUseCase.invoke().first()?.id)
+            categoryItem.toDatabase().copy(userId = getUserUseCase.invoke().first()?.uid)
         )
     }
 

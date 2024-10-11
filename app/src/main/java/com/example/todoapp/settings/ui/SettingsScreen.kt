@@ -1,13 +1,8 @@
 package com.example.todoapp.settings.ui
 
 import android.app.Activity
-import android.content.Intent
 import android.graphics.Paint
 import android.widget.Toast
-import androidx.activity.compose.ManagedActivityResultLauncher
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -34,7 +29,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
@@ -47,9 +41,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.todoapp.R
 import com.example.todoapp.settings.auth.ui.AuthViewModel
-import com.example.todoapp.settings.auth.ui.model.UserModel
+import com.example.todoapp.settings.auth.ui.component.SignInWithGoogle
 import com.example.todoapp.ui.components.CardSettings
 import com.example.todoapp.ui.navigation.DriveRoute
+import com.example.todoapp.user.ui.model.UserModel
 
 @Composable
 fun SettingsScreen(
@@ -58,12 +53,6 @@ fun SettingsScreen(
     authViewModel: AuthViewModel,
 ) {
     val context = LocalContext.current as Activity
-
-    val startAddAccountIntentLauncher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
-            // Una vez agregada la cuenta, inicie sesión nuevamente.
-            authViewModel.doGoogleSignIn(settingsViewModel, context, null)
-        }
 
     val userUiState by settingsViewModel.userUiState.collectAsState()
 
@@ -74,7 +63,6 @@ fun SettingsScreen(
         is UserUiState.Success -> {
             Container(
                 userModel = (userUiState as UserUiState.Success).user,
-                startAddAccountIntentLauncher = startAddAccountIntentLauncher,
                 settingsViewModel = settingsViewModel,
                 context = context,
                 dropDownAuthMenuExpanded = dropDownAuthMenuExpanded,
@@ -86,7 +74,6 @@ fun SettingsScreen(
         is UserUiState.Empty -> {
             Container(
                 userModel = null,
-                startAddAccountIntentLauncher = startAddAccountIntentLauncher,
                 settingsViewModel = settingsViewModel,
                 context = context,
                 dropDownAuthMenuExpanded = dropDownAuthMenuExpanded,
@@ -108,7 +95,6 @@ fun SettingsScreen(
 @Composable
 fun Container(
     userModel: UserModel?,
-    startAddAccountIntentLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>?,
     settingsViewModel: SettingsViewModel,
     context: Activity,
     dropDownAuthMenuExpanded: Boolean,
@@ -118,9 +104,7 @@ fun Container(
     Column {
         Auth(
             userModel = userModel,
-            startAddAccountIntentLauncher = startAddAccountIntentLauncher,
             settingsViewModel = settingsViewModel,
-            context = context,
             dropDownAuthMenuExpanded = dropDownAuthMenuExpanded,
             authViewModel = authViewModel
         )
@@ -145,9 +129,7 @@ fun Container(
 @Composable
 fun Auth(
     userModel: UserModel?,
-    startAddAccountIntentLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>?,
     settingsViewModel: SettingsViewModel,
-    context: Activity,
     dropDownAuthMenuExpanded: Boolean,
     authViewModel: AuthViewModel,
 ) {
@@ -175,19 +157,9 @@ fun Auth(
                     thickness = 2.dp, modifier = Modifier.padding(vertical = 10.dp)
                 )
                 Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                    IconButton(onClick = {
-                        authViewModel.doGoogleSignIn(
-                            settingsViewModel,
-                            context,
-                            startAddAccountIntentLauncher
-                        )
-                    }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_google),
-                            contentDescription = "Google",
-                            tint = Color.Unspecified
-                        )
-                    }
+
+                    SignInWithGoogle(authViewModel)
+
                     Spacer(modifier = Modifier.padding(8.dp))
                     IconButton(onClick = { /* Iniciar sesion con GitHub */ }) {
                         Icon(

@@ -7,11 +7,11 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.todoapp.addtasks.data.TaskDao
 import com.example.todoapp.data.TodoDataBase
-import com.example.todoapp.settings.auth.data.UserDao
 import com.example.todoapp.state.data.StateDao
 import com.example.todoapp.state.data.seedStates
 import com.example.todoapp.taskcategory.data.CategoryDao
 import com.example.todoapp.taskcategory.data.CategoryEntity
+import com.example.todoapp.user.data.UserDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

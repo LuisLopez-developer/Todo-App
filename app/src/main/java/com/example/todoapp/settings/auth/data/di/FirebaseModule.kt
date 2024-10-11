@@ -1,6 +1,8 @@
-package com.example.todoapp.settings.di
+package com.example.todoapp.settings.auth.data.di
 
+import com.example.todoapp.user.domain.model.UserItem
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,4 +19,12 @@ class FirebaseModule {
         return FirebaseAuth.getInstance()
     }
 
+}
+
+fun FirebaseUser.toDomain(): UserItem {
+    return UserItem(
+        uid = uid,
+        name = displayName ?: "",
+        email = email ?: ""
+    )
 }

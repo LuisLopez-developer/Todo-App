@@ -1,4 +1,4 @@
-package com.example.todoapp.settings.auth.data
+package com.example.todoapp.user.data
 
 import androidx.room.Dao
 import androidx.room.Insert

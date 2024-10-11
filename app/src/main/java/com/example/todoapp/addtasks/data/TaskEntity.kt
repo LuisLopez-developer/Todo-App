@@ -5,10 +5,10 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.todoapp.addtasks.domain.model.TaskItem
-import com.example.todoapp.settings.auth.data.UserEntity
 import com.example.todoapp.state.data.StateEntity
 import com.example.todoapp.state.data.constants.DefaultStateId.ACTIVE_ID
 import com.example.todoapp.taskcategory.data.CategoryEntity
+import com.example.todoapp.user.data.UserEntity
 import kotlinx.serialization.Contextual
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalTime

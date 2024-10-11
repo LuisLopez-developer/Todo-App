@@ -1,6 +1,6 @@
 package com.example.todoapp.settings.ui
 
-import com.example.todoapp.settings.auth.ui.model.UserModel
+import com.example.todoapp.user.ui.model.UserModel
 
 sealed interface UserUiState {
     data object Loading : UserUiState

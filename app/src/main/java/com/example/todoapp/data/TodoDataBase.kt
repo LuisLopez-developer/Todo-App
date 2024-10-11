@@ -10,12 +10,12 @@ import com.example.todoapp.addtasks.data.TaskEntity
 import com.example.todoapp.addtasks.utils.Converters
 import com.example.todoapp.holidays.data.local.HolidayDao
 import com.example.todoapp.holidays.data.local.HolidayEntity
-import com.example.todoapp.settings.auth.data.UserDao
-import com.example.todoapp.settings.auth.data.UserEntity
 import com.example.todoapp.state.data.StateDao
 import com.example.todoapp.state.data.StateEntity
 import com.example.todoapp.taskcategory.data.CategoryDao
 import com.example.todoapp.taskcategory.data.CategoryEntity
+import com.example.todoapp.user.data.UserDao
+import com.example.todoapp.user.data.UserEntity
 
 @Database(
     entities = [TaskEntity::class, CategoryEntity::class, UserEntity::class, HolidayEntity::class, StateEntity::class],
