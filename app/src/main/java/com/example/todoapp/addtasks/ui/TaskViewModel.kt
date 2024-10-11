@@ -1,13 +1,11 @@
 package com.example.todoapp.addtasks.ui
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.addtasks.domain.AddTaskUseCase
 import com.example.todoapp.addtasks.domain.DeleteTaskUseCase
-import com.example.todoapp.addtasks.domain.GetTaskByIdUseCase
 import com.example.todoapp.addtasks.domain.GetTaskUseCase
 import com.example.todoapp.addtasks.domain.GetTasksByDateUseCase
 import com.example.todoapp.addtasks.domain.UpdateTaskUseCase
@@ -17,7 +15,6 @@ import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.model.toViewModelList
-import com.example.todoapp.services.AlarmManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,9 +32,7 @@ import javax.inject.Inject
 class TaskViewModel @Inject constructor(
     private val addTaskUseCase: AddTaskUseCase,
     private val getTaskUseCase: GetTaskUseCase,
-    private val getTaskByIdUseCase: GetTaskByIdUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
-    private val alarmManager: AlarmManager,
     updateTaskUseCase: UpdateTaskUseCase, deleteTaskUseCase: DeleteTaskUseCase,
 ) : BaseTaskViewModel(updateTaskUseCase, deleteTaskUseCase) {
 
@@ -97,39 +92,5 @@ class TaskViewModel @Inject constructor(
 
     fun onShowDialogClick() {
         _showDialog.value = true
-    }
-
-    fun onCheckBox(taskModel: TaskModel) {
-        viewModelScope.launch {
-            try {
-                // Obtener la tarea original antes de actualizarla
-                val originalTask = getTaskByIdUseCase.execute(taskModel.id)
-
-                if (originalTask != null) {
-                    // Si la tarea original tiene una alarma programada
-                    if (originalTask.time != null) {
-                        // Verificar si la tarea original esta seleccionada (Realizada)
-                        // debido a que si esta seleccionada significa que al llamar a esta función
-                        // se esta deseleccionando la tarea y viceversa
-                        if (originalTask.selected) { // Si la tarea original esta seleccionada (Realizada)
-                            alarmManager.handleAlarmTrigger(
-                                originalTask.id.hashCode(),
-                                originalTask.task,
-                                originalTask.startDate,
-                                originalTask.time
-                            )
-                        } else { // Si la tarea original no esta seleccionada (No realizada)
-                            alarmManager.cancelAlarm(originalTask.id.hashCode(), originalTask.task)
-                        }
-
-                    }
-                }
-
-                updateTaskUseCase(taskModel.copy(selected = taskModel.selected).toDomain())
-
-            } catch (e: Exception) {
-                Log.e("error", e.message.toString())
-            }
-        }
     }
 }

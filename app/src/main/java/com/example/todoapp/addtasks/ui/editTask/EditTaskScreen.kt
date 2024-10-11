@@ -461,7 +461,7 @@ fun Container(
                     startDate = taskEditViewModel.temporaryDate.value ?: LocalDate.now(),
                     time = taskEditViewModel.temporaryTime.value
                 )
-                taskEditViewModel.onDateAndTime(updatedTask)
+                taskEditViewModel.updateTask(updatedTask)
                 taskEditViewModel.resetTemporaryDateTime()
             }
         )

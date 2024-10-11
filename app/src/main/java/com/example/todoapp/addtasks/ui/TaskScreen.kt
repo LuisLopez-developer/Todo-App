@@ -201,7 +201,7 @@ fun TasksList(
                         expandedId = task.id
                     },
                     onCheckBoxChange = { isChecked ->
-                        taskViewModel.onCheckBox(task.copy(selected = isChecked))
+                        taskViewModel.updateTask(task.copy(selected = isChecked))
                     }
                 )
                 Box(
