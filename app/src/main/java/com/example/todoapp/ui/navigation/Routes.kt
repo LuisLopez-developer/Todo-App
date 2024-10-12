@@ -19,3 +19,6 @@ data class EditTaskRoute(val id: String)
 
 @Serializable
 data class DriveRoute(val userId: String)
+
+@Serializable
+object AlarmRoute

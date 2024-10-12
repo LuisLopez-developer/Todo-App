@@ -36,6 +36,8 @@
     <string name="ic_autoRenew">Icono para activar la Sincronización automática</string>
     <string name="ic_warning">Icono de advertencia</string>
     <string name="ic_notifications">Icono de notificaciones</string>
+    <string name="ic_alarm_access">Icono de acceso a la alarma</string>
+    <string name="ic_check_circle">Icono de círculo de verificación</string>
 
     <!-- Para el BottomBar -->
     <string name="bb_calendar_title">Calendario</string>
@@ -79,6 +81,14 @@
     <string name="confirm_delete_title">¿Seguro que quieres borrar todo?</string>
     <string name="confirm_delete_message">Al aceptar, se eliminarán todas las tareas y categorías almacenadas en la nube de forma permanente, sin posibilidad de recuperación.</string>
 
+    <!-- Para la pantalla de notificaciones -->
+    <string name="notifications_title">Notificaciones</string>
+    <string name="notifications_description">Permite recibir notificaciones de tareas programadas.</string>
+    <string name="notifications_enable">Permitir</string>
+    <string name="alarm_title">Alarma</string>
+    <string name="alarm_description">Permite activar la alarma para recordar tus tareas programadas.</string>
+
+
     <!-- General -->
     <string name="yes">Sí</string>
     <string name="no">No</string>
@@ -89,6 +99,7 @@
     <string name="edit">Editar</string>
     <string name="add">Agregar</string>
     <string name="sn">Sin información</string>
+    <string name="allow">Permitir</string>
     <string name="internet_error">Sin acceso a internet, revise su conexión.</string>
 
     <!-- Para toast -->

@@ -20,6 +20,8 @@ import com.example.todoapp.addtasks.ui.editTask.EditTaskScreen
 import com.example.todoapp.addtasks.ui.editTask.TaskEditViewModel
 import com.example.todoapp.addtasks.ui.taskList.TaskListScreen
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
+import com.example.todoapp.alarm.ui.AlarmScreen
+import com.example.todoapp.alarm.ui.AlarmViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.services.permission.PermissionService
 import com.example.todoapp.settings.auth.ui.AuthViewModel
@@ -30,6 +32,7 @@ import com.example.todoapp.settings.ui.SettingsViewModel
 import com.example.todoapp.taskcategory.ui.TaskCategoryScreen
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.ui.constants.StylesTopBar
+import com.example.todoapp.ui.navigation.AlarmRoute
 import com.example.todoapp.ui.navigation.CalendarRoute
 import com.example.todoapp.ui.navigation.DriveRoute
 import com.example.todoapp.ui.navigation.EditTaskRoute
@@ -50,6 +53,7 @@ fun MainLayout(permissionService: PermissionService) {
     val taskEditViewModel: TaskEditViewModel = viewModel()
     val driveViewModel: DriveViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
+    val alarmViewModel: AlarmViewModel = viewModel()
 
     val sharedViewModel: SharedViewModel = viewModel()
 
@@ -73,6 +77,11 @@ fun MainLayout(permissionService: PermissionService) {
             }
 
             extractCleanRoute(DriveRoute.toString()) -> {
+                bottomBarState.value = false
+                styleTopBarState.value = StylesTopBar.MAIN
+            }
+
+            extractCleanRoute(AlarmRoute.toString()) -> {
                 bottomBarState.value = false
                 styleTopBarState.value = StylesTopBar.MAIN
             }
@@ -155,6 +164,9 @@ fun MainLayout(permissionService: PermissionService) {
                     sharedViewModel = sharedViewModel,
                     authViewModel = authViewModel
                 )
+            }
+            composable<AlarmRoute> {
+                AlarmScreen(sharedViewModel, alarmViewModel, permissionService)
             }
         }
     }

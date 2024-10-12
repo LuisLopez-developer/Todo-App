@@ -1,7 +1,6 @@
 package com.example.todoapp.addtasks.ui
 
 import android.content.Context
-import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,7 +22,6 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -60,7 +58,7 @@ fun TasksScreen(
     taskCategoryViewModel: TaskCategoryViewModel,
     navigationController: NavHostController,
     holidaysViewModel: HolidaysViewModel,
-    permissionService: PermissionService,
+    permissionService: PermissionService
 ) {
     // Obtener el contexto en el composable usando `LocalContext`
     val context = LocalContext.current
@@ -81,11 +79,7 @@ fun TasksScreen(
     }
 
     // Solicita permiso después de que la pantalla haya cargado
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissionService.requestNotificationPermission()
-        }
-    }
+    permissionService.requestNotificationPermission()
 
     // Maneja el estado general de tareas
     when (uiStateByDate) {

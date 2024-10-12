@@ -1,11 +1,9 @@
 package com.example.todoapp.services.di
 
 import android.content.Context
-import androidx.activity.ComponentActivity
 import com.example.todoapp.services.AlarmManager
 import com.example.todoapp.services.alarm.AlarmService
 import com.example.todoapp.services.notification.NotificationService
-import com.example.todoapp.services.permission.PermissionService
 import com.example.todoapp.services.sound.SoundService
 import dagger.Module
 import dagger.Provides
@@ -38,17 +36,11 @@ class AlarmModule {
 
     @Provides
     @Singleton
-    fun providePermissionService(activity: ComponentActivity): PermissionService {
-        return PermissionService(activity)
-    }
-
-    @Provides
-    @Singleton
     fun provideAlarmManager(
         alarmService: AlarmService,
         soundService: SoundService,
         notificationService: NotificationService,
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
     ): AlarmManager {
         return AlarmManager(alarmService, soundService, notificationService, context)
     }

@@ -38,9 +38,11 @@ class AlarmService(private val context: Context) {
 
     fun canScheduleExactAlarms(): Boolean {
         return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            Logger.debug("AlarmManager", "Checking if can schedule exact alarms")
             // Solo a partir de Android 12 (S) se puede usar canScheduleExactAlarms()
             alarmManager.canScheduleExactAlarms()
         } else {
+            Logger.debug("AlarmManager", "Can schedule exact alarms")
             // Se asume que en versiones anteriores se puede programar alarmas exactas
             true
         }

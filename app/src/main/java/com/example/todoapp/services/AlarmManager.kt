@@ -27,6 +27,10 @@ class AlarmManager(
         alarmService.setAlarm(date, time, pendingIntent)
     }
 
+    fun canScheduleExactAlarms(): Boolean {
+        return alarmService.canScheduleExactAlarms()
+    }
+
     fun requestExactAlarmPermission() {
         alarmService.requestExactAlarmPermission()
     }

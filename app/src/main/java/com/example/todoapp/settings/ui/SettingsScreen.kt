@@ -44,6 +44,7 @@ import com.example.todoapp.R.string
 import com.example.todoapp.settings.auth.ui.AuthViewModel
 import com.example.todoapp.settings.auth.ui.component.SignInWithGoogle
 import com.example.todoapp.ui.components.CardSettings
+import com.example.todoapp.ui.navigation.AlarmRoute
 import com.example.todoapp.ui.navigation.DriveRoute
 import com.example.todoapp.user.ui.model.UserModel
 
@@ -110,31 +111,41 @@ fun Container(
             authViewModel = authViewModel
         )
 
-        CardSettings(modifier = Modifier.padding(horizontal = 15.dp), enable = userModel != null, text = stringResource(string.sync_cloud), onClick = {
-            if (userModel != null) {
-                navController.navigate(DriveRoute(userId = userModel.id))
-            } else {
-                Toast.makeText(context, string.sign_in_to_sync, Toast.LENGTH_SHORT).show()
-            }
-        }, icon = {
-            Icon(
-                painter = painterResource(R.drawable.ic_outline_cloud_sync),
-                contentDescription = stringResource(string.ic_sync_cloud),
-                tint = colorScheme.tertiaryContainer.copy(alpha = if (userModel != null) 1f else 0.5f)
-            )
-        })
+        CardSettings(
+            modifier = Modifier.padding(horizontal = 15.dp),
+            enable = userModel != null,
+            text = stringResource(string.sync_cloud),
+            onClick = {
+                if (userModel != null) {
+                    navController.navigate(DriveRoute(userId = userModel.id))
+                } else {
+                    Toast.makeText(context, string.sign_in_to_sync, Toast.LENGTH_SHORT).show()
+                }
+            },
+            icon = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_outline_cloud_sync),
+                    contentDescription = stringResource(string.ic_sync_cloud),
+                    tint = colorScheme.tertiaryContainer.copy(alpha = if (userModel != null) 1f else 0.5f)
+                )
+            })
 
         Spacer(modifier = Modifier.padding(6.dp))
 
-        CardSettings(modifier = Modifier.padding(horizontal = 15.dp), enable = true, text = stringResource(string.alerts_and_notifications), onClick = {
-
-        }, icon = {
-            Icon(
-                painter = painterResource(R.drawable.ic_outline_notifications),
-                contentDescription = stringResource(string.ic_notifications),
-                tint = colorScheme.tertiaryContainer.copy(alpha = 1f)
-            )
-        })
+        CardSettings(
+            modifier = Modifier.padding(horizontal = 15.dp),
+            enable = true,
+            text = stringResource(string.alerts_and_notifications),
+            onClick = {
+                navController.navigate(AlarmRoute)
+            },
+            icon = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_outline_notifications),
+                    contentDescription = stringResource(string.ic_notifications),
+                    tint = colorScheme.tertiaryContainer.copy(alpha = 1f)
+                )
+            })
 
     }
 }

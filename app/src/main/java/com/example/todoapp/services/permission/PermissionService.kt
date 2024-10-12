@@ -12,8 +12,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.example.todoapp.R
+import dagger.hilt.android.scopes.ActivityScoped
+import javax.inject.Inject
 
-class PermissionService(private val activity: ComponentActivity) {
+@ActivityScoped
+class PermissionService @Inject constructor(private val activity: ComponentActivity) {
+
 
     private val requestPermissionLauncher =
         activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -24,15 +28,30 @@ class PermissionService(private val activity: ComponentActivity) {
             }
         }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun requestNotificationPermission() {
-        if (ContextCompat.checkSelfPermission(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (!checkNotificationPermission()){
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
+    fun checkNotificationPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
                 activity,
                 Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
         }
+    }
+
+    fun openAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", activity.packageName, null)
+        }
+        activity.startActivity(intent)
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
