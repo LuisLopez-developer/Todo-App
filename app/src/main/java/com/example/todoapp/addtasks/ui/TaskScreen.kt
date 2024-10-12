@@ -44,6 +44,7 @@ import com.example.todoapp.R.string.ic_calendar
 import com.example.todoapp.addtasks.ui.components.BottomSheetComponent
 import com.example.todoapp.addtasks.ui.components.TaskItemComponent
 import com.example.todoapp.addtasks.ui.model.TaskModel
+import com.example.todoapp.alarm.ui.component.PermissionDialog
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.holidays.ui.model.HolidayModel
 import com.example.todoapp.state.data.constants.DefaultStateId.DELETED_ID
@@ -51,6 +52,7 @@ import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 import com.example.todoapp.ui.components.CalendarComponent
+import com.example.todoapp.ui.layouts.SharedViewModel
 import com.example.todoapp.ui.navigation.EditTaskRoute
 import com.example.todoapp.utils.Logger
 import org.threeten.bp.LocalDate
@@ -61,6 +63,7 @@ fun TasksScreen(
     taskCategoryViewModel: TaskCategoryViewModel,
     navigationController: NavHostController,
     holidaysViewModel: HolidaysViewModel,
+    sharedViewModel: SharedViewModel,
 ) {
     // Obtener el contexto en el composable usando `LocalContext`
     val context = LocalContext.current
@@ -79,15 +82,17 @@ fun TasksScreen(
 
     // Establece el launcher en el servicio de permisos
     LaunchedEffect(Unit) {
-        taskViewModel.setPermissionLauncher(permissionLauncher)
+        sharedViewModel.setPermissionLauncher(permissionLauncher)
     }
 
     // Verifica si el permiso ya está concedido, de lo contrario, solicítalo
     LaunchedEffect(Unit) {
-        if (!taskViewModel.isNotificationPermissionGranted(context)) {
-            taskViewModel.requestNotificationPermission(context)
+        if (!sharedViewModel.isNotificationPermissionGranted(context)) {
+            sharedViewModel.requestNotificationPermission(context)
         }
     }
+
+    val showPermissionDialog by taskViewModel.showPermissionDialog.collectAsState()
 
     // Recuperamos el estado de las tareas por fecha
     val uiStateByDate by taskViewModel.tasksByDateState.collectAsState()
@@ -124,7 +129,9 @@ fun TasksScreen(
                 navigationController = navigationController,
                 selectedDate = selectedDate,
                 categories = categories,
-                context = context
+                sharedViewModel = sharedViewModel,
+                context = context,
+                showPermissionDialog = showPermissionDialog
             )
         }
     }
@@ -140,8 +147,18 @@ fun Container(
     navigationController: NavHostController,
     selectedDate: LocalDate,
     categories: List<TaskCategoryModel>,
+    sharedViewModel: SharedViewModel,
     context: Context,
+    showPermissionDialog: Boolean,
 ) {
+
+    if (!sharedViewModel.areBasicPermissionsGranted(context) && showPermissionDialog) {
+        PermissionDialog(
+            onDismiss = { taskViewModel.ShowPermissionDialog() },
+            sharedViewModel = sharedViewModel
+        )
+    }
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -166,8 +183,7 @@ fun Container(
                     holidays = holidays,
                     selectedDate = selectedDate,
                     taskViewModel = taskViewModel,
-                    navigationController = navigationController,
-                    context = context
+                    navigationController = navigationController
                 )
             }
         }
@@ -189,10 +205,8 @@ fun Container(
                 taskViewModel = taskViewModel
             )
         }
-
     }
 }
-
 
 @Composable
 fun TasksList(
@@ -201,7 +215,6 @@ fun TasksList(
     selectedDate: LocalDate,
     taskViewModel: TaskViewModel,
     navigationController: NavHostController,
-    context: Context,
 ) {
     var expandedId: String? by remember { mutableStateOf(null) }
 

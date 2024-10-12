@@ -21,7 +21,6 @@ import com.example.todoapp.addtasks.ui.editTask.TaskEditViewModel
 import com.example.todoapp.addtasks.ui.taskList.TaskListScreen
 import com.example.todoapp.addtasks.ui.taskList.TaskListViewModel
 import com.example.todoapp.alarm.ui.AlarmScreen
-import com.example.todoapp.alarm.ui.AlarmViewModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.settings.auth.ui.AuthViewModel
 import com.example.todoapp.settings.drive.ui.DriveScreen
@@ -52,7 +51,6 @@ fun MainLayout() {
     val taskEditViewModel: TaskEditViewModel = viewModel()
     val driveViewModel: DriveViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
-    val alarmViewModel: AlarmViewModel = viewModel()
 
     val sharedViewModel: SharedViewModel = viewModel()
 
@@ -122,7 +120,8 @@ fun MainLayout() {
                     taskViewModel = taskViewModel,
                     taskCategoryViewModel = taskCategoryViewModel,
                     holidaysViewModel = holidaysModel,
-                    navigationController = navigationController
+                    navigationController = navigationController,
+                    sharedViewModel = sharedViewModel
                 )
             }
             composable<TaskCategoryRoute> {
@@ -164,7 +163,7 @@ fun MainLayout() {
                 )
             }
             composable<AlarmRoute> {
-                AlarmScreen(sharedViewModel, alarmViewModel)
+                AlarmScreen(sharedViewModel)
             }
         }
     }

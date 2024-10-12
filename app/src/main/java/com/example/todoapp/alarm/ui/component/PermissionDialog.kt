@@ -32,25 +32,24 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.todoapp.R
-import com.example.todoapp.alarm.ui.AlarmViewModel
 import com.example.todoapp.ui.icon.IconCheck
+import com.example.todoapp.ui.layouts.SharedViewModel
 
 @Composable
 fun PermissionDialog(
     onDismiss: () -> Unit,
-    alarmViewModel: AlarmViewModel,
+    sharedViewModel: SharedViewModel,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val postNotificationPermissionGranted by alarmViewModel.postNotificationPermissionGranted.collectAsState()
-    val alarmPermissionGranted by alarmViewModel.alarmPermissionGranted.collectAsState()
+    val postNotificationPermissionGranted by sharedViewModel.postNotificationPermissionGranted.collectAsState()
+    val alarmPermissionGranted by sharedViewModel.alarmPermissionGranted.collectAsState()
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                alarmViewModel.canScheduleExactAlarms()
-                alarmViewModel.checkNotificationPermission(context)
+                sharedViewModel.checkPermissions(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -103,7 +102,7 @@ fun PermissionDialog(
                         Modifier.weight(1f),
                         style = typography.bodyMedium
                     )
-                    Box(Modifier.clickable { alarmViewModel.openAppSettings(context) }) {
+                    Box(Modifier.clickable { sharedViewModel.openAppSettings(context) }) {
                         if (!postNotificationPermissionGranted) {
                             Text(
                                 text = stringResource(R.string.adjust_settings),
@@ -120,8 +119,8 @@ fun PermissionDialog(
                         Modifier.weight(1f),
                         style = typography.bodyMedium
                     )
-                    Box(modifier = Modifier.clickable { alarmViewModel.requestExactAlarmPermission() }) { }
-                    if (alarmPermissionGranted) {
+                    Box(modifier = Modifier.clickable { sharedViewModel.requestExactAlarmPermission() }) { }
+                    if (!alarmPermissionGranted) {
                         Text(
                             text = stringResource(R.string.adjust_settings),
                             color = colorScheme.tertiary
@@ -132,6 +131,5 @@ fun PermissionDialog(
                 }
             }
         }
-
     }
 }

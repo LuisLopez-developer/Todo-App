@@ -32,31 +32,18 @@ import com.example.todoapp.ui.layouts.SharedViewModel
 @Composable
 fun AlarmScreen(
     sharedViewModel: SharedViewModel,
-    alarmViewModel: AlarmViewModel,
+
 ) {
     val context = LocalContext.current
-    val alarmPermissionGranted by alarmViewModel.alarmPermissionGranted.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
-    val postNotificationPermissionGranted by alarmViewModel.postNotificationPermissionGranted.collectAsState()
 
-//    val permissionLauncher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.RequestPermission()
-//    ) { isGranted: Boolean ->
-//        if (isGranted) {
-//            alarmViewModel.checkNotificationPermission(context)
-//        }
-//    }
-//
-//    LaunchedEffect(Unit) {
-//        alarmViewModel.setPermissionLauncher(permissionLauncher)
-//    }
-
+    val alarmPermissionGranted by sharedViewModel.alarmPermissionGranted.collectAsState()
+    val postNotificationPermissionGranted by sharedViewModel.postNotificationPermissionGranted.collectAsState()
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                alarmViewModel.canScheduleExactAlarms()
-                alarmViewModel.checkNotificationPermission(context)
+                sharedViewModel.checkPermissions(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -68,7 +55,6 @@ fun AlarmScreen(
 
     AlarmContent(
         sharedViewModel,
-        alarmViewModel,
         alarmPermissionGranted,
         postNotificationPermissionGranted,
         context
@@ -78,14 +64,13 @@ fun AlarmScreen(
 @Composable
 fun AlarmContent(
     sharedViewModel: SharedViewModel,
-    alarmViewModel: AlarmViewModel,
     alarmPermissionGranted: Boolean,
     postNotificationPermissionGranted: Boolean,
     context: Context,
 ) {
     ConfigTopBar(sharedViewModel)
     Container(
-        alarmViewModel,
+        sharedViewModel,
         alarmPermissionGranted,
         postNotificationPermissionGranted,
         context
@@ -99,7 +84,7 @@ fun ConfigTopBar(sharedViewModel: SharedViewModel) {
 
 @Composable
 fun Container(
-    alarmViewModel: AlarmViewModel,
+    sharedViewModel: SharedViewModel,
     alarmPermissionGranted: Boolean,
     postNotificationPermissionGranted: Boolean,
     context: Context,
@@ -116,9 +101,9 @@ fun Container(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable {
-                            alarmViewModel.requestExactAlarmPermission()
+                            sharedViewModel.requestExactAlarmPermission()
                         }) {
-                        if (alarmPermissionGranted) {
+                        if (!alarmPermissionGranted) {
                             Text(
                                 text = stringResource(R.string.allow),
                                 style = MaterialTheme.typography.bodySmall,
@@ -157,7 +142,7 @@ fun Container(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable {
-                            alarmViewModel.openAppSettings(context)
+                            sharedViewModel.openAppSettings(context)
                         }) {
                         if (!postNotificationPermissionGranted) {
                             Text(
