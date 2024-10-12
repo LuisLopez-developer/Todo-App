@@ -37,8 +37,8 @@ class AlarmModule {
 
     @Provides
     @Singleton
-    fun providePermissionService(): PermissionService {
-        return PermissionService()
+    fun providePermissionService(@ApplicationContext context: Context): PermissionService {
+        return PermissionService(context)
     }
 
     @Provides

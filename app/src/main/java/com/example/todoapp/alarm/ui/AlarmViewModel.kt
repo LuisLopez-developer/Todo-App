@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.example.todoapp.alarm.domain.CheckNotificationPermissionUseCase
 import com.example.todoapp.alarm.domain.OpenAppSettingsUseCase
+import com.example.todoapp.alarm.domain.RequestExactAlarmPermissionUseCase
 import com.example.todoapp.services.AlarmManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,7 @@ class AlarmViewModel @Inject constructor(
     private val alarmManager: AlarmManager,
     private val checkNotificationPermissionUseCase: CheckNotificationPermissionUseCase,
     private val openAppSettingsUseCase: OpenAppSettingsUseCase,
+    private val requestExactAlarmPermissionUseCase: RequestExactAlarmPermissionUseCase
 ) : ViewModel() {
 
     private val _alarmPermissionGranted = MutableStateFlow(false)
@@ -31,7 +33,6 @@ class AlarmViewModel @Inject constructor(
         openAppSettingsUseCase(context)
     }
 
-
     fun checkNotificationPermission(context: Context) {
         _postNotificationPermissionGranted.value = checkNotificationPermissionUseCase(context)
     }
@@ -41,7 +42,7 @@ class AlarmViewModel @Inject constructor(
     }
 
     fun requestExactAlarmPermission() {
-        alarmManager.requestExactAlarmPermission()
+        requestExactAlarmPermissionUseCase()
     }
 
 }

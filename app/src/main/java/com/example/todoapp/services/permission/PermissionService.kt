@@ -13,7 +13,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PermissionService @Inject constructor() {
+class PermissionService @Inject constructor(private val context: Context) {
     private var permissionLauncher: ActivityResultLauncher<String>? = null
 
     fun setPermissionLauncher(launcher: ActivityResultLauncher<String>) {
@@ -43,6 +43,17 @@ class PermissionService @Inject constructor() {
         val uri = Uri.fromParts("package", context.packageName, null)
         intent.data = uri
         context.startActivity(intent)
+    }
+
+    fun requestExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val request =
+                Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                    data = Uri.parse("package:${context.packageName}")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+            context.startActivity(request)
+        }
     }
 
 }

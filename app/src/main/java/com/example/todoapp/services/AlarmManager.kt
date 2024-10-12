@@ -31,10 +31,6 @@ class AlarmManager(
         return alarmService.canScheduleExactAlarms()
     }
 
-    fun requestExactAlarmPermission() {
-        alarmService.requestExactAlarmPermission()
-    }
-
     fun onAlarmReceived(id: Int, title: String) {
         soundService.playAlarmSound()
         val stopAlarmPendingIntent = createStopAlarmPendingIntent(id)

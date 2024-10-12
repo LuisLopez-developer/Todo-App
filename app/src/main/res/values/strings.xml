@@ -38,6 +38,7 @@
     <string name="ic_notifications">Icono de notificaciones</string>
     <string name="ic_alarm_access">Icono de acceso a la alarma</string>
     <string name="ic_check_circle">Icono de círculo de verificación</string>
+    <string name="ic_close">Icono para cerrar el dialogo</string>
 
     <!-- Para el BottomBar -->
     <string name="bb_calendar_title">Calendario</string>
@@ -77,7 +78,7 @@
     <string name="btn_cloud_download">Cargar</string>
     <string name="btn_autoRenew">Activar</string>
     <string name="delete_all">Eliminar todo</string>
-    
+
     <string name="confirm_delete_title">¿Seguro que quieres borrar todo?</string>
     <string name="confirm_delete_message">Al aceptar, se eliminarán todas las tareas y categorías almacenadas en la nube de forma permanente, sin posibilidad de recuperación.</string>
 
@@ -103,6 +104,7 @@
     <string name="internet_error">Sin acceso a internet, revise su conexión.</string>
     <string name="permission_title">Permisos</string>
     <string name="permission_message">Para poder utilizar la aplicación, es necesario que acepte los permisos solicitados.</string>
+    <string name="adjust_settings">Ajustes</string>
 
     <!-- Para toast -->
     <string name="total_files">Total de archivos</string>
@@ -115,4 +117,10 @@
     <string name="permission_denied">Permiso denegado</string>
     <string name="permission_allow">Permiso permitido</string>
 
+    <!-- Para el dialogo de permisos -->
+    <string name="permission_rationale">Has creado una tarea programada, para poder recibir notificaciones, es necesario que aceptes los permisos solicitados.</string>
+    <string name="permission_rationale_title">Permisos necesarios</string>
+    <string name="enable_notifications">Permitir notificaciones</string>
+    <string name="enable_alarm">Permitir alarma</string>
+    
 </resources>
