@@ -1,6 +1,5 @@
 package com.example.todoapp.addtasks.ui
 
-import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -130,7 +129,6 @@ fun TasksScreen(
                 selectedDate = selectedDate,
                 categories = categories,
                 sharedViewModel = sharedViewModel,
-                context = context,
                 showPermissionDialog = showPermissionDialog
             )
         }
@@ -148,13 +146,12 @@ fun Container(
     selectedDate: LocalDate,
     categories: List<TaskCategoryModel>,
     sharedViewModel: SharedViewModel,
-    context: Context,
     showPermissionDialog: Boolean,
 ) {
 
-    if (!sharedViewModel.areBasicPermissionsGranted(context) && showPermissionDialog) {
+    if (showPermissionDialog) {
         PermissionDialog(
-            onDismiss = { taskViewModel.ShowPermissionDialog() },
+            onDismiss = { taskViewModel.onShowPermissionDialog() },
             sharedViewModel = sharedViewModel
         )
     }

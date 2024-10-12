@@ -1,5 +1,6 @@
 package com.example.todoapp.addtasks.ui
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asFlow
@@ -15,7 +16,9 @@ import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.model.toViewModelList
+import com.example.todoapp.alarm.domain.AreBasicPermissionsGrantedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,6 +36,8 @@ class TaskViewModel @Inject constructor(
     private val addTaskUseCase: AddTaskUseCase,
     private val getTaskUseCase: GetTaskUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
+    private val areBasicPermissionsGrantedUseCase: AreBasicPermissionsGrantedUseCase,
+    @ApplicationContext private val context: Context,
     updateTaskUseCase: UpdateTaskUseCase, deleteTaskUseCase: DeleteTaskUseCase,
 ) : BaseTaskViewModel(updateTaskUseCase, deleteTaskUseCase) {
 
@@ -88,6 +93,7 @@ class TaskViewModel @Inject constructor(
         viewModelScope.launch {
             addTaskUseCase(task.toDomain())
         }
+        checkTaskForTimeAndPermissions(task)
     }
 
     fun onShowDialogClick() {
@@ -97,8 +103,17 @@ class TaskViewModel @Inject constructor(
     private val _showPermissionDialog = MutableStateFlow(false)
     val showPermissionDialog: StateFlow<Boolean> = _showPermissionDialog
 
-    fun ShowPermissionDialog() {
+    fun onShowPermissionDialog() {
         _showPermissionDialog.value = !_showPermissionDialog.value
     }
 
+    private fun checkTaskForTimeAndPermissions(task: TaskModel) {
+        if (task.time != null) {
+            // Si la tarea tiene una hora, comprobamos los permisos
+            if (!areBasicPermissionsGrantedUseCase(context)) {
+                // Si no tiene los permisos, mostramos el diálogo
+                onShowPermissionDialog()
+            }
+        }
+    }
 }
