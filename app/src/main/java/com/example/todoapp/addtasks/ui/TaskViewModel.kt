@@ -1,5 +1,7 @@
 package com.example.todoapp.addtasks.ui
 
+import android.content.Context
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asFlow
@@ -15,6 +17,9 @@ import com.example.todoapp.addtasks.ui.TasksUiState.Loading
 import com.example.todoapp.addtasks.ui.TasksUiState.Success
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.model.toViewModelList
+import com.example.todoapp.alarm.domain.IsNotificationPermissionGrantedUseCase
+import com.example.todoapp.alarm.domain.RequestNotificationPermissionUseCase
+import com.example.todoapp.alarm.domain.SetPermissionLauncherUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +38,9 @@ class TaskViewModel @Inject constructor(
     private val addTaskUseCase: AddTaskUseCase,
     private val getTaskUseCase: GetTaskUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
+    private val setPermissionLauncherUseCase: SetPermissionLauncherUseCase,
+    private val isNotificationPermissionGrantedUseCase: IsNotificationPermissionGrantedUseCase,
+    private val requestNotificationPermissionUseCase: RequestNotificationPermissionUseCase,
     updateTaskUseCase: UpdateTaskUseCase, deleteTaskUseCase: DeleteTaskUseCase,
 ) : BaseTaskViewModel(updateTaskUseCase, deleteTaskUseCase) {
 
@@ -92,5 +100,17 @@ class TaskViewModel @Inject constructor(
 
     fun onShowDialogClick() {
         _showDialog.value = true
+    }
+
+    fun setPermissionLauncher(permissionLauncher: ManagedActivityResultLauncher<String, Boolean>) {
+        setPermissionLauncherUseCase(permissionLauncher)
+    }
+
+    fun isNotificationPermissionGranted(context: Context): Boolean {
+        return isNotificationPermissionGrantedUseCase(context)
+    }
+
+    fun requestNotificationPermission(context: Context) {
+        requestNotificationPermissionUseCase(context)
     }
 }

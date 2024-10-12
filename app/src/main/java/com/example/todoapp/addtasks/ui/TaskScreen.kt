@@ -1,6 +1,8 @@
 package com.example.todoapp.addtasks.ui
 
 import android.content.Context
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +24,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -49,6 +52,7 @@ import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
 import com.example.todoapp.taskcategory.ui.model.TaskCategoryModel
 import com.example.todoapp.ui.components.CalendarComponent
 import com.example.todoapp.ui.navigation.EditTaskRoute
+import com.example.todoapp.utils.Logger
 import org.threeten.bp.LocalDate
 
 @Composable
@@ -60,6 +64,30 @@ fun TasksScreen(
 ) {
     // Obtener el contexto en el composable usando `LocalContext`
     val context = LocalContext.current
+
+    // Crea el launcher para solicitar permisos
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                Logger.debug("POST_NOTIFICATIONS", "Permission granted")
+            } else {
+                Logger.debug("POST_NOTIFICATIONS", "Permission denied")
+            }
+        }
+    )
+
+    // Establece el launcher en el servicio de permisos
+    LaunchedEffect(Unit) {
+        taskViewModel.setPermissionLauncher(permissionLauncher)
+    }
+
+    // Verifica si el permiso ya está concedido, de lo contrario, solicítalo
+    LaunchedEffect(Unit) {
+        if (!taskViewModel.isNotificationPermissionGranted(context)) {
+            taskViewModel.requestNotificationPermission(context)
+        }
+    }
 
     // Recuperamos el estado de las tareas por fecha
     val uiStateByDate by taskViewModel.tasksByDateState.collectAsState()
@@ -75,9 +103,6 @@ fun TasksScreen(
         is TaskCategoryUiState.Success -> (categoryUiState as TaskCategoryUiState.Success).categories
         else -> emptyList()
     }
-
-    // Solicita permiso después de que la pantalla haya cargado
-    //permissionService.requestNotificationPermission()
 
     // Maneja el estado general de tareas
     when (uiStateByDate) {

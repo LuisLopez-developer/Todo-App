@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.result.ActivityResultLauncher
+import com.example.todoapp.utils.Logger
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,9 +20,13 @@ class PermissionService @Inject constructor() {
         permissionLauncher = launcher
     }
 
-    fun requestNotificationPermission() {
+    fun requestNotificationPermission(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissionLauncher?.launch(Manifest.permission.POST_NOTIFICATIONS)
+            if (isNotificationPermissionGranted(context)) {
+                Logger.info("permissions","Permiso de notificación ya concedido")
+            } else {
+                permissionLauncher?.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 
@@ -39,6 +44,5 @@ class PermissionService @Inject constructor() {
         intent.data = uri
         context.startActivity(intent)
     }
-
 
 }

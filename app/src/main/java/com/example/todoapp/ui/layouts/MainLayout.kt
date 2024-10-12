@@ -122,7 +122,7 @@ fun MainLayout() {
                     taskViewModel = taskViewModel,
                     taskCategoryViewModel = taskCategoryViewModel,
                     holidaysViewModel = holidaysModel,
-                    navigationController = navigationController,
+                    navigationController = navigationController
                 )
             }
             composable<TaskCategoryRoute> {

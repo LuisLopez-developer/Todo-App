@@ -35,9 +35,12 @@ fun AlarmScreen(
     alarmViewModel: AlarmViewModel,
 ) {
     val context = LocalContext.current
+    val alarmPermissionGranted by alarmViewModel.alarmPermissionGranted.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val postNotificationPermissionGranted by alarmViewModel.postNotificationPermissionGranted.collectAsState()
 
 //    val permissionLauncher = rememberLauncherForActivityResult(
-//        contract = RequestPermission()
+//        contract = ActivityResultContracts.RequestPermission()
 //    ) { isGranted: Boolean ->
 //        if (isGranted) {
 //            alarmViewModel.checkNotificationPermission(context)
@@ -48,9 +51,6 @@ fun AlarmScreen(
 //        alarmViewModel.setPermissionLauncher(permissionLauncher)
 //    }
 
-    val alarmPermissionGranted by alarmViewModel.alarmPermissionGranted.collectAsState()
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val postNotificationPermissionGranted by alarmViewModel.postNotificationPermissionGranted.collectAsState()
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -81,7 +81,7 @@ fun AlarmContent(
     alarmViewModel: AlarmViewModel,
     alarmPermissionGranted: Boolean,
     postNotificationPermissionGranted: Boolean,
-    context: Context
+    context: Context,
 ) {
     ConfigTopBar(sharedViewModel)
     Container(
@@ -102,7 +102,7 @@ fun Container(
     alarmViewModel: AlarmViewModel,
     alarmPermissionGranted: Boolean,
     postNotificationPermissionGranted: Boolean,
-    context: Context
+    context: Context,
 ) {
     LazyColumn(
         Modifier

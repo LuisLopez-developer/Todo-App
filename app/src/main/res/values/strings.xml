@@ -101,6 +101,8 @@
     <string name="sn">Sin información</string>
     <string name="allow">Permitir</string>
     <string name="internet_error">Sin acceso a internet, revise su conexión.</string>
+    <string name="permission_title">Permisos</string>
+    <string name="permission_message">Para poder utilizar la aplicación, es necesario que acepte los permisos solicitados.</string>
 
     <!-- Para toast -->
     <string name="total_files">Total de archivos</string>

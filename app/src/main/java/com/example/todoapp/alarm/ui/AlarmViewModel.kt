@@ -1,10 +1,10 @@
 package com.example.todoapp.alarm.ui
 
 import android.content.Context
-import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModel
+import com.example.todoapp.alarm.domain.CheckNotificationPermissionUseCase
+import com.example.todoapp.alarm.domain.OpenAppSettingsUseCase
 import com.example.todoapp.services.AlarmManager
-import com.example.todoapp.services.permission.PermissionService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +13,8 @@ import javax.inject.Inject
 @HiltViewModel
 class AlarmViewModel @Inject constructor(
     private val alarmManager: AlarmManager,
-    private val permissionService: PermissionService,
+    private val checkNotificationPermissionUseCase: CheckNotificationPermissionUseCase,
+    private val openAppSettingsUseCase: OpenAppSettingsUseCase,
 ) : ViewModel() {
 
     private val _alarmPermissionGranted = MutableStateFlow(false)
@@ -27,21 +28,12 @@ class AlarmViewModel @Inject constructor(
     }
 
     fun openAppSettings(context: Context) {
-        permissionService.openAppSettings(context)
+        openAppSettingsUseCase(context)
     }
 
-    fun setPermissionLauncher(launcher: ActivityResultLauncher<String>) {
-        permissionService.setPermissionLauncher(launcher)
-    }
 
     fun checkNotificationPermission(context: Context) {
-        _postNotificationPermissionGranted.value =
-            permissionService.isNotificationPermissionGranted(context)
-
-        if (!_postNotificationPermissionGranted.value) {
-            // Solicitar permiso si no está concedido
-            permissionService.requestNotificationPermission()
-        }
+        _postNotificationPermissionGranted.value = checkNotificationPermissionUseCase(context)
     }
 
     fun canScheduleExactAlarms() {
