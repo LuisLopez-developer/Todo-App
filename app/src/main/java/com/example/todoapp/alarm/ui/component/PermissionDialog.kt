@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -27,7 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -59,32 +56,13 @@ fun PermissionDialog(
         }
     }
 
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(onDismissRequest = { }) {
         // Ícono de cierre
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .zIndex(1f)
-                .offset(y = (-26).dp)
-                .clickable { onDismiss() },
-            contentAlignment = Alignment.CenterEnd
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_close), // Icono de cerrar
-                contentDescription = stringResource(R.string.ic_close),
-                modifier = Modifier
-                    .size(24.dp)
-                    .background(colorScheme.surfaceContainerLowest.copy(alpha = 0.4f), RoundedCornerShape(50)),
-                colorFilter = ColorFilter.tint(colorScheme.onPrimary),
-            )
-        }
-
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(Modifier.background(colorScheme.surfaceContainerLowest)) {
-
+            Box {
+                // imagen principal
                 Image(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -92,6 +70,21 @@ fun PermissionDialog(
                     painter = painterResource(id = R.drawable.notification),
                     contentDescription = "Alarm"
                 )
+
+                // Botón de cierre
+                Image(
+                    painter = painterResource(id = R.drawable.ic_close),
+                    contentDescription = stringResource(R.string.ic_close),
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable { onDismiss() }
+                        .align(Alignment.TopEnd),
+                    colorFilter = ColorFilter.tint(colorScheme.onPrimaryContainer),
+                )
+            }
+
+            // Contenido
+            Column(Modifier.background(colorScheme.surfaceContainerLowest)) {
                 Text(
                     text = stringResource(R.string.permission_rationale),
                     modifier = Modifier.padding(16.dp)
