@@ -43,7 +43,6 @@ import com.example.todoapp.addtasks.ui.components.TaskItemComponent
 import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.holidays.ui.HolidaysViewModel
 import com.example.todoapp.holidays.ui.model.HolidayModel
-import com.example.todoapp.services.permission.PermissionService
 import com.example.todoapp.state.data.constants.DefaultStateId.DELETED_ID
 import com.example.todoapp.taskcategory.ui.TaskCategoryUiState
 import com.example.todoapp.taskcategory.ui.TaskCategoryViewModel
@@ -58,7 +57,6 @@ fun TasksScreen(
     taskCategoryViewModel: TaskCategoryViewModel,
     navigationController: NavHostController,
     holidaysViewModel: HolidaysViewModel,
-    permissionService: PermissionService
 ) {
     // Obtener el contexto en el composable usando `LocalContext`
     val context = LocalContext.current
@@ -79,7 +77,7 @@ fun TasksScreen(
     }
 
     // Solicita permiso después de que la pantalla haya cargado
-    permissionService.requestNotificationPermission()
+    //permissionService.requestNotificationPermission()
 
     // Maneja el estado general de tareas
     when (uiStateByDate) {

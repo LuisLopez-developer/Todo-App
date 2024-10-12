@@ -8,21 +8,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.todoapp.services.permission.PermissionService
 import com.example.todoapp.ui.layouts.MainLayout
 import com.example.todoapp.ui.theme.TodoAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    private lateinit var permissionService: PermissionService
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Inicializa PermissionService
-        permissionService = PermissionService(this)
 
         enableEdgeToEdge()
         setContent {
@@ -31,7 +24,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainLayout(permissionService)
+                    MainLayout()
                 }
             }
         }

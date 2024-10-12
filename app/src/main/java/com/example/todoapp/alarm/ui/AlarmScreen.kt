@@ -1,7 +1,9 @@
 package com.example.todoapp.alarm.ui
 
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,6 +18,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -23,7 +26,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.todoapp.R
-import com.example.todoapp.services.permission.PermissionService
 import com.example.todoapp.ui.components.CardComponent
 import com.example.todoapp.ui.layouts.SharedViewModel
 
@@ -31,26 +33,46 @@ import com.example.todoapp.ui.layouts.SharedViewModel
 fun AlarmScreen(
     sharedViewModel: SharedViewModel,
     alarmViewModel: AlarmViewModel,
-    permissionService: PermissionService,
 ) {
+    val context = LocalContext.current
+
+//    val permissionLauncher = rememberLauncherForActivityResult(
+//        contract = RequestPermission()
+//    ) { isGranted: Boolean ->
+//        if (isGranted) {
+//            alarmViewModel.checkNotificationPermission(context)
+//        }
+//    }
+//
+//    LaunchedEffect(Unit) {
+//        alarmViewModel.setPermissionLauncher(permissionLauncher)
+//    }
 
     val alarmPermissionGranted by alarmViewModel.alarmPermissionGranted.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
+    val postNotificationPermissionGranted by alarmViewModel.postNotificationPermissionGranted.collectAsState()
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 alarmViewModel.canScheduleExactAlarms()
+                alarmViewModel.checkNotificationPermission(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
 
-        // Cleanup cuando se elimina o cambia el Composable
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
-    AlarmContent(sharedViewModel, alarmViewModel, alarmPermissionGranted)
+
+    AlarmContent(
+        sharedViewModel,
+        alarmViewModel,
+        alarmPermissionGranted,
+        postNotificationPermissionGranted,
+        context
+    )
 }
 
 @Composable
@@ -58,9 +80,16 @@ fun AlarmContent(
     sharedViewModel: SharedViewModel,
     alarmViewModel: AlarmViewModel,
     alarmPermissionGranted: Boolean,
+    postNotificationPermissionGranted: Boolean,
+    context: Context
 ) {
     ConfigTopBar(sharedViewModel)
-    Container(alarmViewModel, alarmPermissionGranted)
+    Container(
+        alarmViewModel,
+        alarmPermissionGranted,
+        postNotificationPermissionGranted,
+        context
+    )
 }
 
 @Composable
@@ -69,7 +98,12 @@ fun ConfigTopBar(sharedViewModel: SharedViewModel) {
 }
 
 @Composable
-fun Container(alarmViewModel: AlarmViewModel, alarmPermissionGranted: Boolean) {
+fun Container(
+    alarmViewModel: AlarmViewModel,
+    alarmPermissionGranted: Boolean,
+    postNotificationPermissionGranted: Boolean,
+    context: Context
+) {
     LazyColumn(
         Modifier
             .padding(15.dp)
@@ -114,6 +148,46 @@ fun Container(alarmViewModel: AlarmViewModel, alarmPermissionGranted: Boolean) {
                 }
             )
 
+        }
+        item {
+            Spacer(modifier = Modifier.padding(10.dp))
+            CardComponent(
+                title = stringResource(R.string.notifications_title),
+                onClickText = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable {
+                            alarmViewModel.openAppSettings(context)
+                        }) {
+                        if (!postNotificationPermissionGranted) {
+                            Text(
+                                text = stringResource(R.string.allow),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colorScheme.tertiaryContainer
+                            )
+                            Icon(
+                                painterResource(R.drawable.ic_navigate_next),
+                                modifier = Modifier.size(16.dp),
+                                contentDescription = null,
+                                tint = colorScheme.tertiaryContainer
+                            )
+                        } else {
+                            Icon(
+                                painterResource(R.drawable.ic_outline_check_circle),
+                                contentDescription = stringResource(R.string.ic_check_circle),
+                                tint = colorScheme.tertiaryContainer
+                            )
+                        }
+                    }
+                }, description = stringResource(R.string.notifications_description),
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_outline_notifications),
+                        contentDescription = stringResource(R.string.ic_notifications),
+                        tint = colorScheme.tertiaryContainer
+                    )
+                }
+            )
         }
     }
 }

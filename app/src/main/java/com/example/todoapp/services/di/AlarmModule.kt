@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.todoapp.services.AlarmManager
 import com.example.todoapp.services.alarm.AlarmService
 import com.example.todoapp.services.notification.NotificationService
+import com.example.todoapp.services.permission.PermissionService
 import com.example.todoapp.services.sound.SoundService
 import dagger.Module
 import dagger.Provides
@@ -32,6 +33,12 @@ class AlarmModule {
     @Singleton
     fun provideNotificationService(@ApplicationContext context: Context): NotificationService {
         return NotificationService(context)
+    }
+
+    @Provides
+    @Singleton
+    fun providePermissionService(): PermissionService {
+        return PermissionService()
     }
 
     @Provides
