@@ -10,6 +10,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.todoapp.MainActivity
 import com.example.todoapp.R
+import com.example.todoapp.utils.Logger
 
 class NotificationService(private val context: Context) {
 
@@ -44,7 +45,15 @@ class NotificationService(private val context: Context) {
             .build()
 
 
-        notificationManager.notify(taskId, notification)
+        if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            try {
+                notificationManager.notify(taskId, notification)
+            } catch (e: SecurityException) {
+                Logger.debug("NotificationService", "Permiso de notificación denegado: ${e.message}")
+            }
+        } else {
+            Logger.debug("NotificationService", "Las notificaciones están deshabilitadas")
+        }
 
     }
 
