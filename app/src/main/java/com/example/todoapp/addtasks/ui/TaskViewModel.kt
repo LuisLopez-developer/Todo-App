@@ -112,7 +112,7 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    private fun checkTaskForTimeAndPermissions(task: TaskModel) {
+    fun checkTaskForTimeAndPermissions(task: TaskModel) {
         if (task.time != null) {
             // Si la tarea tiene una hora, comprobamos los permisos
             if (!areBasicPermissionsGrantedUseCase()) {

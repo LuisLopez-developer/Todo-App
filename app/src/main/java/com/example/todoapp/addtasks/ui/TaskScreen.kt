@@ -88,6 +88,12 @@ fun TasksScreen(
         }
     }
 
+    LaunchedEffect(sharedViewModel.taskUpdated) {
+        Logger.debug("TASK_UPDATED", "Task updated ${sharedViewModel.taskUpdated.value}")
+        sharedViewModel.taskUpdated.value?.let { taskViewModel.checkTaskForTimeAndPermissions(it) }
+        sharedViewModel.onTaskUpdated(null)
+    }
+
     val showPermissionDialog by taskViewModel.showPermissionDialog.collectAsState()
 
     // Recuperamos el estado de las tareas por fecha

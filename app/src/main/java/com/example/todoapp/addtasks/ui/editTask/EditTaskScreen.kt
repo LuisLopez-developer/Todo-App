@@ -2,7 +2,6 @@
 
 package com.example.todoapp.addtasks.ui.editTask
 
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -80,9 +78,6 @@ fun EditTaskScreen(
     // Observar el modelo de las categorias
     val categoryUiState by taskCategoryViewModel.uiState.collectAsState()
 
-    // Obtener el contexto en el composable usando `LocalContext`
-    val context = LocalContext.current
-
     when (uiStateById) {
         is TaskUiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize()) {
@@ -102,7 +97,6 @@ fun EditTaskScreen(
                 navController = navController,
                 task = (uiStateById as TaskUiState.Success).task,
                 categoryUiState = categoryUiState,
-                context = context,
                 showDatePicker = showDatePicker
             )
         }
@@ -121,7 +115,6 @@ fun Main(
     navController: NavHostController,
     task: TaskModel,
     categoryUiState: TaskCategoryUiState,
-    context: Context,
     showDatePicker: Boolean,
 ) {
     ConfigTopBar(sharedViewModel, navController, taskEditViewModel, task)
@@ -131,7 +124,7 @@ fun Main(
         taskCategoryViewModel,
         task,
         categoryUiState,
-        context
+        sharedViewModel
     )
 }
 
@@ -215,7 +208,7 @@ fun Container(
     taskCategoryViewModel: TaskCategoryViewModel,
     task: TaskModel,
     categoryUiState: TaskCategoryUiState,
-    context: Context,
+    sharedViewModel: SharedViewModel,
 ) {
     val categories = when (categoryUiState) {
         is TaskCategoryUiState.Success -> categoryUiState.categories
@@ -462,6 +455,10 @@ fun Container(
                     time = taskEditViewModel.temporaryTime.value
                 )
                 taskEditViewModel.updateTask(updatedTask)
+                // Actualizar la tarea en el SharedViewModel, para poder mostrar
+                // el dialogo de permisos en caso de que la tarea tenga una hora
+                sharedViewModel.onTaskUpdated(updatedTask)
+
                 taskEditViewModel.resetTemporaryDateTime()
             }
         )

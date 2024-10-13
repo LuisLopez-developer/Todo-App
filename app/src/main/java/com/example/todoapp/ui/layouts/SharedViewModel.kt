@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.example.todoapp.alarm.domain.AreBasicPermissionsGrantedUseCase
+import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.alarm.domain.CheckNotificationPermissionUseCase
 import com.example.todoapp.alarm.domain.IsNotificationPermissionGrantedUseCase
 import com.example.todoapp.alarm.domain.OpenAppSettingsUseCase
@@ -25,7 +25,6 @@ class SharedViewModel @Inject constructor(
     private val checkNotificationPermissionUseCase: CheckNotificationPermissionUseCase,
     private val openAppSettingsUseCase: OpenAppSettingsUseCase,
     private val requestExactAlarmPermissionUseCase: RequestExactAlarmPermissionUseCase,
-    private val areBasicPermissionsGrantedUseCase: AreBasicPermissionsGrantedUseCase,
     private val isNotificationPermissionGrantedUseCase: IsNotificationPermissionGrantedUseCase,
     private val requestNotificationPermissionUseCase: RequestNotificationPermissionUseCase,
     private val setPermissionLauncherUseCase: SetPermissionLauncherUseCase,
@@ -36,9 +35,6 @@ class SharedViewModel @Inject constructor(
     val topBarNavigationIcon = mutableStateOf<@Composable () -> Unit>({})
 
     // Estados de los permisos
-    private val _permissionsGranted = MutableStateFlow(false)
-    val permissionsGranted: StateFlow<Boolean> = _permissionsGranted
-
     private val _alarmPermissionGranted = MutableStateFlow(false)
     val alarmPermissionGranted: StateFlow<Boolean> = _alarmPermissionGranted
 
@@ -73,7 +69,10 @@ class SharedViewModel @Inject constructor(
         requestNotificationPermissionUseCase()
     }
 
-    fun areBasicPermissionsGranted(): Boolean {
-        return areBasicPermissionsGrantedUseCase()
+    private val _taskUpdated = MutableStateFlow<TaskModel?>(null)
+    val taskUpdated: StateFlow<TaskModel?> = _taskUpdated
+
+    fun onTaskUpdated(task: TaskModel?) {
+        _taskUpdated.value = task
     }
 }
