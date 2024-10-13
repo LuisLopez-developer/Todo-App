@@ -1,6 +1,5 @@
 package com.example.todoapp.services.notification
 
-import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -16,7 +15,6 @@ class NotificationService(private val context: Context) {
 
     private val notificationManager = NotificationManagerCompat.from(context)
 
-    @SuppressLint("MissingPermission")
     fun sendTaskNotification(taskId: Int, title: String, stopAlarmPendingIntent: PendingIntent) {
         val chanelId = createNotificationChannel()
 

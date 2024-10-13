@@ -9,6 +9,7 @@ import com.example.todoapp.services.alarm.AlarmReceiver
 import com.example.todoapp.services.alarm.AlarmService
 import com.example.todoapp.services.alarm.StopAlarmReceiver
 import com.example.todoapp.services.notification.NotificationService
+import com.example.todoapp.services.permission.PermissionService
 import com.example.todoapp.services.sound.SoundService
 import com.example.todoapp.utils.Logger
 import org.threeten.bp.LocalDate
@@ -18,6 +19,7 @@ class AlarmManager(
     private val alarmService: AlarmService,
     private val soundService: SoundService,
     private val notificationService: NotificationService,
+    private val permissionService: PermissionService,
     private val context: Context,
 ) {
 
@@ -32,6 +34,11 @@ class AlarmManager(
     }
 
     fun onAlarmReceived(id: Int, title: String) {
+        if(!permissionService.isNotificationPermissionGranted() || !canScheduleExactAlarms()){
+            Logger.debug("AlarmManager", "Permisos insuficientes para mostrar notificación")
+            return
+        }
+
         soundService.playAlarmSound()
         val stopAlarmPendingIntent = createStopAlarmPendingIntent(id)
         notificationService.sendTaskNotification(id, title, stopAlarmPendingIntent)

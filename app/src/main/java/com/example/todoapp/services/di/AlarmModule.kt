@@ -47,9 +47,16 @@ class AlarmModule {
         alarmService: AlarmService,
         soundService: SoundService,
         notificationService: NotificationService,
+        permissionService: PermissionService,
         @ApplicationContext context: Context,
     ): AlarmManager {
-        return AlarmManager(alarmService, soundService, notificationService, context)
+        return AlarmManager(
+            alarmService,
+            soundService,
+            notificationService,
+            permissionService,
+            context
+        )
     }
 
 }
