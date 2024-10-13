@@ -32,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -64,8 +63,6 @@ fun TasksScreen(
     holidaysViewModel: HolidaysViewModel,
     sharedViewModel: SharedViewModel,
 ) {
-    // Obtener el contexto en el composable usando `LocalContext`
-    val context = LocalContext.current
 
     // Crea el launcher para solicitar permisos
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -86,8 +83,8 @@ fun TasksScreen(
 
     // Verifica si el permiso ya está concedido, de lo contrario, solicítalo
     LaunchedEffect(Unit) {
-        if (!sharedViewModel.isNotificationPermissionGranted(context)) {
-            sharedViewModel.requestNotificationPermission(context)
+        if (!sharedViewModel.isNotificationPermissionGranted()) {
+            sharedViewModel.requestNotificationPermission()
         }
     }
 
@@ -151,7 +148,10 @@ fun Container(
 
     if (showPermissionDialog) {
         PermissionDialog(
-            onDismiss = { taskViewModel.onShowPermissionDialog() },
+            onDismiss = {
+                taskViewModel.onShowPermissionDialog()
+                taskViewModel.recreateAlarms()
+            },
             sharedViewModel = sharedViewModel
         )
     }

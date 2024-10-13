@@ -1,6 +1,5 @@
 package com.example.todoapp.addtasks.ui
 
-import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asFlow
@@ -9,6 +8,7 @@ import com.example.todoapp.addtasks.domain.AddTaskUseCase
 import com.example.todoapp.addtasks.domain.DeleteTaskUseCase
 import com.example.todoapp.addtasks.domain.GetTaskUseCase
 import com.example.todoapp.addtasks.domain.GetTasksByDateUseCase
+import com.example.todoapp.addtasks.domain.RecreateAlarmsForTasksUseCase
 import com.example.todoapp.addtasks.domain.UpdateTaskUseCase
 import com.example.todoapp.addtasks.domain.model.toDomain
 import com.example.todoapp.addtasks.ui.TasksUiState.Error
@@ -18,7 +18,6 @@ import com.example.todoapp.addtasks.ui.model.TaskModel
 import com.example.todoapp.addtasks.ui.model.toViewModelList
 import com.example.todoapp.alarm.domain.AreBasicPermissionsGrantedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -37,7 +36,7 @@ class TaskViewModel @Inject constructor(
     private val getTaskUseCase: GetTaskUseCase,
     private val getTasksByDateUseCase: GetTasksByDateUseCase,
     private val areBasicPermissionsGrantedUseCase: AreBasicPermissionsGrantedUseCase,
-    @ApplicationContext private val context: Context,
+    private val recreateAlarmsForTasksUseCase: RecreateAlarmsForTasksUseCase,
     updateTaskUseCase: UpdateTaskUseCase, deleteTaskUseCase: DeleteTaskUseCase,
 ) : BaseTaskViewModel(updateTaskUseCase, deleteTaskUseCase) {
 
@@ -107,10 +106,16 @@ class TaskViewModel @Inject constructor(
         _showPermissionDialog.value = !_showPermissionDialog.value
     }
 
+    fun recreateAlarms() {
+        viewModelScope.launch {
+            recreateAlarmsForTasksUseCase()
+        }
+    }
+
     private fun checkTaskForTimeAndPermissions(task: TaskModel) {
         if (task.time != null) {
             // Si la tarea tiene una hora, comprobamos los permisos
-            if (!areBasicPermissionsGrantedUseCase(context)) {
+            if (!areBasicPermissionsGrantedUseCase()) {
                 // Si no tiene los permisos, mostramos el diálogo
                 onShowPermissionDialog()
             }

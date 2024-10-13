@@ -20,9 +20,9 @@ class PermissionService @Inject constructor(private val context: Context) {
         permissionLauncher = launcher
     }
 
-    fun requestNotificationPermission(context: Context) {
+    fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (isNotificationPermissionGranted(context)) {
+            if (isNotificationPermissionGranted()) {
                 Logger.info("permissions","Permiso de notificación ya concedido")
             } else {
                 permissionLauncher?.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -30,7 +30,7 @@ class PermissionService @Inject constructor(private val context: Context) {
         }
     }
 
-    fun isNotificationPermissionGranted(context: Context): Boolean {
+    fun isNotificationPermissionGranted(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
         } else {

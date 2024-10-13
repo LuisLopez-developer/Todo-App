@@ -21,6 +21,7 @@ class AlarmService(private val context: Context) {
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             if (alarmManager.canScheduleExactAlarms()) {
+                Logger.debug("AlarmManager", "Programando alarma exacta")
                 alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
             } else {
                 Logger.debug("AlarmManager", "Solicicitar permiso para programar alarma exacta")
@@ -38,17 +39,17 @@ class AlarmService(private val context: Context) {
 
     fun canScheduleExactAlarms(): Boolean {
         return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            Logger.debug("AlarmManager", "Checking if can schedule exact alarms")
+            Logger.debug("AlarmManager", "Comprobar si se pueden programar alarmas exactas")
             // Solo a partir de Android 12 (S) se puede usar canScheduleExactAlarms()
             alarmManager.canScheduleExactAlarms()
         } else {
-            Logger.debug("AlarmManager", "Can schedule exact alarms")
+            Logger.debug("AlarmManager", "Se asume que se pueden programar alarmas exactas")
             // Se asume que en versiones anteriores se puede programar alarmas exactas
             true
         }
     }
 
-    fun requestExactAlarmPermission() {
+    private fun requestExactAlarmPermission() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             val request =
                 Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {

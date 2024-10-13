@@ -1,11 +1,10 @@
 package com.example.todoapp.alarm.domain
 
-import android.content.Context
 import com.example.todoapp.services.permission.PermissionService
 import javax.inject.Inject
 
 class CheckNotificationPermissionUseCase @Inject constructor(private val permissionService: PermissionService) {
-    operator fun invoke(context: Context): Boolean {
-        return permissionService.isNotificationPermissionGranted(context)
+    operator fun invoke(): Boolean {
+        return permissionService.isNotificationPermissionGranted()
     }
 }

@@ -46,8 +46,8 @@ class SharedViewModel @Inject constructor(
     val postNotificationPermissionGranted: StateFlow<Boolean> = _postNotificationPermissionGranted
 
     // Función para verificar los permisos
-    fun checkPermissions(context: Context) {
-        _postNotificationPermissionGranted.value = checkNotificationPermissionUseCase(context)
+    fun checkPermissions() {
+        _postNotificationPermissionGranted.value = checkNotificationPermissionUseCase()
         _alarmPermissionGranted.value = alarmManager.canScheduleExactAlarms()
     }
 
@@ -65,15 +65,15 @@ class SharedViewModel @Inject constructor(
         setPermissionLauncherUseCase(permissionLauncher)
     }
 
-    fun isNotificationPermissionGranted(context: Context): Boolean {
-        return isNotificationPermissionGrantedUseCase(context)
+    fun isNotificationPermissionGranted(): Boolean {
+        return isNotificationPermissionGrantedUseCase()
     }
 
-    fun requestNotificationPermission(context: Context) {
-        requestNotificationPermissionUseCase(context)
+    fun requestNotificationPermission() {
+        requestNotificationPermissionUseCase()
     }
 
-    fun areBasicPermissionsGranted(context: Context): Boolean {
-        return areBasicPermissionsGrantedUseCase(context)
+    fun areBasicPermissionsGranted(): Boolean {
+        return areBasicPermissionsGrantedUseCase()
     }
 }
